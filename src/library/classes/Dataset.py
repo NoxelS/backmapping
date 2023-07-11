@@ -17,7 +17,7 @@ class Dataset:
         return f'<Dataset {self.name} at {hex(id(self))}>'
     
     def get_structure(self) -> Structure: 
-        parser = PDBParser()
+        parser = PDBParser(QUIET=True)
         return parser.get_structure(self.name, self.path)
     
     def get_model(self) -> Model:

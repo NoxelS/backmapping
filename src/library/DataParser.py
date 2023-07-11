@@ -1,8 +1,7 @@
 import os
-from classes.Dataset import Dataset
+from library.classes.Dataset import Dataset
 from Bio.PDB.PDBParser import PDBParser
-from Visualization import plot_residue
-from static.MartiniMaps import DOPC_CG_NAME_TO_TYPE_MAP, DOPC_CG_BOND_MAP
+
 
 def find_all_pdb_files(path):
     """
@@ -44,7 +43,7 @@ def get_cg_at_datasets(
         path,
         CG_PATTERN='CG_INPUT.pdb',
         AT_PATTERN='final_cg2at_de_novo.pdb'
-        ):
+):
     """
         Get all CG and AT datasets from a given path.
         This uses the folder structure provided by chetan.
@@ -76,7 +75,7 @@ def get_cg_at_datasets(
                 cg_datasets.append(dataset)
             elif dataset.path.endswith(AT_PATTERN):
                 at_datasets.append(dataset)
-    
+
     return cg_datasets, at_datasets
 
 
@@ -86,13 +85,3 @@ def get_structure_from_dataset(dataset):
     """
     parser = PDBParser()
     return parser.get_structure(dataset.name, dataset.path)
-
-if __name__ == '__main__':
-    # Test the function
-    cg_datasets, at_datasets = get_cg_at_datasets(os.path.join( "data", "raw"))
-
-    struct = cg_datasets[0].get_residues()
-    struct.__next__()
-    struct.__next__()
-    plot_residue(struct.__next__(),
-                 residue_map=DOPC_CG_NAME_TO_TYPE_MAP, bond_map=DOPC_CG_BOND_MAP)

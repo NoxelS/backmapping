@@ -161,5 +161,6 @@ cython_debug/
 
 
 data/raw/
+data/figures/raw_data
 
 
