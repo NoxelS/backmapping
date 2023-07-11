@@ -5,6 +5,9 @@ from Bio.PDB.PDBIO import Select
 from Bio.PDB.PDBIO import PDBIO
 from Bio.PDB.PDBParser import PDBParser
 
+import time
+from datetime import datetime
+
 def find_all_pdb_files(path):
     """
         Find all pdb files recursivly in a given path and return a list of Dataset objects
@@ -109,14 +112,18 @@ def generate_training_data(path_to_raw_data, output_dir_path):
         for j, (cg_residue, at_residue) in enumerate(zip(cg_dataset.get_residues(), at_dataset.get_residues())):
             # Create folder for the idx
             if not os.path.exists(f"{output_dir_path}/{idx}"):
-                os.makedirs(f"data/training/{idx}")
+                os.makedirs(f"{output_dir_path}/{idx}")
 
             io.set_structure(cg_dataset.get_structure())
-            io.save(f"data/training/{idx}/cg.pdb",
+            io.save(f"{output_dir_path}/{idx}/cg.pdb",
                     ResidueSelector(cg_residue._id[1]), preserve_atom_numbering=True)
 
             io.set_structure(at_dataset.get_structure())
-            io.save(f"data/training/{idx}/at.pdb",
+            io.save(f"{output_dir_path}/{idx}/at.pdb",
                     ResidueSelector(at_residue._id[1]), preserve_atom_numbering=True)
 
             idx += 1
+
+            if idx % 10 == 0:
+                timestamp = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                print(f"[{timestamp}] Generated {idx} training examples")

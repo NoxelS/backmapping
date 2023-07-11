@@ -10,9 +10,9 @@ import sys
 from library.classes.CNN import CNN
 from library.classes.TrainingDataGenerator import TrainingDataGenerator
 
-# data_prefix = "/data/users/noel/"      # For smaug
+data_prefix = "/data/users/noel/data/"      # For smaug
 # data_prefix = "/localdisk/noel/"       # For fluffy
-data_prefix = "data/"                        # For local
+# data_prefix = "data/"                        # For local
 
 cg_size = (12, 8)
 at_size = (138, 8)

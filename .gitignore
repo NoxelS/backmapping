@@ -166,3 +166,4 @@ data/models/
 data/training/
 
 
+logs/*
