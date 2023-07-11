@@ -17,6 +17,22 @@ DOPC_CG_NAME_TO_TYPE_MAP = {
     'C4B': 'C1',
 }
 
+DOPC_BEAD_TYPE_NAME_IDS = {
+    'Q0': 0,
+    'Qa': 1,
+    'Na': 2,
+    'C1': 3,
+    'C3': 4,
+}
+
+DOPC_ELEMENT_TYPE_NAME_IDS = {
+    'C': 0,
+    'N': 1,
+    'O': 2,
+    'P': 3,
+    'H': 4,
+}
+
 
 DOPC_CG_BOND_MAP = {
     1: 2,

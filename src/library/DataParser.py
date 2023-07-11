@@ -1,7 +1,9 @@
 import os
 from library.classes.Dataset import Dataset
 from Bio.PDB.PDBParser import PDBParser
-
+from Bio.PDB.PDBIO import Select
+from Bio.PDB.PDBIO import PDBIO
+from Bio.PDB.PDBParser import PDBParser
 
 def find_all_pdb_files(path):
     """
@@ -85,3 +87,36 @@ def get_structure_from_dataset(dataset):
     """
     parser = PDBParser()
     return parser.get_structure(dataset.name, dataset.path)
+
+
+class ResidueSelector(Select):
+    def __init__(self, target_id):
+        self.target_id = target_id
+
+    def accept_residue(self, residue):
+        # TODO: improve this
+        return residue._id[1] == self.target_id
+
+def generate_training_data(path_to_raw_data, output_dir_path):
+    # Get all CG and AT datasets (this is only indexing the data, not loading it)
+    cg_datasets, at_datasets = get_cg_at_datasets(path_to_raw_data)
+
+    io = PDBIO()
+    idx = 0
+
+    # Loop over both at the same time (these are generators, so they are not loaded into memory immediately)
+    for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
+        for j, (cg_residue, at_residue) in enumerate(zip(cg_dataset.get_residues(), at_dataset.get_residues())):
+            # Create folder for the idx
+            if not os.path.exists(f"{output_dir_path}/{idx}"):
+                os.makedirs(f"data/training/{idx}")
+
+            io.set_structure(cg_dataset.get_structure())
+            io.save(f"data/training/{idx}/cg.pdb",
+                    ResidueSelector(cg_residue._id[1]), preserve_atom_numbering=True)
+
+            io.set_structure(at_dataset.get_structure())
+            io.save(f"data/training/{idx}/at.pdb",
+                    ResidueSelector(at_residue._id[1]), preserve_atom_numbering=True)
+
+            idx += 1
