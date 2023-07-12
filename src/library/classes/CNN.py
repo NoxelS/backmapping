@@ -29,7 +29,7 @@ class CNN:
         self.y_test = y_test
 
         # Scale the model
-        scale = 2
+        scale = 1
 
         self.model = tf.keras.Sequential(
             [
