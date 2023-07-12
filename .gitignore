@@ -163,7 +163,7 @@ cython_debug/
 data/raw/
 data/figures/raw_data
 data/models/
-data/training/
-data/validate/
+# data/training/
+# data/validate/
 data/training.zip
 logs/*
