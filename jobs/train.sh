@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=gen_data
-#SBATCH --output=./logs/jobs/training-data-%j.log
-#SBATCH --error=./logs/jobs/training-data-%j.err
+#SBATCH --output=./logs/jobs/train-%j.log
+#SBATCH --error=./logs/jobs/train-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
 # #SBATCH --cpus-per-task=4
@@ -39,7 +39,7 @@ echo ""
 
 echo "####################### CODE ###########################"
 date
-python src/generate_data.py
+python src/train.py
 date
 # echo "####################### POST ANALYSIS ###########################"
 # echo "Finished!"
