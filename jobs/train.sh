@@ -10,7 +10,7 @@
 # #SBATCH --mem-per-gpu=140G        # make sure to at least get 140GB of total vram
 # #SBATCH --mem=140G                # make sure to at least get 140GB of total vram
 # #SBTACH --contiguous
-#SBATCH --partition=long
+#SBATCH --partition=deflt
 # #SBATCH --time=02:00:00:00             # make sure to change the time if running something real
 #SBATCH --mail-type=begin           # send email when job begins
 #SBATCH --mail-type=end             # send email when job ends

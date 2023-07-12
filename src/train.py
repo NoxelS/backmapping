@@ -55,7 +55,7 @@ test_gen = TrainingDataGenerator(
 cnn.model.fit(
     train_gen,
     batch_size=1024,
-    epochs=5,
+    epochs=150,
     validation_data=test_gen,
 )
 
