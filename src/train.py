@@ -54,15 +54,15 @@ test_gen = TrainingDataGenerator(
 
 cnn.model.fit(
     train_gen,
-    batch_size=16,
-    epochs=1,
+    batch_size=1024,
+    epochs=5,
     validation_data=test_gen,
 )
 
 test_X, test_Y = pdb_data_to_xyz(
     batch_size=1,
     idx=0,
-    input_dir_path=data_prefix + "validate",
+    input_dir_path=data_prefix + "training",
     input_size=cg_size,
     output_size=at_size,
 )
@@ -71,8 +71,8 @@ parser = PDBParser(QUIET=True)
 cg_structure = parser.get_structure(1, data_prefix + "validate/0/cg.pdb")
 print(cg_structure)
 
-cg_xyz_to_pdb_data(test_X, 'data/results/test_1')
-at_xyz_to_pdb_data(test_Y, 'data/results/test_1')
+# cg_xyz_to_pdb_data(test_X, 'data/results/test_1')
+# at_xyz_to_pdb_data(test_Y, 'data/results/test_1')
 
 # Make predictions
 test_Y = cnn.model.predict(test_X)

@@ -31,11 +31,28 @@ class CNN:
 
         self.model = tf.keras.Sequential(
             [
+                # Input layer
                 tf.keras.layers.Input(input_size, sparse=False),
-                tf.keras.layers.Dense(64 * 8, activation='sigmoid'),
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(
-                    np.prod(output_size), activation='sigmoid'),
+                tf.keras.layers.Reshape((input_size[0], input_size[1], 1)),
+                # Encode with convolutions
+                tf.keras.layers.Conv2D(64, (2, 2), activation='relu'),
+                tf.keras.layers.MaxPooling2D((2, 2)),
+                tf.keras.layers.Conv2D(128, (2, 2), activation='relu'),
+                # Latent space
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(256, activation='relu'),
+                tf.keras.layers.Dropout(0.5),
+                tf.keras.layers.Reshape((4, 4, 16)),
+                # Decode with transpose convolutions
+                tf.keras.layers.Conv2DTranspose(128, (2, 2), activation='relu'),
+                tf.keras.layers.UpSampling2D((2, 2)),
+                tf.keras.layers.Conv2DTranspose(64, (2, 2), activation='relu'),
+                tf.keras.layers.UpSampling2D((2, 2)),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dropout(0.15),
+                # Output layer
+                tf.keras.layers.Dense(np.prod(output_size), activation='sigmoid'),
                 tf.keras.layers.Reshape(output_size),
             ], name=self.display_name)
 

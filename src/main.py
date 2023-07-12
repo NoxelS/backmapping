@@ -20,9 +20,11 @@ from library.Visualization import plot_residue
 # Load residue
 cg_struct = PDBParser().get_structure("DOPC", "data/results/test_2/cg_0.pdb")
 at_struct = PDBParser().get_structure("DOPC", "data/results/test_2/at_0.pdb")
+at_struct_real = PDBParser().get_structure("DOPC", "data/validate/0/at.pdb")
 
 cg_residue = list(cg_struct.get_residues())[0]
 at_residue = list(at_struct.get_residues())[0]
+at_residue_real = list(at_struct_real.get_residues())[0]
 
 # Bond map for cg system
 cg_residue_map = cg_name_to_type_dict(os.path.join(
@@ -39,14 +41,19 @@ at_bond_map = cg_bond_map_dict(os.path.join(
 
 # Plot the figures side by side
 fig = plt.figure(figsize=(10, 5))
+ax0 = fig.add_subplot(131, projection='3d')
 ax1 = fig.add_subplot(121, projection='3d')
 ax2 = fig.add_subplot(122, projection='3d')
 
+
 plot_residue(cg_residue,
-                residue_map=cg_residue_map, bond_map=cg_bond_map, show_labels=True, group_by_element=True, dont_show_plot=True, ax=ax1, fig=fig)
+             residue_map=cg_residue_map, bond_map=cg_bond_map, show_labels=True, group_by_element=True, dont_show_plot=True, ax=ax0, fig=fig)
 
 plot_residue(at_residue, residue_map=at_residue_map,
-                bond_map=at_bond_map, show_labels=False, group_by_element=True, dont_show_plot=True, ax=ax2, fig=fig)
+             bond_map=at_bond_map, show_labels=False, group_by_element=True, dont_show_plot=True, ax=ax1, fig=fig)
+
+plot_residue(at_residue_real, residue_map=at_residue_map,
+             bond_map=at_bond_map, show_labels=False, group_by_element=True, dont_show_plot=True, ax=ax2, fig=fig)
 
 # Add title
 fig.suptitle(f'CG vs AT', fontsize=16)
