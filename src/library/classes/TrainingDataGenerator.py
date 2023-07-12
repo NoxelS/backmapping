@@ -147,17 +147,6 @@ class TrainingDataGenerator(tf.keras.utils.Sequence):
                 at_type_id = DOPC_ELEMENT_TYPE_NAME_IDS[atom.element]
                 Y[i, j, 3 + at_type_id] = 1
 
-
-        # Print min and max of positions in x,y,z
-        print(f"cg X: {np.min(X[:, :, 0])} {np.max(X[:, :, 0])}")
-        print(f"cg Y: {np.min(X[:, :, 1])} {np.max(X[:, :, 1])}")
-        print(f"cg Z: {np.min(X[:, :, 2])} {np.max(X[:, :, 2])}")
-
-        # Print min and max of positions in x,y,z
-        print(f"at X: {np.min(Y[:, :, 0])} {np.max(Y[:, :, 0])}")
-        print(f"at Y: {np.min(Y[:, :, 1])} {np.max(Y[:, :, 1])}")
-        print(f"at Z: {np.min(Y[:, :, 2])} {np.max(Y[:, :, 2])}")
-
         # Convert to tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)
         Y = tf.convert_to_tensor(Y, dtype=tf.float32)
