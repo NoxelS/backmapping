@@ -60,7 +60,7 @@ daal4py==2021.6.0
 darkdetect==0.8.0
 dask==2022.7.0
 datashader==0.14.1
-datashape==0.5.4
+datashape~=0.5.4
 debugpy==1.5.1
 decorator==5.1.1
 defusedxml==0.7.1
