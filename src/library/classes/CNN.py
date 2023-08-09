@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
+from library.classes.BackmappingLosses import BackmappingLoss
 
 
 class CNN:
@@ -63,7 +64,7 @@ class CNN:
         # Compile the model
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(),
-            loss='mse',
+            loss=BackmappingLoss(),
             metrics=['accuracy'],
         )
 

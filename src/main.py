@@ -18,9 +18,9 @@ import numpy as np
 from library.Visualization import plot_residue
 
 # Load residue
-cg_struct = PDBParser().get_structure("DOPC", "data/results/test_2/cg_0.pdb")
+cg_struct = PDBParser().get_structure("DOPC", "data/training/0/cg.pdb")
 at_struct = PDBParser().get_structure("DOPC", "data/results/test_2/at_0.pdb")
-at_struct_real = PDBParser().get_structure("DOPC", "data/validate/0/at.pdb")
+at_struct_real = PDBParser().get_structure("DOPC", "data/training/0/at.pdb")
 
 cg_residue = list(cg_struct.get_residues())[0]
 at_residue = list(at_struct.get_residues())[0]
@@ -40,10 +40,10 @@ at_bond_map = cg_bond_map_dict(os.path.join(
 
 
 # Plot the figures side by side
-fig = plt.figure(figsize=(10, 5))
+fig = plt.figure(figsize=(15, 10))
 ax0 = fig.add_subplot(131, projection='3d')
-ax1 = fig.add_subplot(121, projection='3d')
-ax2 = fig.add_subplot(122, projection='3d')
+ax1 = fig.add_subplot(132, projection='3d')
+ax2 = fig.add_subplot(133, projection='3d')
 
 
 plot_residue(cg_residue,
@@ -56,7 +56,10 @@ plot_residue(at_residue_real, residue_map=at_residue_map,
              bond_map=at_bond_map, show_labels=False, group_by_element=True, dont_show_plot=True, ax=ax2, fig=fig)
 
 # Add title
-fig.suptitle(f'CG vs AT', fontsize=16)
+fig.suptitle(f'CG vs Predicted vs Expected', fontsize=16)
+
+# Thight layout
+fig.tight_layout()
 
 # Plot
 plt.show()
