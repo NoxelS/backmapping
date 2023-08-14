@@ -8,8 +8,8 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import sys
 from library.classes.CNN import CNN
-from library.classes.TrainingDataGenerator import TrainingDataGenerator
-from library.DataParser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
+from library.classes.generators import TrainingDataGenerator
+from library.parser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
 from Bio.PDB import PDBParser
 
 

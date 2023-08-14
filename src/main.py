@@ -7,15 +7,15 @@ from Bio.PDB.NeighborSearch import NeighborSearch
 from Bio.PDB.PDBParser import PDBParser
 
 from library.classes.Dataset import Dataset
-from library.DataParser import get_cg_at_datasets
-from library.static.ColorMaps import DEFAULT_ELEMENT_COLOR_MAP
-from library.static.MartiniMaps import cg_name_to_type_dict, cg_bond_map_dict
+from library.parser import get_cg_at_datasets
+from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
+from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict
 
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.Visualization import plot_residue
+from library.viz import plot_residue
 
 # Load residue
 cg_struct = PDBParser().get_structure("DOPC", "data/training/0/cg.pdb")

@@ -1,6 +1,6 @@
 import argparse
 from library import __version__
-from library.Visualization import show_dataset
+from library.viz import show_dataset
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=f'CLI for the backmapping CNN library. Version: {__version__.v}')

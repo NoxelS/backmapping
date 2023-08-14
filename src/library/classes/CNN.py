@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
-from library.classes.BackmappingLosses import BackmappingLoss
+from library.classes.BackmappingLoss import BackmappingLoss
 
 
 class CNN:

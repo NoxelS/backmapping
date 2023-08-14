@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from Bio.PDB.PDBParser import PDBParser
 
 from library.classes.Dataset import Dataset
-from library.Visualization import plot_residue
-from library.DataParser import get_cg_at_datasets
-from library.static.MartiniMaps import cg_name_to_type_dict, cg_bond_map_dict
+from library.viz import plot_residue
+from library.parser import get_cg_at_datasets
+from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict
 
 # Get all CG and AT datasets
 cg_datasets, at_datasets = get_cg_at_datasets(os.path.join("data", "raw"))
