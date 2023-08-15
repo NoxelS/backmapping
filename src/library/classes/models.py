@@ -21,7 +21,7 @@ class CNN:
         self.data_prefix = data_prefix
 
         # Scale the model, this currently only affects the number of filters
-        scale = 1
+        scale = 16
 
         self.model = tf.keras.Sequential(
             [
@@ -128,12 +128,12 @@ class CNN:
             # this is set to 1 epoch here to save after each epoch. Make sure to set
             # this to a value greater than one when training on a large dataset, because
             # it can take a long time to save checkpoints.
-            # tf.keras.callbacks.BackupAndRestore(
-            #     backup_dir=os.path.join(self.data_prefix, "backup", self.display_name),
-            #     save_freq=1,
-            #     delete_checkpoint=not self.keep_checkpoints,
-            #     save_before_preemption=False,
-            # ),
+            tf.keras.callbacks.BackupAndRestore(
+                backup_dir=os.path.join(self.data_prefix, "backup", self.display_name),
+                save_freq=1,
+                delete_checkpoint=not self.keep_checkpoints,
+                save_before_preemption=False,
+            ),
 
             # The ReduceLROnPlateau callback monitors a quantity and if no improvement
             # is seen for a 'patience' number of epochs, the learning rate is reduced.
@@ -161,19 +161,19 @@ class CNN:
             # The TensorBoard callback writes a log for TensorBoard, which allows
             # you to visualize dynamic graphs of your training and test metrics,
             # as well as activation histograms for the different layers in your model.
-            tf.keras.callbacks.TensorBoard(
-                log_dir=os.path.join(self.data_prefix,'tensorboard'),
-                histogram_freq=1,
-                write_graph=True,
-                write_images=True,
-                write_steps_per_second=True,
-                update_freq='batch',
-                profile_batch=(0, 10),
-                embeddings_freq=1,
-                embeddings_metadata=None,
-            ),
+            # tf.keras.callbacks.TensorBoard(
+            #     log_dir=os.path.join(self.data_prefix,'tensorboard'),
+            #     histogram_freq=1,
+            #     write_graph=True,
+            #     write_images=True,
+            #     write_steps_per_second=True,
+            #     update_freq='batch',
+            #     profile_batch=(0, 10),
+            #     embeddings_freq=1,
+            #     embeddings_metadata=None,
+            # ),
             # Print the min, max and average weight of each layer before each batch.
-            tf.keras.callbacks.LambdaCallback(on_batch_begin=lambda batch, logs: print(self.get_weight_info()))
+            # tf.keras.callbacks.LambdaCallback(on_batch_begin=lambda batch, logs: print(self.get_weight_info()))
         ]
 
         if early_stop:
