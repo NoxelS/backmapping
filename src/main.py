@@ -6,7 +6,7 @@ from Bio.PDB.Structure import Structure
 from Bio.PDB.NeighborSearch import NeighborSearch
 from Bio.PDB.PDBParser import PDBParser
 
-from library.classes.Dataset import Dataset
+from library.classes.dataset import Dataset
 from library.parser import get_cg_at_datasets
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict

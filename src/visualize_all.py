@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Bio.PDB.PDBParser import PDBParser
 
-from library.classes.Dataset import Dataset
+from library.classes.dataset import Dataset
 from library.viz import plot_residue
 from library.parser import get_cg_at_datasets
 from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict

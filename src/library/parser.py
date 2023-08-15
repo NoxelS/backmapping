@@ -1,5 +1,5 @@
 import os
-from library.classes.Dataset import Dataset
+from library.classes.dataset import Dataset
 from Bio.PDB.PDBIO import Select
 from Bio.PDB.PDBIO import PDBIO
 from Bio.PDB.PDBParser import PDBParser

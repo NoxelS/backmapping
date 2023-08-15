@@ -172,5 +172,8 @@ data/membranes_test/
 data/molecules/
 data/molecules_slow/
 data/molecules_test/
+data/tensorboard/
+data/hist/
+data/backup/
 data/training.zip
 logs/*

@@ -7,75 +7,60 @@ import tensorflow as tf
 import numpy as np
 from scipy.ndimage import gaussian_filter
 import sys
-from library.classes.CNN import CNN
-from library.classes.generators import TrainingDataGenerator
+from library.classes.models import CNN
+from library.classes.generators import RelativeVectorsTrainingDataGenerator, PADDING_X, PADDING_Y
 from library.parser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
 from Bio.PDB import PDBParser
+import matplotlib.pyplot as plt
 
+##### CONFIGURATION #####
 
-# data_prefix = "/data/users/noel/data/"      # For smaug
-# data_prefix = "/localdisk/noel/"       # For fluffy
-data_prefix = "data/"                        # For local
+# data_prefix = "/data/users/noel/data/"        # For smaug
+# data_prefix = "/localdisk/noel/"              # For fluffy
+data_prefix = "data/"                           # For local
 
-cg_size = (12, 8)
-at_size = (138, 8)
+cg_size = (11 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
+at_size = (53 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 
+BATCH_SIZE = 1024
+VALIDATION_SPLIT = 0.1
+
+print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
+
+##### TRAINING #####
 
 cnn = CNN(
-    "DOPC",
+    cg_size,
+    at_size,
+    data_prefix=data_prefix,
+    display_name="DOPC",
     keep_checkpoints=True,
-    x_train=[],
-    y_train=[],
-    x_test=[],
-    y_test=[],
-    path=data_prefix,
     load_path="models/DOPC.h5",
-    input_size=cg_size,
-    output_size=at_size,
 )
 
-train_gen = TrainingDataGenerator(
-    input_dir_path=data_prefix + "training",
-    output_dir_path=data_prefix + "training",
-    input_size=cg_size,
-    output_size=at_size,
+train_gen = RelativeVectorsTrainingDataGenerator(
+    input_dir_path=os.path.join(data_prefix, "training", "input"),
+    output_dir_path=os.path.join(data_prefix, "training", "output"),
     shuffle=False,
-    batch_size=16
+    batch_size=BATCH_SIZE,
+    validate_split=VALIDATION_SPLIT,
+    validation_mode=False
 )
 
-test_gen = TrainingDataGenerator(
-    input_dir_path=data_prefix + "validate",
-    output_dir_path=data_prefix + "validate",
-    input_size=cg_size,
-    output_size=at_size,
+validation_gen = RelativeVectorsTrainingDataGenerator(
+    input_dir_path=os.path.join(data_prefix, "training", "input"),
+    output_dir_path=os.path.join(data_prefix, "training", "output"),
     shuffle=False,
-    batch_size=16
+    batch_size=BATCH_SIZE,
+    validate_split=VALIDATION_SPLIT,
+    validation_mode=True
 )
 
-cnn.model.fit(
+cnn.fit(
     train_gen,
-    batch_size=1024,
-    epochs=5,
-    validation_data=test_gen,
+    batch_size=BATCH_SIZE,
+    epochs=100,
+    validation_gen=validation_gen,
 )
 
-test_X, test_Y = pdb_data_to_xyz(
-    batch_size=1,
-    idx=0,
-    input_dir_path=data_prefix + "training",
-    input_size=cg_size,
-    output_size=at_size,
-)
-
-parser = PDBParser(QUIET=True)
-cg_structure = parser.get_structure(1, data_prefix + "validate/0/cg.pdb")
-print(cg_structure)
-
-# cg_xyz_to_pdb_data(test_X, 'data/results/test_1')
-# at_xyz_to_pdb_data(test_Y, 'data/results/test_1')
-
-# Make predictions
-test_Y = cnn.model.predict(test_X)
-
-cg_xyz_to_pdb_data(test_X, 'data/results/test_2')
-at_xyz_to_pdb_data(test_Y, 'data/results/test_2')
+cnn.test(train_gen)
