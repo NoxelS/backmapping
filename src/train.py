@@ -59,8 +59,24 @@ validation_gen = RelativeVectorsTrainingDataGenerator(
 cnn.fit(
     train_gen,
     batch_size=BATCH_SIZE,
-    epochs=100,
+    epochs=200,
     validation_gen=validation_gen,
 )
 
-cnn.test(train_gen)
+
+test_gen = RelativeVectorsTrainingDataGenerator(
+    input_dir_path=os.path.join(data_prefix, "training", "input"),
+    output_dir_path=os.path.join(data_prefix, "training", "output"),
+    shuffle=False,
+    batch_size=1,
+    validate_split=VALIDATION_SPLIT,
+    validation_mode=False
+)
+
+test_output = cnn.predict(test_gen.__getitem__(0)[0])
+print(test_gen.__getitem__(0)[0][0, 10, :, 0])
+print(test_output[0, 10, :, 0])
+
+# Calculate mean squared error
+mse = np.sqrt(np.mean(np.square(test_output * 100 - test_gen.__getitem__(0)[1] * 100)))
+print(f"Mean squared error: {mse}")

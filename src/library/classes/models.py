@@ -67,10 +67,11 @@ class CNN:
                 ),
                 ##### Latent space #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(64, activation='relu'),
+                tf.keras.layers.Dense(36, activation='relu'),
+                tf.keras.layers.Dropout(0.2),
                 tf.keras.layers.BatchNormalization(),
                 ##### Decoder #####
-                tf.keras.layers.Reshape((8, 8, 1)),
+                tf.keras.layers.Reshape((6, 6, 1)),
                 tf.keras.layers.Conv2DTranspose(
                     filters=2 * scale,
                     kernel_size=(3, 2),
@@ -88,7 +89,7 @@ class CNN:
                 ),
                 tf.keras.layers.BatchNormalization(),
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(np.prod(output_size), activation='linear', kernel_initializer=tf.keras.initializers.HeNormal()),
+                tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.HeNormal()),
                 tf.keras.layers.Reshape(output_size),
                 ##### Output #####
             ], name=self.display_name)
@@ -100,8 +101,8 @@ class CNN:
                 # learning_rate=0.0001,
             ),
             loss=BackmappingLoss(),
-            metrics=['accuracy'],
-            run_eagerly=True,
+            metrics=['accuracy','mae'],
+            run_eagerly=True
         )
 
         self.model.summary()
@@ -161,17 +162,17 @@ class CNN:
             # The TensorBoard callback writes a log for TensorBoard, which allows
             # you to visualize dynamic graphs of your training and test metrics,
             # as well as activation histograms for the different layers in your model.
-            # tf.keras.callbacks.TensorBoard(
-            #     log_dir=os.path.join(self.data_prefix,'tensorboard'),
-            #     histogram_freq=1,
-            #     write_graph=True,
-            #     write_images=True,
-            #     write_steps_per_second=True,
-            #     update_freq='batch',
-            #     profile_batch=(0, 10),
-            #     embeddings_freq=1,
-            #     embeddings_metadata=None,
-            # ),
+            tf.keras.callbacks.TensorBoard(
+                log_dir=os.path.join(self.data_prefix,'tensorboard'),
+                histogram_freq=1,
+                write_graph=True,
+                write_images=True,
+                write_steps_per_second=True,
+                update_freq='batch',
+                profile_batch=(0, 10),
+                embeddings_freq=1,
+                embeddings_metadata=None,
+            ),
             # Print the min, max and average weight of each layer before each batch.
             # tf.keras.callbacks.LambdaCallback(on_batch_begin=lambda batch, logs: print(self.get_weight_info()))
         ]
@@ -218,6 +219,12 @@ class CNN:
         Y = data_generator.__getitem__(0)[1]
         loss, acc = self.model.evaluate(X, Y, verbose=0)
         print(f"CNN-Test: acc = {100*acc:5.2f}%, loss = {loss:7.4f}")
+
+    def predict(self, x):
+        """
+            Predicts the output for a given input
+        """
+        return self.model.predict(x)
 
     def activation(self, x, layer_name):
         """

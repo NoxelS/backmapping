@@ -3,9 +3,11 @@ from Bio.PDB.PDBIO import PDBIO
 import time
 from datetime import datetime
 from library.parser import get_cg_at_datasets
+import numpy as np
 
 input_dir_path = "data/membranes"
 output_dir_path = "data/molecules"
+output_box_table_path = "data"    # <- This is the file where the box sizes are saved
 training_dir_path = "data/training"
 TRAINING_DATA_MODE = True
 MAX_SAMPLES = (10 + 1) * 1024  # 102400
@@ -35,6 +37,15 @@ if TRAINING_DATA_MODE and not os.path.exists(training_dir_path):
     os.makedirs(f"{training_dir_path}/input")
     os.makedirs(f"{training_dir_path}/output")
 
+# List to store all box sizes
+cg_box_sizes = []
+at_box_sizes = []
+
+# List of tuples to keep track of which dataset has which box size
+# Consists of (dataset_idx, box_size)
+cg_box_size_dataset_relations = []
+at_box_size_dataset_relations = []
+
 # Loop over both at the same time (these are generators, so they are not loaded into memory immediately)
 for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
     # Open the CG and AT files
@@ -49,6 +60,24 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
     cg_file.close()
     at_file.close()
     
+    # Find the crystal box size
+    cg_box_size = [(float(line.split()[1]), float(line.split()[2]), float(line.split()[3]) ) for line in cg_lines if line.startswith("CRYST1")][0]
+    at_box_size = [(float(line.split()[1]), float(line.split()[2]), float(line.split()[3]) ) for line in at_lines if line.startswith("CRYST1")][0]
+    
+    # Add the box size to the list
+    cg_box_sizes.append(cg_box_size)
+    at_box_sizes.append(at_box_size)
+    
+    # Print mean nad std of box sizes
+    cg_box_mean = np.mean(cg_box_sizes, axis=0)
+    cg_box_std = np.std(cg_box_sizes, axis=0)
+    at_box_mean = np.mean(at_box_sizes, axis=0)
+    at_box_std = np.std(at_box_sizes, axis=0)
+    
+    print(f"CG box mean: {cg_box_mean}, CG box std: {cg_box_std}")
+    print(f"AT box mean: {at_box_mean}, AT box std: {at_box_std}")
+    
+
     # Remove all lines that are not ATOM lines
     cg_lines = [line for line in cg_lines if line.startswith("ATOM")]
     at_lines = [line for line in at_lines if line.startswith("ATOM")]
@@ -91,8 +120,11 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
             with open(save_path, "w") as cg_file:
                 for line in line_stack_cg:
                     cg_file.write(line)
-                    
 
+            # Save box size in list
+            cg_box_size_dataset_relations.append((idx_cg, cg_box_size))            
+
+            # Reset stack and residue index
             line_stack_cg = []
             last_residue_idx_cg = residue_idx_cg
         
@@ -134,7 +166,10 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
                 for line in line_stack_at:
                     at_file.write(line)
                     
+            # Save box size in list
+            at_box_size_dataset_relations.append((idx_at, at_box_size))
 
+            # Reset stack and residue index
             line_stack_at = []
             last_residue_idx_at = residue_idx_at
             
@@ -152,3 +187,16 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
 
     if idx_cg > MAX_SAMPLES and idx_at > MAX_SAMPLES:
         break
+    
+    
+# Save box size dataset relations as csv
+path = os.path.join(output_box_table_path, "box_sizes_cg.csv")
+with open(path, "a") as file:
+    for entry in cg_box_size_dataset_relations:
+            file.write(f"{entry[1][0]},{entry[1][1]},{entry[1][2]}\n")
+
+path = os.path.join(output_box_table_path, "box_sizes_at.csv")
+with open(path, "a") as file:
+    for entry in at_box_size_dataset_relations:
+            file.write(f"{entry[1][0]},{entry[1][1]},{entry[1][2]}\n")
+
