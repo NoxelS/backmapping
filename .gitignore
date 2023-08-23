@@ -177,3 +177,4 @@ data/hist/
 data/backup/
 data/training.zip
 logs/*
+box_sizes_*_*.csv
