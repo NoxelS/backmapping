@@ -48,7 +48,7 @@ cnn = CNN(
     keep_checkpoints=True,
     load_path="models/DOPC.h5",
     loss=BackmappingAbsolutePositionLoss(),
-    test_sample=sample_gen.__getitem__(1035),
+    test_sample=sample_gen.__getitem__(0),
 )
 
 train_gen = AbsolutePositionsGenerator(
