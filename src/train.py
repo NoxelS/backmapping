@@ -24,7 +24,7 @@ data_prefix = "data/"                           # For local
 cg_size = (12 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
 at_size = (54 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
 
-BATCH_SIZE = 16384 # 1024
+BATCH_SIZE = 1024 # 16384 # 1024
 VALIDATION_SPLIT = 0.1
 
 print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
@@ -48,7 +48,7 @@ cnn = CNN(
     keep_checkpoints=True,
     load_path="models/DOPC.h5",
     loss=BackmappingAbsolutePositionLoss(),
-    test_sample=sample_gen.__getitem__(0),
+    test_sample=sample_gen.__getitem__(1035),
 )
 
 train_gen = AbsolutePositionsGenerator(
