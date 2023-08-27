@@ -59,8 +59,8 @@ class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
         # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :] - y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
         
         # We ignore the padding
-        pos_true = y_true[0, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
-        pos_pred = y_pred[0, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
+        pos_true = y_true[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
+        pos_pred = y_pred[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
         
         # Add loss for each atom position
         positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
