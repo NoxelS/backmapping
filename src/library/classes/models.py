@@ -34,8 +34,11 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 16 * 2      # Scaled the filter dimensions by this factor
-        latent_size = 8**2  # Needs to be a square number
+        scale = 8      # Scaled the filter dimensions by this factor
+        latent_size = 4**2  # Needs to be a square number
+        
+        
+        conv_activation = "swish" # tf.keras.layers.LeakyReLU(alpha=0.01)
 
         self.model = tf.keras.Sequential(
             [
@@ -43,69 +46,95 @@ class CNN:
                 tf.keras.layers.Input(input_size, sparse=False),
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
-                    filters=1 * scale,
+                    filters=2**0 * scale,
                     kernel_size=(2, 2),
                     strides=(1, 1),
-                    padding='same',
-                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-                    kernel_initializer=tf.keras.initializers.HeNormal(),
-                    use_bias=True,
-                    bias_initializer=tf.keras.initializers.HeNormal(),
-                ),
-                tf.keras.layers.BatchNormalization(),
-                tf.keras.layers.AveragePooling2D(
-                    pool_size=(2, 2),
-                    strides=(2, 2),
-                    padding='same',
+                    padding='valid',
+                    activation=conv_activation,
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2 * scale,
+                    filters=2**1 * scale,
                     kernel_size=(2, 2),
                     strides=(1, 1),
-                    padding='same',
-                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                    padding='valid',
+                    activation=conv_activation,
                 ),
-                tf.keras.layers.BatchNormalization(),
                 tf.keras.layers.Conv2D(
-                    filters=2 * scale,
+                    filters=2**2 * scale,
                     kernel_size=(2, 2),
                     strides=(1, 1),
-                    padding='same',
-                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                    padding='valid',
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**3 * scale,
+                    kernel_size=(2, 2),
+                    strides=(1, 1),
+                    padding='valid',
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**4 * scale,
+                    kernel_size=(2, 1),
+                    strides=(1, 1),
+                    padding='valid',
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**5 * scale,
+                    kernel_size=(2, 1),
+                    strides=(1, 1),
+                    padding='valid',
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**6 * scale,
+                    kernel_size=(2, 1),
+                    strides=(1, 1),
+                    padding='valid',
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**7 * scale,
+                    kernel_size=(2, 1),
+                    strides=(1, 1),
+                    padding='valid',
+                    activation=conv_activation,
                 ),
                 tf.keras.layers.BatchNormalization(),
-                tf.keras.layers.AveragePooling2D(
-                    pool_size=(2, 2),
-                    strides=(2, 2),
-                    padding='same',
-                ),
                 ##### Latent space #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(latent_size, activation='swish'),
+                tf.keras.layers.Dense(latent_size, activation='tanh'),
                 tf.keras.layers.Dropout(0.2),
                 tf.keras.layers.BatchNormalization(),
                 ##### Decoder #####
                 tf.keras.layers.Reshape((int(np.floor(np.sqrt(latent_size))), int(np.floor(np.sqrt(latent_size))), 1)),
                 tf.keras.layers.Conv2DTranspose(
-                    filters=2 * scale,
+                    filters=2**6 * scale,
                     kernel_size=(3, 2),
-                    strides=(3, 2),
+                    strides=(1, 1),
                     padding='same',
-                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                    activation=conv_activation,
                 ),
-                tf.keras.layers.BatchNormalization(),
                 tf.keras.layers.Conv2DTranspose(
-                    filters=1 * scale,
+                    filters=2**5 * scale,
                     kernel_size=(3, 2),
                     strides=(3, 2),
                     padding='same',
-                    activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                    activation=conv_activation,
+                ),
+                tf.keras.layers.Conv2DTranspose(
+                    filters=2**4 * scale,
+                    kernel_size=(3, 2),
+                    strides=(3, 2),
+                    padding='same',
+                    activation=conv_activation,
                 ),
                 tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(np.prod(output_size) // 4, activation='tanh'), #, kernel_initializer=tf.keras.initializers.HeNormal()),
-                tf.keras.layers.Dense(np.prod(output_size), activation='tanh'), #, kernel_initializer=tf.keras.initializers.HeNormal()),
+                tf.keras.layers.Dense(np.prod(output_size) // 2, activation='tanh', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)),
+                tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
                 tf.keras.layers.Reshape(output_size)
             ], name=self.display_name)
 
@@ -309,7 +338,7 @@ class CNN:
         max_z = max([x[2] for x in true_positions])
 
         # Make size fixed with padding
-        padding_factor = 0
+        padding_factor = 0.1
         scale_factor = 0.7
         ax.set_xlim(scale_factor * min_x - padding_factor * (max_x - min_x), scale_factor * max_x + padding_factor * (max_x - min_x))
         ax.set_ylim(scale_factor * min_y - padding_factor * (max_y - min_y), scale_factor * max_y + padding_factor * (max_y - min_y))
@@ -405,6 +434,21 @@ class CNN:
         Y = data_generator.__getitem__(0)[1]
         loss, acc = self.model.evaluate(X, Y, verbose=0)
         print(f"CNN-Test: acc = {100*acc:5.2f}%, loss = {loss:7.4f}")
+
+    def find_dataset_with_lowest_loss(self, data_generator):
+        """
+            Finds the dataset with the lowest loss
+        """
+        lowest_loss = 100000
+        lowest_loss_dataset = None
+        for i in range(data_generator.__len__()):
+            X = data_generator.__getitem__(i)[0]
+            Y = data_generator.__getitem__(i)[1]
+            loss, acc = self.model.evaluate(X, Y, verbose=0)
+            if loss < lowest_loss:
+                lowest_loss = loss
+                lowest_loss_dataset = i
+        return lowest_loss_dataset
 
     def predict(self, x):
         """
