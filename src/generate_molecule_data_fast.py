@@ -7,10 +7,10 @@ import numpy as np
 
 input_dir_path = "data/membranes"
 output_dir_path = "data/molecules"
-output_box_table_path = "data"    # <- This is the file where the box sizes are saved
+output_box_table_path = "data"    # <- This is the path where the box sizes are saved
 training_dir_path = "data/training"
 TRAINING_DATA_MODE = True
-MAX_SAMPLES = (10 + 1) * 1024  # 102400
+MAX_SAMPLES = 16 * (10 + 1) * 1024  # 102400
 
 cg_datasets, at_datasets = [], []
 io = PDBIO()
