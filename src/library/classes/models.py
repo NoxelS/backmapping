@@ -188,14 +188,14 @@ class CNN:
                 embeddings_freq=1,
                 embeddings_metadata=None,
             ),
+            # Update the current epoch and in the future other stuff
+            tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.update_internals(epoch, logs)),
             # Print the min, max and average weight of each layer before each batch.
             tf.keras.callbacks.LambdaCallback(on_batch_begin=lambda batch, logs: self.get_weight_info()),
             # Track the test sample after each epoch
             tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.track_test_samle(epoch, logs)),
             # Track the test sample after each batch (live)
             # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.live_track_test_samle(batch, logs)),
-            # Update the current epoch and in the future other stuff
-            tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.update_internals(epoch, logs)),
             # Add custom metrics to tensorboard
             tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.custom_tensorboard_metrics(batch, logs)),
         ]
@@ -324,9 +324,12 @@ class CNN:
 
         if not os.path.exists(os.path.join(self.data_prefix, "hist", "pred")):
             os.makedirs(os.path.join(self.data_prefix, "hist", "pred"))
+            
+        # Find the max number of the files in the folder
+        index = len(os.listdir(os.path.join(self.data_prefix, "hist", "pred")))
 
         # Save the figure
-        fig.savefig(os.path.join(self.data_prefix, "hist", "pred", f"epoch_{self.current_epoch:03d}_{batch:03d}.png"))
+        fig.savefig(os.path.join(self.data_prefix, "hist", "pred", f"batch_{index}.png"))
 
     def live_track_test_samle(self, batch, logs=None):
         # Does the same as track_test_samle but does not save the figure and shows it in a window and updates it
