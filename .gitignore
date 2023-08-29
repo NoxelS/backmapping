@@ -177,5 +177,6 @@ data/hist/
 data/backup/
 data/training.zip
 logs/*
+jobs/logs*
 box_sizes_*
 neighborhoods.*
