@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=gen_data
-#SBATCH --output=./logs/jobs/train-%j.log
-#SBATCH --error=./logs/jobs/train-%j.err
+#SBATCH --job-name=v1_train
+#SBATCH --output=./jobs/logs/train-%j.log
+#SBATCH --error=./jobs/logs/train-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
 # #SBATCH --cpus-per-task=4
@@ -37,9 +37,11 @@ echo ""
 # export PATH="$PYENV_ROOT/bin:$PATH"
 # eval "$(pyenv init -)"
 
+date
 echo "####################### CODE ###########################"
+python src/train_one_with_neighborhood.py
+
+
+echo "####################### POST ANALYSIS ###########################"
 date
-python src/train.py
-date
-# echo "####################### POST ANALYSIS ###########################"
-# echo "Finished!"
+echo "Finished!"
