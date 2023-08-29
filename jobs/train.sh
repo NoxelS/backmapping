@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=v1_train
-#SBATCH --output=./jobs/logs/train-%j.log
-#SBATCH --error=./jobs/logs/train-%j.err
+#SBATCH --output=./jobs/logs/train-O31-6N-%j.log
+#SBATCH --error=./jobs/logs/train-O31-6N-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
 # #SBATCH --cpus-per-task=4

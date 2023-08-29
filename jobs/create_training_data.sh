@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=gen_data
-#SBATCH --output=./logs/jobs/training-data-%j.log
-#SBATCH --error=./logs/jobs/training-data-%j.err
+#SBATCH --output=./logs/jobs/data-gen-%j.log
+#SBATCH --error=./logs/jobs/data-gen-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
 # #SBATCH --cpus-per-task=4
@@ -38,8 +38,7 @@ echo ""
 # eval "$(pyenv init -)"
 
 echo "####################### CODE ###########################"
-date
-python src/generate_data.py
-date
-# echo "####################### POST ANALYSIS ###########################"
-# echo "Finished!"
+
+python src/generate_membrane_data.py
+
+python src/generate_molecule_data_fast.py

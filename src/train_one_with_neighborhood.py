@@ -1,19 +1,15 @@
-import os
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Disable tensorflow warnings
-
-# from lib.cnn import CNN
-import tensorflow as tf
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-import numpy as np
-from scipy.ndimage import gaussian_filter
-import sys
-from library.classes.models import CNN
 from library.classes.generators import RelativeVectorsTrainingDataGenerator, AbsolutePositionsGenerator, PADDING_X, PADDING_Y, print_matrix, AbsolutePositionsNeigbourhoodGenerator
-from library.parser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
-from Bio.PDB import PDBParser
 from library.classes.losses import BackmappingRelativeVectorLoss, BackmappingAbsolutePositionLoss
-import matplotlib.pyplot as plt
+from library.parser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
 from library.static.topologies import DOPC_AT_NAMES
+from scipy.ndimage import gaussian_filter
+from library.classes.models import CNN
+import matplotlib.pyplot as plt
+from Bio.PDB import PDBParser
+import tensorflow as tf
+import numpy as np
+import sys
+import os
 
 ##### CONFIGURATION #####
 
@@ -21,19 +17,17 @@ from library.static.topologies import DOPC_AT_NAMES
 # data_prefix = "/localdisk/noel/"              # For fluffy
 data_prefix = "data/"                           # For local
 
-BATCH_SIZE = 1024  # 16384 # 1024
+BATCH_SIZE = 1024
 VALIDATION_SPLIT = 0.1
-NEIGHBORHOOD_SIZE = 4
-ATOM_NAME_TO_FIT = "C312"
+NEIGHBORHOOD_SIZE = 6
+ATOM_NAME_TO_FIT = "O31"
 
 cg_size = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
 at_size = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 
-
 print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
 
 ##### TRAINING #####
-
 
 sample_gen = AbsolutePositionsNeigbourhoodGenerator(
     input_dir_path=os.path.join(data_prefix, "training", "input"),
