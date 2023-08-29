@@ -1,5 +1,5 @@
 import tensorflow as tf
-from library.classes.generators import BOX_SCALE_FACTOR, PADDING_X, PADDING_Y, print_matrix
+from library.classes.generators import BOX_SCALE_FACTOR, PADDING_X, PADDING_Y, print_matrix, ABSOLUT_POSITION_SCALE
 class BackmappingRelativeVectorLoss(tf.keras.losses.Loss):
     def __init__(self, name="backmapping_rel_loss"):
         super().__init__(name=name)
@@ -64,6 +64,8 @@ class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
         
         # Add loss for each atom position
         positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
+        
+        print(f" - pl: {(positional_loss * ABSOLUT_POSITION_SCALE):.4f}A, true: {pos_true[0] * ABSOLUT_POSITION_SCALE}, pred: {pos_pred[0] * ABSOLUT_POSITION_SCALE}")
 
         # Calculate the total position loss
         return positional_loss

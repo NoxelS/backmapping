@@ -178,3 +178,4 @@ data/backup/
 data/training.zip
 logs/*
 box_sizes_*
+neighborhoods.*

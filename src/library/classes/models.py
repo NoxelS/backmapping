@@ -2,6 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from library.classes.losses import BackmappingRelativeVectorLoss
+from library.classes.generators import PADDING_X, PADDING_Y
 
 import time
 import matplotlib.pyplot as plt
@@ -34,11 +35,10 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 8      # Scaled the filter dimensions by this factor
+        scale = 32          # Scaled the filter dimensions by this factor
         latent_size = 4**2  # Needs to be a square number
-        
-        
-        conv_activation = "swish" # tf.keras.layers.LeakyReLU(alpha=0.01)
+
+        conv_activation =  tf.keras.layers.LeakyReLU(alpha=0.01)
 
         self.model = tf.keras.Sequential(
             [
@@ -61,14 +61,14 @@ class CNN:
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**2 * scale,
-                    kernel_size=(2, 2),
+                    kernel_size=(2, 1),
                     strides=(1, 1),
                     padding='valid',
                     activation=conv_activation,
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**3 * scale,
-                    kernel_size=(2, 2),
+                    kernel_size=(2, 1),
                     strides=(1, 1),
                     padding='valid',
                     activation=conv_activation,
@@ -76,72 +76,82 @@ class CNN:
                 tf.keras.layers.Conv2D(
                     filters=2**4 * scale,
                     kernel_size=(2, 1),
-                    strides=(1, 1),
+                    strides=(2, 1),
                     padding='valid',
                     activation=conv_activation,
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**5 * scale,
                     kernel_size=(2, 1),
-                    strides=(1, 1),
+                    strides=(2, 1),
                     padding='valid',
                     activation=conv_activation,
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**6 * scale,
                     kernel_size=(2, 1),
-                    strides=(1, 1),
+                    strides=(2, 1),
                     padding='valid',
                     activation=conv_activation,
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**7 * scale,
                     kernel_size=(2, 1),
-                    strides=(1, 1),
+                    strides=(2, 1),
                     padding='valid',
                     activation=conv_activation,
                 ),
+                tf.keras.layers.MaxPool2D(
+                    pool_size=(3, 3),
+                ),
+                # tf.keras.layers.Conv2D(
+                #     filters=2**8 * scale,
+                #     kernel_size=(2, 1),
+                #     strides=(1, 1),
+                #     padding='valid',
+                #     activation=conv_activation,
+                # ),
                 tf.keras.layers.BatchNormalization(),
                 ##### Latent space #####
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(latent_size, activation='tanh'),
-                tf.keras.layers.Dropout(0.2),
-                tf.keras.layers.BatchNormalization(),
-                ##### Decoder #####
-                tf.keras.layers.Reshape((int(np.floor(np.sqrt(latent_size))), int(np.floor(np.sqrt(latent_size))), 1)),
-                tf.keras.layers.Conv2DTranspose(
-                    filters=2**6 * scale,
-                    kernel_size=(3, 2),
-                    strides=(1, 1),
-                    padding='same',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2DTranspose(
-                    filters=2**5 * scale,
-                    kernel_size=(3, 2),
-                    strides=(3, 2),
-                    padding='same',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2DTranspose(
-                    filters=2**4 * scale,
-                    kernel_size=(3, 2),
-                    strides=(3, 2),
-                    padding='same',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.BatchNormalization(),
+                # tf.keras.layers.Flatten(),
+                # tf.keras.layers.Dense(latent_size, activation='tanh'),
+                # tf.keras.layers.Dropout(0.2),
+                # tf.keras.layers.BatchNormalization(),
+                # ##### Decoder #####
+                # tf.keras.layers.Reshape((int(np.floor(np.sqrt(latent_size))), int(np.floor(np.sqrt(latent_size))), 1)),
+                # tf.keras.layers.Conv2DTranspose(
+                #     filters=2**6 * scale,
+                #     kernel_size=(3, 2),
+                #     strides=(1, 1),
+                #     padding='same',
+                #     activation=conv_activation,
+                # ),
+                # tf.keras.layers.Conv2DTranspose(
+                #     filters=2**5 * scale,
+                #     kernel_size=(3, 2),
+                #     strides=(3, 2),
+                #     padding='same',
+                #     activation=conv_activation,
+                # ),
+                # tf.keras.layers.Conv2DTranspose(
+                #     filters=2**4 * scale,
+                #     kernel_size=(3, 2),
+                #     strides=(3, 2),
+                #     padding='same',
+                #     activation=conv_activation,
+                # ),
+                # tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(np.prod(output_size) // 2, activation='tanh', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)),
-                tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
+                # tf.keras.layers.Dense(np.prod(output_size) // 2, activation='tanh', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.05)),
+                tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.Zeros()), #tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
                 tf.keras.layers.Reshape(output_size)
             ], name=self.display_name)
 
         # Compile the model
         self.model.compile(
             optimizer=tf.optimizers.Adam(
-                learning_rate=0.00001, # Start with 1% of the default learning rate
+                # learning_rate=0.00001, # Start with 1% of the default learning rate
             ),
             loss=self.loss,
             metrics=['accuracy', 'mae'],
@@ -185,8 +195,8 @@ class CNN:
             # Here, it monitors 'val_loss' and if no improvement is seen for 10 epochs,
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
-                factor=0.85,
-                patience=5,
+                factor=0.75,
+                patience=3,
                 verbose=0,
                 mode='max',
                 min_delta=0.00000005,
@@ -222,7 +232,7 @@ class CNN:
             # Print the min, max and average weight of each layer before each batch.
             tf.keras.callbacks.LambdaCallback(on_batch_begin=lambda batch, logs: self.get_weight_info()),
             # Track the test sample after each epoch
-            tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.track_test_samle(epoch, logs)),
+            # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.track_test_samle(epoch, logs)),
             # Track the test sample after each batch (live)
             # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.live_track_test_samle(batch, logs)),
             # Add custom metrics to tensorboard
@@ -300,6 +310,10 @@ class CNN:
         # Predict the output
         pred = self.model.predict(self.test_sample[0][0:1, :, :, :])[0, :, :, 0]
         true = self.test_sample[1][0, :, :, 0]
+        
+        # Remove padding
+        pred = pred[PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y]
+        true = true[PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y]
 
         # Make 3D scatter
         pred_positions = []
@@ -339,10 +353,12 @@ class CNN:
 
         # Make size fixed with padding
         padding_factor = 0.1
-        scale_factor = 0.7
-        ax.set_xlim(scale_factor * min_x - padding_factor * (max_x - min_x), scale_factor * max_x + padding_factor * (max_x - min_x))
-        ax.set_ylim(scale_factor * min_y - padding_factor * (max_y - min_y), scale_factor * max_y + padding_factor * (max_y - min_y))
-        ax.set_zlim(scale_factor * min_z - padding_factor * (max_z - min_z), scale_factor * max_z + padding_factor * (max_z - min_z))
+        scale_factor = 1
+        fixed_padding = 0.1
+        
+        ax.set_xlim(scale_factor * min_x - padding_factor * (max_x - min_x) - fixed_padding, scale_factor * max_x + padding_factor * (max_x - min_x) + fixed_padding)
+        ax.set_ylim(scale_factor * min_y - padding_factor * (max_y - min_y) - fixed_padding, scale_factor * max_y + padding_factor * (max_y - min_y) + fixed_padding)
+        ax.set_zlim(scale_factor * min_z - padding_factor * (max_z - min_z) - fixed_padding, scale_factor * max_z + padding_factor * (max_z - min_z) + fixed_padding)
 
         # Make angle fixed from 45 in x and 45 in y
         ax.view_init(azim=-40, elev=35)
@@ -421,10 +437,13 @@ class CNN:
         summary_dir1 = os.path.join("data", "tensorboard", "custom")
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
         
+        # Set step
+        step = batch # TODO: Fix this
+        
         with summary_writer1.as_default():
-            tf.summary.scalar("loss_b", logs["loss"], step=batch)
-            tf.summary.scalar("accuracy_b", logs["accuracy"], step=batch)
-            tf.summary.scalar("mae_b", logs["mae"], step=batch)
+            tf.summary.scalar("loss_b", logs["loss"], step=step)
+            tf.summary.scalar("accuracy_b", logs["accuracy"], step=step)
+            tf.summary.scalar("mae_b", logs["mae"], step=step)
 
     def test(self, data_generator):
         """
