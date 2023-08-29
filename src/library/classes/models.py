@@ -35,7 +35,7 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 32          # Scaled the filter dimensions by this factor
+        scale = 16          # Scaled the filter dimensions by this factor
         latent_size = 4**2  # Needs to be a square number
 
         conv_activation =  tf.keras.layers.LeakyReLU(alpha=0.01)
@@ -178,14 +178,12 @@ class CNN:
         if not os.path.exists(os.path.join(self.data_prefix, "hist")):
             os.makedirs(os.path.join(self.data_prefix, "hist"))
 
-        backup_callback =  tf.keras.callbacks.experimental.BackupAndRestore if tf.__version__.split(".")[1] < "9" else tf.keras.callbacks.BackupAndRestore
-
         callbacks = [
             # The BackupAndRestore callback saves checkpoints every save_freq batches,
             # this is set to 1 epoch here to save after each epoch. Make sure to set
             # this to a value greater than one when training on a large dataset, because
             # it can take a long time to save checkpoints.
-            backup_callback(
+            tf.keras.callbacks.experimental.BackupAndRestore(
                 backup_dir=os.path.join(self.data_prefix, "backup", self.display_name),
                 # save_freq=1,
                 # delete_checkpoint=not self.keep_checkpoints,
@@ -219,7 +217,7 @@ class CNN:
             # you to visualize dynamic graphs of your training and test metrics,
             # as well as activation histograms for the different layers in your model.
             tf.keras.callbacks.TensorBoard(
-                log_dir=os.path.join(self.data_prefix, 'tensorboard'),
+                log_dir=os.path.join(self.data_prefix, 'tensorboard', self.display_name),
                 histogram_freq=1,
                 write_graph=True,
                 write_images=True,
@@ -275,7 +273,7 @@ class CNN:
         now = time.localtime()
         subdir = time.strftime("%d-%b-%Y_%H.%M.%S", now)
 
-        summary_dir1 = os.path.join("data", "tensorboard", "custom")
+        summary_dir1 = os.path.join("data", "tensorboard", self.display_name, "custom")
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
 
         # TODO: FIX THIS
@@ -372,6 +370,7 @@ class CNN:
         index = len(os.listdir(os.path.join(self.data_prefix, "hist", "pred")))
 
         # Save the figure
+        # TODO: Fix save folder for atom specific models
         fig.savefig(os.path.join(self.data_prefix, "hist", "pred", f"batch_{index}.png"))
 
     def live_track_test_samle(self, batch, logs=None):
@@ -432,7 +431,7 @@ class CNN:
         # Add custom metrics to tensorboard for each batch
         
         # Write loss to tensorboard        
-        summary_dir1 = os.path.join("data", "tensorboard", "custom")
+        summary_dir1 = os.path.join("data", "tensorboard", self.display_name, "custom")
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
         
         # Set step
