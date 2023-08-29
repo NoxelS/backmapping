@@ -98,6 +98,6 @@ validation_gen = AbsolutePositionsNeigbourhoodGenerator(
 cnn.fit(
     train_gen,
     batch_size=BATCH_SIZE,
-    epochs=1,
+    epochs=2,
     validation_gen=validation_gen
 )

@@ -35,7 +35,7 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 16          # Scaled the filter dimensions by this factor
+        scale = 32          # Scaled the filter dimensions by this factor
         latent_size = 4**2  # Needs to be a square number
 
         conv_activation =  tf.keras.layers.LeakyReLU(alpha=0.01)
@@ -435,7 +435,7 @@ class CNN:
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
         
         # Set step
-        step = batch # TODO: Fix this
+        step = batch + 148 * batch # TODO: Fix this
         
         with summary_writer1.as_default():
             tf.summary.scalar("loss_b", logs["loss"], step=step)
