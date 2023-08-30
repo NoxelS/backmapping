@@ -28,11 +28,15 @@ ABSOLUT_POSITION_SCALE = 200.0      # This factor is used to scale down position
 
 def fix_pbc(vector, box_size=AVERAGE_SIMULATION_BOX_SIZE, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
     """
-        Fixes the periodic boundary conditions of a vector.
-        :param vector: The vector to fix
-        :param box_size: The size of the simulation box
-        :param cutoff: The cutoff box where to apply the PBC
-        :return: The fixed vector
+    This function fixes the periodic boundary conditions of a vector. It does this by checking if the vector is outside of the box and if it is, it will move it back into the box.
+
+    Args:
+        vector (vector): The vector that should be fixed.
+        box_size (vector, optional): The box size of the simulation. Defaults to AVERAGE_SIMULATION_BOX_SIZE.
+        cutoff (list, optional): Cutoff radius to apply the PBC fix to. Defaults to [PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF].
+
+    Returns:
+        vector: The fixed vector.
     """
     if vector[0] > cutoff[0]:
         vector[0] -= box_size[0]
@@ -59,7 +63,7 @@ def is_output_matrix_healthy(output):
         Checked will be:
             - If values outside of [-1, 1] exist (this should not be the case)
             - If nan or inf exist (this should not be the case)
-        #TODO: This functions can be extended to check for other things as well.
+        TODO: This functions can be extended to check for other things as well.
     """
     healthy = True
 
@@ -162,14 +166,34 @@ def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=N
     return output_matrix
 
 
-def get_bounding_box(dataset_idx, path_to_csv):
+def get_bounding_box(dataset_idx: int, path_to_csv: str) -> np.array:
+    """
+    This function returns the bounding box of a residue in a dataset. The bounding box is the size of the simulation box in which the residue is located.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the bounding box sizes for the residues.
+
+    Returns:
+        array: The bounding box as a numpy array.
+    """
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1)
     # Return the bounding box as a numpy array
     return np.array([float(x) for x in line.split(",")])
 
 
-def get_neighbour_residues(dataset_idx, path_to_csv):
+def get_neighbour_residues(dataset_idx: int, path_to_csv: str):
+    """
+    This function returns a list of the neighbour residues of a residue in a dataset.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the neighbour residues for the residues.
+
+    Returns:
+        array: List of neighbour residue indices.
+    """
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1).replace("\n", "")
     if len(line) == 0:
@@ -179,6 +203,12 @@ def get_neighbour_residues(dataset_idx, path_to_csv):
 
 
 def print_matrix(matrix):
+    """
+    This function prints a matrix in ascii art.
+
+    Args:
+        matrix (list): List with shape (batch_size, i, j, 1)
+    """
     # Prints an output/input matrix in ascii art
     for i in range(matrix.shape[0]):
         print(" ", end="")
@@ -206,26 +236,29 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
 
     def __init__(
         self,
-        input_dir_path,
-        output_dir_path,
-        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        shuffle=False,
-        batch_size=1,
-        validate_split=0.1,
-        validation_mode=False,
-        augmentation=False,
+        input_dir_path: str,
+        output_dir_path: str,
+        input_size: tuple = (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size: tuple = (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle: bool = False,
+        batch_size: int = 1,
+        validate_split: float = 0.1,
+        validation_mode: bool = False,
+        augmentation: bool = False,
     ):
         """
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        This is the base class for the backmapping data generator.
+
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         """
         self.input_dir_path = input_dir_path
         self.output_dir_path = output_dir_path
@@ -285,15 +318,16 @@ class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
         augmentation=False,
     ):
         """
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         """
         # Call super constructor
         super().__init__(
@@ -387,17 +421,18 @@ class AbsolutePositionsGenerator(BackmappingBaseGenerator):
         atom_name=None,
     ):
         """
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
         """
         # Call super constructor
         super().__init__(
@@ -650,18 +685,19 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
         neighbourhood_size=4,
     ):
         """
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
-            :param neighbourhood_size: The number of the neighbour molecules that should be included
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
+            neighbourhood_size (int, optional): The amount of the neighbours to take into place. Defaults to 4.
         """
         # Call super constructor
         super().__init__(

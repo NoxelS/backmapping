@@ -64,11 +64,6 @@ class BackmappingRelativeVectorLoss(tf.keras.losses.Loss):
             position_loss.append(tf.norm(pos_true - pos_pred))
         position_loss = tf.reduce_mean(position_loss)
 
-        # # Print last two atoms
-        # print(f&#34;\n -&gt; True: {positions_true[-1][-1] * BOX_SCALE_FACTOR} Pred: {positions_pred[-1][-1] * BOX_SCALE_FACTOR}&#34;)
-        # # Print the losses
-        # print(f&#34; -&gt; bdl={bond_direction_loss:.4f} - bll={(bond_length_loss * BOX_SCALE_FACTOR):.4f}A - pl={(position_loss * BOX_SCALE_FACTOR):.4f}A&#34;)
-
         return 0.3 * bond_direction_loss + 0.1 * bond_length_loss + 0.6 * position_loss
 
 
@@ -77,23 +72,12 @@ class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
         super().__init__(name=name)
 
     def call(self, y_true, y_pred):
-        # Print first two datasets
-        # print(&#34;\n&#34;)
-        # print(&#34;True:&#34;)
-        # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y,:])
-        # print(&#34;Pred:&#34;)
-        # print_matrix(y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-        # print(&#34;Diff:&#34;)
-        # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :] - y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-        
         # We ignore the padding
         pos_true = y_true[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
         pos_pred = y_pred[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
         
         # Add loss for each atom position
         positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
-        
-        print(f&#34; - pl: {(positional_loss * ABSOLUT_POSITION_SCALE):.4f}A, true: {pos_true[0] * ABSOLUT_POSITION_SCALE}, pred: {pos_pred[0] * ABSOLUT_POSITION_SCALE}&#34;)
 
         # Calculate the total position loss
         return positional_loss</code></pre>
@@ -162,23 +146,12 @@ for more details.</dd>
         super().__init__(name=name)
 
     def call(self, y_true, y_pred):
-        # Print first two datasets
-        # print(&#34;\n&#34;)
-        # print(&#34;True:&#34;)
-        # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y,:])
-        # print(&#34;Pred:&#34;)
-        # print_matrix(y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-        # print(&#34;Diff:&#34;)
-        # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :] - y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-        
         # We ignore the padding
         pos_true = y_true[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
         pos_pred = y_pred[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
         
         # Add loss for each atom position
         positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
-        
-        print(f&#34; - pl: {(positional_loss * ABSOLUT_POSITION_SCALE):.4f}A, true: {pos_true[0] * ABSOLUT_POSITION_SCALE}, pred: {pos_pred[0] * ABSOLUT_POSITION_SCALE}&#34;)
 
         # Calculate the total position loss
         return positional_loss</code></pre>
@@ -210,23 +183,12 @@ shape = <code>[batch_size, d0, .. dN-1]</code></dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def call(self, y_true, y_pred):
-    # Print first two datasets
-    # print(&#34;\n&#34;)
-    # print(&#34;True:&#34;)
-    # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y,:])
-    # print(&#34;Pred:&#34;)
-    # print_matrix(y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-    # print(&#34;Diff:&#34;)
-    # print_matrix(y_true[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :] - y_pred[0:1, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, :])
-    
     # We ignore the padding
     pos_true = y_true[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
     pos_pred = y_pred[:, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
     
     # Add loss for each atom position
     positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
-    
-    print(f&#34; - pl: {(positional_loss * ABSOLUT_POSITION_SCALE):.4f}A, true: {pos_true[0] * ABSOLUT_POSITION_SCALE}, pred: {pos_pred[0] * ABSOLUT_POSITION_SCALE}&#34;)
 
     # Calculate the total position loss
     return positional_loss</code></pre>
@@ -319,11 +281,6 @@ for more details.</dd>
             position_loss.append(tf.norm(pos_true - pos_pred))
         position_loss = tf.reduce_mean(position_loss)
 
-        # # Print last two atoms
-        # print(f&#34;\n -&gt; True: {positions_true[-1][-1] * BOX_SCALE_FACTOR} Pred: {positions_pred[-1][-1] * BOX_SCALE_FACTOR}&#34;)
-        # # Print the losses
-        # print(f&#34; -&gt; bdl={bond_direction_loss:.4f} - bll={(bond_length_loss * BOX_SCALE_FACTOR):.4f}A - pl={(position_loss * BOX_SCALE_FACTOR):.4f}A&#34;)
-
         return 0.3 * bond_direction_loss + 0.1 * bond_length_loss + 0.6 * position_loss</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -383,11 +340,6 @@ shape = <code>[batch_size, d0, .. dN-1]</code></dd>
     for pos_true, pos_pred in zip(positions_true, positions_pred):
         position_loss.append(tf.norm(pos_true - pos_pred))
     position_loss = tf.reduce_mean(position_loss)
-
-    # # Print last two atoms
-    # print(f&#34;\n -&gt; True: {positions_true[-1][-1] * BOX_SCALE_FACTOR} Pred: {positions_pred[-1][-1] * BOX_SCALE_FACTOR}&#34;)
-    # # Print the losses
-    # print(f&#34; -&gt; bdl={bond_direction_loss:.4f} - bll={(bond_length_loss * BOX_SCALE_FACTOR):.4f}A - pl={(position_loss * BOX_SCALE_FACTOR):.4f}A&#34;)
 
     return 0.3 * bond_direction_loss + 0.1 * bond_length_loss + 0.6 * position_loss</code></pre>
 </details>

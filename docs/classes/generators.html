@@ -56,11 +56,15 @@ ABSOLUT_POSITION_SCALE = 200.0      # This factor is used to scale down position
 
 def fix_pbc(vector, box_size=AVERAGE_SIMULATION_BOX_SIZE, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
     &#34;&#34;&#34;
-        Fixes the periodic boundary conditions of a vector.
-        :param vector: The vector to fix
-        :param box_size: The size of the simulation box
-        :param cutoff: The cutoff box where to apply the PBC
-        :return: The fixed vector
+    This function fixes the periodic boundary conditions of a vector. It does this by checking if the vector is outside of the box and if it is, it will move it back into the box.
+
+    Args:
+        vector (vector): The vector that should be fixed.
+        box_size (vector, optional): The box size of the simulation. Defaults to AVERAGE_SIMULATION_BOX_SIZE.
+        cutoff (list, optional): Cutoff radius to apply the PBC fix to. Defaults to [PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF].
+
+    Returns:
+        vector: The fixed vector.
     &#34;&#34;&#34;
     if vector[0] &gt; cutoff[0]:
         vector[0] -= box_size[0]
@@ -87,7 +91,7 @@ def is_output_matrix_healthy(output):
         Checked will be:
             - If values outside of [-1, 1] exist (this should not be the case)
             - If nan or inf exist (this should not be the case)
-        #TODO: This functions can be extended to check for other things as well.
+        TODO: This functions can be extended to check for other things as well.
     &#34;&#34;&#34;
     healthy = True
 
@@ -190,14 +194,34 @@ def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=N
     return output_matrix
 
 
-def get_bounding_box(dataset_idx, path_to_csv):
+def get_bounding_box(dataset_idx: int, path_to_csv: str) -&gt; np.array:
+    &#34;&#34;&#34;
+    This function returns the bounding box of a residue in a dataset. The bounding box is the size of the simulation box in which the residue is located.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the bounding box sizes for the residues.
+
+    Returns:
+        array: The bounding box as a numpy array.
+    &#34;&#34;&#34;
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1)
     # Return the bounding box as a numpy array
     return np.array([float(x) for x in line.split(&#34;,&#34;)])
 
 
-def get_neighbour_residues(dataset_idx, path_to_csv):
+def get_neighbour_residues(dataset_idx: int, path_to_csv: str):
+    &#34;&#34;&#34;
+    This function returns a list of the neighbour residues of a residue in a dataset.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the neighbour residues for the residues.
+
+    Returns:
+        array: List of neighbour residue indices.
+    &#34;&#34;&#34;
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1).replace(&#34;\n&#34;, &#34;&#34;)
     if len(line) == 0:
@@ -207,6 +231,12 @@ def get_neighbour_residues(dataset_idx, path_to_csv):
 
 
 def print_matrix(matrix):
+    &#34;&#34;&#34;
+    This function prints a matrix in ascii art.
+
+    Args:
+        matrix (list): List with shape (batch_size, i, j, 1)
+    &#34;&#34;&#34;
     # Prints an output/input matrix in ascii art
     for i in range(matrix.shape[0]):
         print(&#34; &#34;, end=&#34;&#34;)
@@ -234,26 +264,29 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
 
     def __init__(
         self,
-        input_dir_path,
-        output_dir_path,
-        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        shuffle=False,
-        batch_size=1,
-        validate_split=0.1,
-        validation_mode=False,
-        augmentation=False,
+        input_dir_path: str,
+        output_dir_path: str,
+        input_size: tuple = (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size: tuple = (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle: bool = False,
+        batch_size: int = 1,
+        validate_split: float = 0.1,
+        validation_mode: bool = False,
+        augmentation: bool = False,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        This is the base class for the backmapping data generator.
+
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         &#34;&#34;&#34;
         self.input_dir_path = input_dir_path
         self.output_dir_path = output_dir_path
@@ -313,15 +346,16 @@ class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
         augmentation=False,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(
@@ -415,17 +449,18 @@ class AbsolutePositionsGenerator(BackmappingBaseGenerator):
         atom_name=None,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(
@@ -678,18 +713,19 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
         neighbourhood_size=4,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
-            :param neighbourhood_size: The number of the neighbour molecules that should be included
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
+            neighbourhood_size (int, optional): The amount of the neighbours to take into place. Defaults to 4.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(
@@ -1015,22 +1051,36 @@ Additionally, it fixes PBC and checks for consistency.</p>
 <span>def <span class="ident">fix_pbc</span></span>(<span>vector, box_size=(191.05054545, 191.05054545, 111.67836364), cutoff=[10.0, 10.0, 10.0])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Fixes the periodic boundary conditions of a vector.
-:param vector: The vector to fix
-:param box_size: The size of the simulation box
-:param cutoff: The cutoff box where to apply the PBC
-:return: The fixed vector</p></div>
+<div class="desc"><p>This function fixes the periodic boundary conditions of a vector. It does this by checking if the vector is outside of the box and if it is, it will move it back into the box.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>vector</code></strong> :&ensp;<code>vector</code></dt>
+<dd>The vector that should be fixed.</dd>
+<dt><strong><code>box_size</code></strong> :&ensp;<code>vector</code>, optional</dt>
+<dd>The box size of the simulation. Defaults to AVERAGE_SIMULATION_BOX_SIZE.</dd>
+<dt><strong><code>cutoff</code></strong> :&ensp;<code>list</code>, optional</dt>
+<dd>Cutoff radius to apply the PBC fix to. Defaults to [PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF].</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>vector</code></dt>
+<dd>The fixed vector.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def fix_pbc(vector, box_size=AVERAGE_SIMULATION_BOX_SIZE, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
     &#34;&#34;&#34;
-        Fixes the periodic boundary conditions of a vector.
-        :param vector: The vector to fix
-        :param box_size: The size of the simulation box
-        :param cutoff: The cutoff box where to apply the PBC
-        :return: The fixed vector
+    This function fixes the periodic boundary conditions of a vector. It does this by checking if the vector is outside of the box and if it is, it will move it back into the box.
+
+    Args:
+        vector (vector): The vector that should be fixed.
+        box_size (vector, optional): The box size of the simulation. Defaults to AVERAGE_SIMULATION_BOX_SIZE.
+        cutoff (list, optional): Cutoff radius to apply the PBC fix to. Defaults to [PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF].
+
+    Returns:
+        vector: The fixed vector.
     &#34;&#34;&#34;
     if vector[0] &gt; cutoff[0]:
         vector[0] -= box_size[0]
@@ -1052,15 +1102,37 @@ Additionally, it fixes PBC and checks for consistency.</p>
 </details>
 </dd>
 <dt id="library.classes.generators.get_bounding_box"><code class="name flex">
-<span>def <span class="ident">get_bounding_box</span></span>(<span>dataset_idx, path_to_csv)</span>
+<span>def <span class="ident">get_bounding_box</span></span>(<span>dataset_idx: int, path_to_csv: str) ‑> <built-in function array></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This function returns the bounding box of a residue in a dataset. The bounding box is the size of the simulation box in which the residue is located.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>dataset_idx</code></strong> :&ensp;<code>int</code></dt>
+<dd>The dataset index is the index of the dataset in the dataset list.</dd>
+<dt><strong><code>path_to_csv</code></strong> :&ensp;<code>list</code></dt>
+<dd>The path to the csv file that contains the bounding box sizes for the residues.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>array</code></dt>
+<dd>The bounding box as a numpy array.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_bounding_box(dataset_idx, path_to_csv):
+<pre><code class="python">def get_bounding_box(dataset_idx: int, path_to_csv: str) -&gt; np.array:
+    &#34;&#34;&#34;
+    This function returns the bounding box of a residue in a dataset. The bounding box is the size of the simulation box in which the residue is located.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the bounding box sizes for the residues.
+
+    Returns:
+        array: The bounding box as a numpy array.
+    &#34;&#34;&#34;
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1)
     # Return the bounding box as a numpy array
@@ -1068,15 +1140,37 @@ Additionally, it fixes PBC and checks for consistency.</p>
 </details>
 </dd>
 <dt id="library.classes.generators.get_neighbour_residues"><code class="name flex">
-<span>def <span class="ident">get_neighbour_residues</span></span>(<span>dataset_idx, path_to_csv)</span>
+<span>def <span class="ident">get_neighbour_residues</span></span>(<span>dataset_idx: int, path_to_csv: str)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This function returns a list of the neighbour residues of a residue in a dataset.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>dataset_idx</code></strong> :&ensp;<code>int</code></dt>
+<dd>The dataset index is the index of the dataset in the dataset list.</dd>
+<dt><strong><code>path_to_csv</code></strong> :&ensp;<code>list</code></dt>
+<dd>The path to the csv file that contains the neighbour residues for the residues.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>array</code></dt>
+<dd>List of neighbour residue indices.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_neighbour_residues(dataset_idx, path_to_csv):
+<pre><code class="python">def get_neighbour_residues(dataset_idx: int, path_to_csv: str):
+    &#34;&#34;&#34;
+    This function returns a list of the neighbour residues of a residue in a dataset.
+
+    Args:
+        dataset_idx (int): The dataset index is the index of the dataset in the dataset list.
+        path_to_csv (list): The path to the csv file that contains the neighbour residues for the residues.
+
+    Returns:
+        array: List of neighbour residue indices.
+    &#34;&#34;&#34;
     # Get the bounding box by using the cahched line access
     line = linecache.getline(path_to_csv, dataset_idx + 1).replace(&#34;\n&#34;, &#34;&#34;)
     if len(line) == 0:
@@ -1092,8 +1186,8 @@ Additionally, it fixes PBC and checks for consistency.</p>
 <div class="desc"><p>This is a diagnostic function that checks if the output matrix is fulffiling the requirements.
 Checked will be:
 - If values outside of [-1, 1] exist (this should not be the case)
-- If nan or inf exist (this should not be the case)</p>
-<h1 id="todo-this-functions-can-be-extended-to-check-for-other-things-as-well">TODO: This functions can be extended to check for other things as well.</h1></div>
+- If nan or inf exist (this should not be the case)
+TODO: This functions can be extended to check for other things as well.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1104,7 +1198,7 @@ Checked will be:
         Checked will be:
             - If values outside of [-1, 1] exist (this should not be the case)
             - If nan or inf exist (this should not be the case)
-        #TODO: This functions can be extended to check for other things as well.
+        TODO: This functions can be extended to check for other things as well.
     &#34;&#34;&#34;
     healthy = True
 
@@ -1123,12 +1217,23 @@ Checked will be:
 <span>def <span class="ident">print_matrix</span></span>(<span>matrix)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>This function prints a matrix in ascii art.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>matrix</code></strong> :&ensp;<code>list</code></dt>
+<dd>List with shape (batch_size, i, j, 1)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def print_matrix(matrix):
+    &#34;&#34;&#34;
+    This function prints a matrix in ascii art.
+
+    Args:
+        matrix (list): List with shape (batch_size, i, j, 1)
+    &#34;&#34;&#34;
     # Prints an output/input matrix in ascii art
     for i in range(matrix.shape[0]):
         print(&#34; &#34;, end=&#34;&#34;)
@@ -1159,17 +1264,31 @@ Checked will be:
 <dd>
 <div class="desc"><p>A data generator class that generates batches of data for the CNN.
 The input and output is the aboslute positions of the atoms and beads.</p>
-<p>Initializes a data generator object to generate batches of data.
-:param input_dir_path: The path to the directory where the input data (X) is located
-:param output_dir_path: The path to the directory where the output data (Y) is located
-:param input_size: The size/shape of the input data
-:param output_size: The size/shape of the output data
-:param shuffle: If the data should be shuffled after each epoch
-:param batch_size: The size of each batch
-:param validate_split: The percentage of data that should be used for validation
-:param validation_mode: If the generator should be in validation mode
-:param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-:param atom_name: The name of the atom that should be fitted</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the input data (X) is located</dd>
+<dt><strong><code>output_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the output data (Y) is located</dd>
+<dt><strong><code>input_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>output_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>shuffle</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the data should be shuffled after each epoch. Defaults to False.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The size of each batch. Defaults to 1.</dd>
+<dt><strong><code>validate_split</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>The percentage of data that should be used for validation. Defaults to 0.1.</dd>
+<dt><strong><code>validation_mode</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should be in validation mode. Defaults to False.</dd>
+<dt><strong><code>augmentation</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should augment the data. Defaults to False.</dd>
+<dt><strong><code>only_fit_one_atom</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If only one atom should be fitted. Defaults to False.</dd>
+<dt><strong><code>atom_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The name of the atom that should be fitted. Defaults to None.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1195,17 +1314,18 @@ The input and output is the aboslute positions of the atoms and beads.</p>
         atom_name=None,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(
@@ -1456,18 +1576,33 @@ The input and output is the aboslute positions of the atoms and beads.</p>
 <div class="desc"><p>A data generator class that generates batches of data for the CNN.
 The input and output is the aboslute positions of the atoms and beads and
 includes the neighbourhood of the molecule that should be fitted.</p>
-<p>Initializes a data generator object to generate batches of data.
-:param input_dir_path: The path to the directory where the input data (X) is located
-:param output_dir_path: The path to the directory where the output data (Y) is located
-:param input_size: The size/shape of the input data
-:param output_size: The size/shape of the output data
-:param shuffle: If the data should be shuffled after each epoch
-:param batch_size: The size of each batch
-:param validate_split: The percentage of data that should be used for validation
-:param validation_mode: If the generator should be in validation mode
-:param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-:param atom_name: The name of the atom that should be fitted
-:param neighbourhood_size: The number of the neighbour molecules that should be included</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the input data (X) is located</dd>
+<dt><strong><code>output_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the output data (Y) is located</dd>
+<dt><strong><code>input_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>output_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>shuffle</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the data should be shuffled after each epoch. Defaults to False.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The size of each batch. Defaults to 1.</dd>
+<dt><strong><code>validate_split</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>The percentage of data that should be used for validation. Defaults to 0.1.</dd>
+<dt><strong><code>validation_mode</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should be in validation mode. Defaults to False.</dd>
+<dt><strong><code>augmentation</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should augment the data. Defaults to False.</dd>
+<dt><strong><code>only_fit_one_atom</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If only one atom should be fitted. Defaults to False.</dd>
+<dt><strong><code>atom_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The name of the atom that should be fitted. Defaults to None.</dd>
+<dt><strong><code>neighbourhood_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The amount of the neighbours to take into place. Defaults to 4.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1495,18 +1630,19 @@ includes the neighbourhood of the molecule that should be fitted.</p>
         neighbourhood_size=4,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
-            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
-            :param atom_name: The name of the atom that should be fitted
-            :param neighbourhood_size: The number of the neighbour molecules that should be included
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
+            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
+            neighbourhood_size (int, optional): The amount of the neighbours to take into place. Defaults to 4.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(
@@ -1741,21 +1877,34 @@ includes the neighbourhood of the molecule that should be fitted.</p>
 </dd>
 <dt id="library.classes.generators.BackmappingBaseGenerator"><code class="flex name class">
 <span>class <span class="ident">BackmappingBaseGenerator</span></span>
-<span>(</span><span>input_dir_path, output_dir_path, input_size=(13, 5, 1), output_size=(55, 5, 1), shuffle=False, batch_size=1, validate_split=0.1, validation_mode=False, augmentation=False)</span>
+<span>(</span><span>input_dir_path: str, output_dir_path: str, input_size: tuple = (13, 5, 1), output_size: tuple = (55, 5, 1), shuffle: bool = False, batch_size: int = 1, validate_split: float = 0.1, validation_mode: bool = False, augmentation: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This is the base class for the backmapping data generator.
 It is used to generate batches of data for the CNN. The children classes specify the structure of the data.
 For example, the RelativeVectorsTrainingDataGenerator generates batches of relative bond vectors.</p>
-<p>Initializes a data generator object to generate batches of data.
-:param input_dir_path: The path to the directory where the input data (X) is located
-:param output_dir_path: The path to the directory where the output data (Y) is located
-:param input_size: The size/shape of the input data
-:param output_size: The size/shape of the output data
-:param shuffle: If the data should be shuffled after each epoch
-:param batch_size: The size of each batch
-:param validate_split: The percentage of data that should be used for validation
-:param validation_mode: If the generator should be in validation mode</p></div>
+<p>This is the base class for the backmapping data generator.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the input data (X) is located</dd>
+<dt><strong><code>output_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the output data (Y) is located</dd>
+<dt><strong><code>input_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>output_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>shuffle</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the data should be shuffled after each epoch. Defaults to False.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The size of each batch. Defaults to 1.</dd>
+<dt><strong><code>validate_split</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>The percentage of data that should be used for validation. Defaults to 0.1.</dd>
+<dt><strong><code>validation_mode</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should be in validation mode. Defaults to False.</dd>
+<dt><strong><code>augmentation</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should augment the data. Defaults to False.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1769,26 +1918,29 @@ For example, the RelativeVectorsTrainingDataGenerator generates batches of relat
 
     def __init__(
         self,
-        input_dir_path,
-        output_dir_path,
-        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        shuffle=False,
-        batch_size=1,
-        validate_split=0.1,
-        validation_mode=False,
-        augmentation=False,
+        input_dir_path: str,
+        output_dir_path: str,
+        input_size: tuple = (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size: tuple = (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle: bool = False,
+        batch_size: int = 1,
+        validate_split: float = 0.1,
+        validation_mode: bool = False,
+        augmentation: bool = False,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        This is the base class for the backmapping data generator.
+
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         &#34;&#34;&#34;
         self.input_dir_path = input_dir_path
         self.output_dir_path = output_dir_path
@@ -1862,15 +2014,27 @@ For example, the RelativeVectorsTrainingDataGenerator generates batches of relat
 <dd>
 <div class="desc"><p>A data generator class that generates batches of data for the CNN.
 The input and output is the relative vectors between the atoms and the beads.</p>
-<p>Initializes a data generator object to generate batches of data.
-:param input_dir_path: The path to the directory where the input data (X) is located
-:param output_dir_path: The path to the directory where the output data (Y) is located
-:param input_size: The size/shape of the input data
-:param output_size: The size/shape of the output data
-:param shuffle: If the data should be shuffled after each epoch
-:param batch_size: The size of each batch
-:param validate_split: The percentage of data that should be used for validation
-:param validation_mode: If the generator should be in validation mode</p></div>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the input data (X) is located</dd>
+<dt><strong><code>output_dir_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>The path to the directory where the output data (Y) is located</dd>
+<dt><strong><code>input_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>output_size</code></strong> :&ensp;<code>tuple</code>, optional</dt>
+<dd>The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).</dd>
+<dt><strong><code>shuffle</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the data should be shuffled after each epoch. Defaults to False.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The size of each batch. Defaults to 1.</dd>
+<dt><strong><code>validate_split</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>The percentage of data that should be used for validation. Defaults to 0.1.</dd>
+<dt><strong><code>validation_mode</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should be in validation mode. Defaults to False.</dd>
+<dt><strong><code>augmentation</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If the generator should augment the data. Defaults to False.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1894,15 +2058,16 @@ The input and output is the relative vectors between the atoms and the beads.</p
         augmentation=False,
     ):
         &#34;&#34;&#34;
-            Initializes a data generator object to generate batches of data.
-            :param input_dir_path: The path to the directory where the input data (X) is located
-            :param output_dir_path: The path to the directory where the output data (Y) is located
-            :param input_size: The size/shape of the input data
-            :param output_size: The size/shape of the output data
-            :param shuffle: If the data should be shuffled after each epoch
-            :param batch_size: The size of each batch
-            :param validate_split: The percentage of data that should be used for validation
-            :param validation_mode: If the generator should be in validation mode
+        Args:
+            input_dir_path (str): The path to the directory where the input data (X) is located
+            output_dir_path (str): The path to the directory where the output data (Y) is located
+            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
+            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
+            batch_size (int, optional): The size of each batch. Defaults to 1.
+            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
+            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
+            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
         &#34;&#34;&#34;
         # Call super constructor
         super().__init__(

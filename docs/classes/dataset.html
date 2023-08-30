@@ -35,13 +35,18 @@ from Bio.PDB.Residue import Residue
 from Bio.PDB.Atom import Atom
 
 class Dataset:
+    &#34;&#34;&#34;
+        A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.
+    &#34;&#34;&#34;
+
     def __init__(self, name, path, type, parent=None):
         self.name = name
         self.path = path
         self.parent = parent
         self.type = type
 
-    def __repr__(self):
+
+    def __repr__(self) -&gt; str:
         return f&#39;&lt;Dataset {self.name} at {hex(id(self))}&gt;&#39;
     
     def get_structure(self) -&gt; Structure: 
@@ -72,19 +77,24 @@ class Dataset:
 <span>(</span><span>name, path, type, parent=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Dataset:
+    &#34;&#34;&#34;
+        A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.
+    &#34;&#34;&#34;
+
     def __init__(self, name, path, type, parent=None):
         self.name = name
         self.path = path
         self.parent = parent
         self.type = type
 
-    def __repr__(self):
+
+    def __repr__(self) -&gt; str:
         return f&#39;&lt;Dataset {self.name} at {hex(id(self))}&gt;&#39;
     
     def get_structure(self) -&gt; Structure: 
