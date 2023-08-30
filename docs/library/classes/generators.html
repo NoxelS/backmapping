@@ -1,0 +1,2045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>library.classes.generators API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>library.classes.generators</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os
+import tensorflow as tf
+import numpy as np
+from scipy.ndimage import gaussian_filter
+import sys
+import linecache
+from library.parser import get_cg_at_datasets
+from library.static.topologies import DOPC_CG_NAME_TO_TYPE_MAP, DOPC_BEAD_TYPE_NAME_IDS, DOPC_ELEMENT_TYPE_NAME_IDS
+from Bio.PDB.PDBIO import Select
+from Bio.PDB.PDBIO import PDBIO
+from Bio.PDB.PDBParser import PDBParser
+from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
+import matplotlib.pyplot as plt
+import random
+
+PADDING_X = 1  # Padding on left and right
+PADDING_Y = 1  # Padding on top and bottom
+
+AVERAGE_SIMULATION_BOX_SIZE = (191.05054545, 191.05054545, 111.67836364)  # This is the average box size as fallback if the box size cannot be found in the csv file
+PBC_CUTOFF = 10.0  # If a bond is longer than this, it is considered to be on the other side of the simulation box
+BOX_SCALE_FACTOR = 10.0  # The scale factor to downscale the bond vectors with
+CG_BOUNDING_BOX_RELATION_PATH = &#34;data/box_sizes_cg.csv&#34;  # Path to the csv file that contains the bounding box sizes for the cg residues
+AT_BOUNDING_BOX_RELATION_PATH = &#34;data/box_sizes_at.csv&#34;  # This is generated by the generate_molecule_data_fast.py script
+NEIGHBOURHOOD_PATH = &#34;data/neighborhoods.csv&#34;  # This is generated by the generate_molecule_data_fast.py script
+ABSOLUTE_POSITION_EXTRA_SCALE = 1.1  # This is a factor that is used to scale the box around absolute positions with. This is used to make sure that the absolute positions are not outside of [-1, 1]
+ABSOLUT_POSITION_SCALE = 200.0      # This factor is used to scale down positions
+
+
+def fix_pbc(vector, box_size=AVERAGE_SIMULATION_BOX_SIZE, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
+    &#34;&#34;&#34;
+        Fixes the periodic boundary conditions of a vector.
+        :param vector: The vector to fix
+        :param box_size: The size of the simulation box
+        :param cutoff: The cutoff box where to apply the PBC
+        :return: The fixed vector
+    &#34;&#34;&#34;
+    if vector[0] &gt; cutoff[0]:
+        vector[0] -= box_size[0]
+    elif vector[0] &lt; -cutoff[0]:
+        vector[0] += box_size[0]
+    if vector[1] &gt; cutoff[1]:
+        vector[1] -= box_size[1]
+    elif vector[1] &lt; -cutoff[1]:
+        vector[1] += box_size[1]
+    if vector[2] &gt; cutoff[2]:
+        vector[2] -= box_size[2]
+    elif vector[2] &lt; -cutoff[2]:
+        vector[2] += box_size[2]
+
+    if vector[0] &gt; cutoff[0] or vector[0] &lt; -cutoff[0] or vector[1] &gt; cutoff[1] or vector[1] &lt; -cutoff[1] or vector[2] &gt; cutoff[2] or vector[2] &lt; -cutoff[2]:
+        return fix_pbc(vector, box_size)
+    else:
+        return vector
+
+
+def is_output_matrix_healthy(output):
+    &#34;&#34;&#34;
+        This is a diagnostic function that checks if the output matrix is fulffiling the requirements.
+        Checked will be:
+            - If values outside of [-1, 1] exist (this should not be the case)
+            - If nan or inf exist (this should not be the case)
+        #TODO: This functions can be extended to check for other things as well.
+    &#34;&#34;&#34;
+    healthy = True
+
+    # Check if values that are not in [-1, 1] exist
+    if np.max(output) &gt; 1 or np.min(output) &lt; -1:
+        healthy = False
+
+    # Check for nan or inf
+    if np.isnan(output).any() or np.isinf(output).any():
+        healthy = False
+
+    return healthy
+
+
+def add_relative_vectors(atom_pos_dict, atom_mapping, output_matrix, batch_index, box):
+    &#34;&#34;&#34;
+    This functions calculates the relative vectors between the atoms in the atom mapping and writes them to the output matrix.
+    Additionally, it fixes PBC and checks for consistency.
+
+    Args:
+        atom_pos_dict (_type_): The atom pos dict is a dict that maps the atom name to the atom position.
+        atom_mapping (_type_): The atom mapping is a list of tuples that contain the atom names that should be mapped.
+        output_matrix (_type_): The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)
+        batch_index (_type_): The batch index is the index of the batch in the output matrix.
+        residue_idx (_type_): The residue index is the index of the residue in the dataset.
+    &#34;&#34;&#34;
+    for j, (at1_name, at2_name) in enumerate(atom_mapping):
+        if not (atom_pos_dict.get(at1_name) and atom_pos_dict.get(at2_name)):
+            raise Exception(f&#34;Missing {at1_name} or {at2_name} in residue&#34;)
+        else:
+            # Calculate the relative vector
+            rel_vector = atom_pos_dict.get(at2_name).get_vector() - atom_pos_dict.get(at1_name).get_vector()
+
+            # Fix the PBC
+            if rel_vector.norm() &gt; PBC_CUTOFF:
+                rel_vector = fix_pbc(rel_vector, box)
+
+            # Consitency check
+            if rel_vector.norm() &gt; PBC_CUTOFF:
+                raise Exception(f&#34;Found a vector that is too large ({rel_vector})!&#34;)
+
+            # Check if nan or inf is in the vector
+            if np.isnan(rel_vector[0]) or np.isnan(rel_vector[1]) or np.isnan(rel_vector[2]) or np.isinf(rel_vector[0]) or np.isinf(rel_vector[1]) or np.isinf(rel_vector[2]):
+                raise Exception(f&#34;Found nan or inf in vector ({rel_vector})!&#34;)
+
+        # Write the relative vectors to the output matrix
+        for k in range(3):
+            output_matrix[batch_index, j + PADDING_X, PADDING_Y + k, 0] = rel_vector[k] / BOX_SCALE_FACTOR
+
+    return output_matrix
+
+
+def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=None, preset_position_origin=None):
+    &#34;&#34;&#34;
+    This functions calculates the absolute positions of the atoms in the atom mapping and writes them to the output matrix.
+
+    Args:
+        atom_pos_dict (_type_): The atom pos dict is a dict that maps the atom name to the atom position.
+        atom_mapping (_type_): The atom mapping is a list of tuples that contain the atom names that should be mapped.
+        output_matrix (_type_): The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)
+        batch_index (_type_): The batch index is the index of the batch in the output matrix.
+        residue_idx (_type_): The residue index is the index of the residue in the dataset.
+        target_name (_type_): The target is the atom that should be fitted. If this is None, all atoms will be fitted. If a target is set, only this atom will be in the output matrix.
+        preset_position_origin (_type_): The position origin is the position of the atom that should be fitted. If this is None, the position of the N atom or NC3 bead will be used.
+    &#34;&#34;&#34;
+    # Filter out hydrogen atoms
+    atoms = [atom for atom in atoms if atom.element != &#34;H&#34;]
+
+    # Make base position
+    position_origin = [atom for atom in atoms if atom.get_name() == &#34;N&#34; or atom.get_name() == &#34;NC3&#34;][0].get_vector()  # Everything is relative to the N atom or NC3 bead
+    if preset_position_origin:
+        position_origin = preset_position_origin
+
+    # Remove the N atom or NC3 bead because their position is the base position (0,0,0)
+    if not preset_position_origin:
+        atoms = [atom for atom in atoms if atom.get_name() != &#34;N&#34; and atom.get_name() != &#34;NC3&#34;]
+
+    if target_atom:
+        # If only one atom is selected we need to filter out all other atoms
+        atoms = [atom for atom in atoms if atom.get_name() == target_atom.get_name()]
+
+        if len(atoms) != 1:
+            raise Exception(f&#34;Found {len(atoms)} atoms with the name {target_atom.get_name()}!&#34;)
+
+    for j, atom in enumerate(atoms):
+        # Calculate the relative vector
+        position = atom.get_vector() - position_origin
+
+        # Fix the PBC
+        position = fix_pbc(position, box, cutoff=[box[0] / 1.5, box[1] / 1.5, box[2] / 1.5])  # TODO: Maybe find better cutoff approximations
+
+        # Check if nan or inf is in the vector
+        if np.isnan(position[0]) or np.isnan(position[1]) or np.isnan(position[2]) or np.isinf(position[0]) or np.isinf(position[1]) or np.isinf(position[2]):
+            raise Exception(f&#34;Found nan or inf in vector ({position})!&#34;)
+
+        # Write the relative vectors to the output matrix
+        for k in range(3):
+            output_matrix[batch_index, j + PADDING_X, PADDING_Y + k, 0] = position[k] / ABSOLUT_POSITION_SCALE  # / (box[k] * ABSOLUTE_POSITION_EXTRA_SCALE)
+
+    return output_matrix
+
+
+def get_bounding_box(dataset_idx, path_to_csv):
+    # Get the bounding box by using the cahched line access
+    line = linecache.getline(path_to_csv, dataset_idx + 1)
+    # Return the bounding box as a numpy array
+    return np.array([float(x) for x in line.split(&#34;,&#34;)])
+
+
+def get_neighbour_residues(dataset_idx, path_to_csv):
+    # Get the bounding box by using the cahched line access
+    line = linecache.getline(path_to_csv, dataset_idx + 1).replace(&#34;\n&#34;, &#34;&#34;)
+    if len(line) == 0:
+        return np.array([])
+    # Return the bounding box as a numpy array
+    return np.array([int(x) for x in line.split(&#34;,&#34;)])
+
+
+def print_matrix(matrix):
+    # Prints an output/input matrix in ascii art
+    for i in range(matrix.shape[0]):
+        print(&#34; &#34;, end=&#34;&#34;)
+        for k in range(matrix.shape[1]):
+            print(f&#34;{k:6d}&#34;, end=&#34;  &#34;)
+        print()
+        print(matrix.shape[1] * 8 * &#34;-&#34;)
+        # Batch
+        for j in range(matrix.shape[2]):
+            # Y
+            for k in range(matrix.shape[1]):
+                # X
+                minus_sign_padding = &#34; &#34; if matrix[i, k, j, 0] &gt;= 0 else &#34;&#34;
+                print(f&#34;{minus_sign_padding}{matrix[i, k, j, 0]:.4f}&#34;, end=&#34; &#34;)
+            print()
+        print(matrix.shape[1] * 8 * &#34;-&#34;)
+
+
+class BackmappingBaseGenerator(tf.keras.utils.Sequence):
+    &#34;&#34;&#34;
+        This is the base class for the backmapping data generator.
+        It is used to generate batches of data for the CNN. The children classes specify the structure of the data.
+        For example, the RelativeVectorsTrainingDataGenerator generates batches of relative bond vectors.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+        &#34;&#34;&#34;
+        self.input_dir_path = input_dir_path
+        self.output_dir_path = output_dir_path
+        self.input_size = input_size
+        self.output_size = output_size
+        self.shuffle = shuffle
+        self.batch_size = batch_size
+        self.validation_mode = validation_mode
+        self.augmentation = augmentation
+
+        self.parser = PDBParser(QUIET=True)
+
+        max_index = int(os.listdir(input_dir_path).__len__() - 1)
+
+        self.len = int(max_index * (1 - validate_split))
+        self.start_index = 0
+        self.end_index = self.len
+
+        # Set validation mode
+        if self.validation_mode:
+            self.start_index = self.len + 1
+            self.len = int(max_index * validate_split)
+            self.end_index = max_index
+
+        # Debug
+        print(f&#34;Found {self.len} residues in ({self.input_dir_path})&#34;)
+
+        # Initialize
+        self.on_epoch_end()
+
+    def on_epoch_end(self):
+        pass
+
+    def __len__(self):
+        return self.len // self.batch_size
+
+    def __getitem__(self, idx):
+        raise Exception(&#34;This is an abstract class and should not be used directly!&#34;)
+
+
+class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the relative vectors between the atoms and the beads.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+    def __getitem__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, *self.output_size), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Make name -&gt; atom dict
+            cg_atoms_dict = {atom.get_name(): atom for atom in cg_atoms}
+            at_atoms_dict = {atom.get_name(): atom for atom in at_atoms}
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the relative vectors out of a vector mapping
+            X = add_relative_vectors(cg_atoms_dict, DOPC_CG_MAPPING, X, i, cg_box_size)
+            Y = add_relative_vectors(at_atoms_dict, DOPC_AT_MAPPING, Y, i, at_box_size)
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+
+class AbsolutePositionsGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the aboslute positions of the atoms and beads.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(12 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more bead position than relativ vectors
+        output_size=(54 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more atom position than relativ vectors
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+        only_fit_one_atom=False,
+        atom_name=None,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+            :param atom_name: The name of the atom that should be fitted
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+        self.only_fit_one_atom = only_fit_one_atom
+        self.atom_name = atom_name
+
+    def __getitem__(self, idx):
+        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+
+    def __getitem_one_atom__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, 1 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Filter out the atom that should be fitted
+            if not self.atom_name:
+                raise Exception(&#34;You need to specify an atom name!&#34;)
+            at_atoms_to_fit = [atom for atom in at_atoms if atom.get_name() == self.atom_name]
+
+            if at_atoms_to_fit.__len__() != 1:
+                raise Exception(f&#34;Found {at_atoms.__len__()} atoms with the name {self.atom_name} in residue {residue_idx}!&#34;)
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0])
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+    def __getitem_all_atoms__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, ), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size)
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+
+class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the aboslute positions of the atoms and beads and 
+        includes the neighbourhood of the molecule that should be fitted.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(12 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more bead position than relativ vectors
+        output_size=(54 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more atom position than relativ vectors
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+        only_fit_one_atom=False,
+        atom_name=None,
+        neighbourhood_size=4,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+            :param atom_name: The name of the atom that should be fitted
+            :param neighbourhood_size: The number of the neighbour molecules that should be included
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+        self.only_fit_one_atom = only_fit_one_atom
+        self.atom_name = atom_name
+        self.neighbourhood_size = neighbourhood_size
+
+    def __getitem__(self, idx):
+        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+
+    def __getitem_one_atom__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)     # Now is (batch, beades + neighborhood_size, (x, y, z), 1)
+        Y = np.zeros((self.batch_size, 1 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Filter out the atom that should be fitted
+            if not self.atom_name:
+                raise Exception(&#34;You need to specify an atom name!&#34;)
+
+            at_atoms_to_fit = [atom for atom in at_atoms if atom.get_name() == self.atom_name]
+
+            if at_atoms_to_fit.__len__() != 1:
+                raise Exception(f&#34;Found {at_atoms.__len__()} atoms with the name {self.atom_name} in residue {residue_idx}!&#34;)
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Get the neighbourhood
+            neighbourhood = get_neighbour_residues(residue_idx, NEIGHBOURHOOD_PATH)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0])
+
+            # Add the neighbourhood
+            for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):
+                neighbor_X = self.get_neighbor_X(
+                    residue_idx=neighbourhood[j],
+                    box_size=cg_box_size,
+                    position_origin=[atom.get_vector() for atom in cg_atoms if atom.get_name() == &#34;NC3&#34;][0]
+                )[0, PADDING_X: 12 + PADDING_X, PADDING_Y:-PADDING_Y, 0]
+
+                # Add the neighbour to the input
+                X[i, PADDING_X + 12 + j * 12: PADDING_X + 24 + j * 12, PADDING_Y:-PADDING_Y, 0] = neighbor_X
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+    def get_neighbor_X(self, residue_idx, box_size, position_origin):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)     # Now is (batch, beades
+
+        # Check if end index is reached
+        if self.validation_mode and residue_idx &gt; self.end_index:
+            raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+        # Get the path to the files
+        cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+
+        # Load the files
+        cg_structure = self.parser.get_structure(residue_idx, cg_path)
+
+        # Get the residues
+        cg_residue = list(cg_structure.get_residues())[0]
+
+        # Get the atoms
+        cg_atoms = list(cg_residue.get_atoms())
+
+        # Make the absolute positions out of a vector mapping
+        X = add_absolute_positions(cg_atoms, X, 0, box_size, preset_position_origin=position_origin)
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+
+        # Return tensor as deep copy
+        return tf.identity(X)
+
+    def __getitem_all_atoms__(self, idx):
+        raise Exception(&#34;Not implemented yet!&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="library.classes.generators.add_absolute_positions"><code class="name flex">
+<span>def <span class="ident">add_absolute_positions</span></span>(<span>atoms, output_matrix, batch_index, box, target_atom=None, preset_position_origin=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This functions calculates the absolute positions of the atoms in the atom mapping and writes them to the output matrix.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>atom_pos_dict</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The atom pos dict is a dict that maps the atom name to the atom position.</dd>
+<dt><strong><code>atom_mapping</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The atom mapping is a list of tuples that contain the atom names that should be mapped.</dd>
+<dt><strong><code>output_matrix</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)</dd>
+<dt><strong><code>batch_index</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The batch index is the index of the batch in the output matrix.</dd>
+<dt><strong><code>residue_idx</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The residue index is the index of the residue in the dataset.</dd>
+<dt><strong><code>target_name</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The target is the atom that should be fitted. If this is None, all atoms will be fitted. If a target is set, only this atom will be in the output matrix.</dd>
+<dt><strong><code>preset_position_origin</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The position origin is the position of the atom that should be fitted. If this is None, the position of the N atom or NC3 bead will be used.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=None, preset_position_origin=None):
+    &#34;&#34;&#34;
+    This functions calculates the absolute positions of the atoms in the atom mapping and writes them to the output matrix.
+
+    Args:
+        atom_pos_dict (_type_): The atom pos dict is a dict that maps the atom name to the atom position.
+        atom_mapping (_type_): The atom mapping is a list of tuples that contain the atom names that should be mapped.
+        output_matrix (_type_): The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)
+        batch_index (_type_): The batch index is the index of the batch in the output matrix.
+        residue_idx (_type_): The residue index is the index of the residue in the dataset.
+        target_name (_type_): The target is the atom that should be fitted. If this is None, all atoms will be fitted. If a target is set, only this atom will be in the output matrix.
+        preset_position_origin (_type_): The position origin is the position of the atom that should be fitted. If this is None, the position of the N atom or NC3 bead will be used.
+    &#34;&#34;&#34;
+    # Filter out hydrogen atoms
+    atoms = [atom for atom in atoms if atom.element != &#34;H&#34;]
+
+    # Make base position
+    position_origin = [atom for atom in atoms if atom.get_name() == &#34;N&#34; or atom.get_name() == &#34;NC3&#34;][0].get_vector()  # Everything is relative to the N atom or NC3 bead
+    if preset_position_origin:
+        position_origin = preset_position_origin
+
+    # Remove the N atom or NC3 bead because their position is the base position (0,0,0)
+    if not preset_position_origin:
+        atoms = [atom for atom in atoms if atom.get_name() != &#34;N&#34; and atom.get_name() != &#34;NC3&#34;]
+
+    if target_atom:
+        # If only one atom is selected we need to filter out all other atoms
+        atoms = [atom for atom in atoms if atom.get_name() == target_atom.get_name()]
+
+        if len(atoms) != 1:
+            raise Exception(f&#34;Found {len(atoms)} atoms with the name {target_atom.get_name()}!&#34;)
+
+    for j, atom in enumerate(atoms):
+        # Calculate the relative vector
+        position = atom.get_vector() - position_origin
+
+        # Fix the PBC
+        position = fix_pbc(position, box, cutoff=[box[0] / 1.5, box[1] / 1.5, box[2] / 1.5])  # TODO: Maybe find better cutoff approximations
+
+        # Check if nan or inf is in the vector
+        if np.isnan(position[0]) or np.isnan(position[1]) or np.isnan(position[2]) or np.isinf(position[0]) or np.isinf(position[1]) or np.isinf(position[2]):
+            raise Exception(f&#34;Found nan or inf in vector ({position})!&#34;)
+
+        # Write the relative vectors to the output matrix
+        for k in range(3):
+            output_matrix[batch_index, j + PADDING_X, PADDING_Y + k, 0] = position[k] / ABSOLUT_POSITION_SCALE  # / (box[k] * ABSOLUTE_POSITION_EXTRA_SCALE)
+
+    return output_matrix</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.add_relative_vectors"><code class="name flex">
+<span>def <span class="ident">add_relative_vectors</span></span>(<span>atom_pos_dict, atom_mapping, output_matrix, batch_index, box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This functions calculates the relative vectors between the atoms in the atom mapping and writes them to the output matrix.
+Additionally, it fixes PBC and checks for consistency.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>atom_pos_dict</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The atom pos dict is a dict that maps the atom name to the atom position.</dd>
+<dt><strong><code>atom_mapping</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The atom mapping is a list of tuples that contain the atom names that should be mapped.</dd>
+<dt><strong><code>output_matrix</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)</dd>
+<dt><strong><code>batch_index</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The batch index is the index of the batch in the output matrix.</dd>
+<dt><strong><code>residue_idx</code></strong> :&ensp;<code>_type_</code></dt>
+<dd>The residue index is the index of the residue in the dataset.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_relative_vectors(atom_pos_dict, atom_mapping, output_matrix, batch_index, box):
+    &#34;&#34;&#34;
+    This functions calculates the relative vectors between the atoms in the atom mapping and writes them to the output matrix.
+    Additionally, it fixes PBC and checks for consistency.
+
+    Args:
+        atom_pos_dict (_type_): The atom pos dict is a dict that maps the atom name to the atom position.
+        atom_mapping (_type_): The atom mapping is a list of tuples that contain the atom names that should be mapped.
+        output_matrix (_type_): The output matrix is the matrix where the relative vectors should be written to. Shape: (batch_size, i, j, 1)
+        batch_index (_type_): The batch index is the index of the batch in the output matrix.
+        residue_idx (_type_): The residue index is the index of the residue in the dataset.
+    &#34;&#34;&#34;
+    for j, (at1_name, at2_name) in enumerate(atom_mapping):
+        if not (atom_pos_dict.get(at1_name) and atom_pos_dict.get(at2_name)):
+            raise Exception(f&#34;Missing {at1_name} or {at2_name} in residue&#34;)
+        else:
+            # Calculate the relative vector
+            rel_vector = atom_pos_dict.get(at2_name).get_vector() - atom_pos_dict.get(at1_name).get_vector()
+
+            # Fix the PBC
+            if rel_vector.norm() &gt; PBC_CUTOFF:
+                rel_vector = fix_pbc(rel_vector, box)
+
+            # Consitency check
+            if rel_vector.norm() &gt; PBC_CUTOFF:
+                raise Exception(f&#34;Found a vector that is too large ({rel_vector})!&#34;)
+
+            # Check if nan or inf is in the vector
+            if np.isnan(rel_vector[0]) or np.isnan(rel_vector[1]) or np.isnan(rel_vector[2]) or np.isinf(rel_vector[0]) or np.isinf(rel_vector[1]) or np.isinf(rel_vector[2]):
+                raise Exception(f&#34;Found nan or inf in vector ({rel_vector})!&#34;)
+
+        # Write the relative vectors to the output matrix
+        for k in range(3):
+            output_matrix[batch_index, j + PADDING_X, PADDING_Y + k, 0] = rel_vector[k] / BOX_SCALE_FACTOR
+
+    return output_matrix</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.fix_pbc"><code class="name flex">
+<span>def <span class="ident">fix_pbc</span></span>(<span>vector, box_size=(191.05054545, 191.05054545, 111.67836364), cutoff=[10.0, 10.0, 10.0])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fixes the periodic boundary conditions of a vector.
+:param vector: The vector to fix
+:param box_size: The size of the simulation box
+:param cutoff: The cutoff box where to apply the PBC
+:return: The fixed vector</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fix_pbc(vector, box_size=AVERAGE_SIMULATION_BOX_SIZE, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
+    &#34;&#34;&#34;
+        Fixes the periodic boundary conditions of a vector.
+        :param vector: The vector to fix
+        :param box_size: The size of the simulation box
+        :param cutoff: The cutoff box where to apply the PBC
+        :return: The fixed vector
+    &#34;&#34;&#34;
+    if vector[0] &gt; cutoff[0]:
+        vector[0] -= box_size[0]
+    elif vector[0] &lt; -cutoff[0]:
+        vector[0] += box_size[0]
+    if vector[1] &gt; cutoff[1]:
+        vector[1] -= box_size[1]
+    elif vector[1] &lt; -cutoff[1]:
+        vector[1] += box_size[1]
+    if vector[2] &gt; cutoff[2]:
+        vector[2] -= box_size[2]
+    elif vector[2] &lt; -cutoff[2]:
+        vector[2] += box_size[2]
+
+    if vector[0] &gt; cutoff[0] or vector[0] &lt; -cutoff[0] or vector[1] &gt; cutoff[1] or vector[1] &lt; -cutoff[1] or vector[2] &gt; cutoff[2] or vector[2] &lt; -cutoff[2]:
+        return fix_pbc(vector, box_size)
+    else:
+        return vector</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.get_bounding_box"><code class="name flex">
+<span>def <span class="ident">get_bounding_box</span></span>(<span>dataset_idx, path_to_csv)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_bounding_box(dataset_idx, path_to_csv):
+    # Get the bounding box by using the cahched line access
+    line = linecache.getline(path_to_csv, dataset_idx + 1)
+    # Return the bounding box as a numpy array
+    return np.array([float(x) for x in line.split(&#34;,&#34;)])</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.get_neighbour_residues"><code class="name flex">
+<span>def <span class="ident">get_neighbour_residues</span></span>(<span>dataset_idx, path_to_csv)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_neighbour_residues(dataset_idx, path_to_csv):
+    # Get the bounding box by using the cahched line access
+    line = linecache.getline(path_to_csv, dataset_idx + 1).replace(&#34;\n&#34;, &#34;&#34;)
+    if len(line) == 0:
+        return np.array([])
+    # Return the bounding box as a numpy array
+    return np.array([int(x) for x in line.split(&#34;,&#34;)])</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.is_output_matrix_healthy"><code class="name flex">
+<span>def <span class="ident">is_output_matrix_healthy</span></span>(<span>output)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is a diagnostic function that checks if the output matrix is fulffiling the requirements.
+Checked will be:
+- If values outside of [-1, 1] exist (this should not be the case)
+- If nan or inf exist (this should not be the case)</p>
+<h1 id="todo-this-functions-can-be-extended-to-check-for-other-things-as-well">TODO: This functions can be extended to check for other things as well.</h1></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_output_matrix_healthy(output):
+    &#34;&#34;&#34;
+        This is a diagnostic function that checks if the output matrix is fulffiling the requirements.
+        Checked will be:
+            - If values outside of [-1, 1] exist (this should not be the case)
+            - If nan or inf exist (this should not be the case)
+        #TODO: This functions can be extended to check for other things as well.
+    &#34;&#34;&#34;
+    healthy = True
+
+    # Check if values that are not in [-1, 1] exist
+    if np.max(output) &gt; 1 or np.min(output) &lt; -1:
+        healthy = False
+
+    # Check for nan or inf
+    if np.isnan(output).any() or np.isinf(output).any():
+        healthy = False
+
+    return healthy</code></pre>
+</details>
+</dd>
+<dt id="library.classes.generators.print_matrix"><code class="name flex">
+<span>def <span class="ident">print_matrix</span></span>(<span>matrix)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_matrix(matrix):
+    # Prints an output/input matrix in ascii art
+    for i in range(matrix.shape[0]):
+        print(&#34; &#34;, end=&#34;&#34;)
+        for k in range(matrix.shape[1]):
+            print(f&#34;{k:6d}&#34;, end=&#34;  &#34;)
+        print()
+        print(matrix.shape[1] * 8 * &#34;-&#34;)
+        # Batch
+        for j in range(matrix.shape[2]):
+            # Y
+            for k in range(matrix.shape[1]):
+                # X
+                minus_sign_padding = &#34; &#34; if matrix[i, k, j, 0] &gt;= 0 else &#34;&#34;
+                print(f&#34;{minus_sign_padding}{matrix[i, k, j, 0]:.4f}&#34;, end=&#34; &#34;)
+            print()
+        print(matrix.shape[1] * 8 * &#34;-&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="library.classes.generators.AbsolutePositionsGenerator"><code class="flex name class">
+<span>class <span class="ident">AbsolutePositionsGenerator</span></span>
+<span>(</span><span>input_dir_path, output_dir_path, input_size=(14, 5, 1), output_size=(56, 5, 1), shuffle=False, batch_size=1, validate_split=0.1, validation_mode=False, augmentation=False, only_fit_one_atom=False, atom_name=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A data generator class that generates batches of data for the CNN.
+The input and output is the aboslute positions of the atoms and beads.</p>
+<p>Initializes a data generator object to generate batches of data.
+:param input_dir_path: The path to the directory where the input data (X) is located
+:param output_dir_path: The path to the directory where the output data (Y) is located
+:param input_size: The size/shape of the input data
+:param output_size: The size/shape of the output data
+:param shuffle: If the data should be shuffled after each epoch
+:param batch_size: The size of each batch
+:param validate_split: The percentage of data that should be used for validation
+:param validation_mode: If the generator should be in validation mode
+:param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+:param atom_name: The name of the atom that should be fitted</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AbsolutePositionsGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the aboslute positions of the atoms and beads.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(12 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more bead position than relativ vectors
+        output_size=(54 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more atom position than relativ vectors
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+        only_fit_one_atom=False,
+        atom_name=None,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+            :param atom_name: The name of the atom that should be fitted
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+        self.only_fit_one_atom = only_fit_one_atom
+        self.atom_name = atom_name
+
+    def __getitem__(self, idx):
+        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+
+    def __getitem_one_atom__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, 1 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Filter out the atom that should be fitted
+            if not self.atom_name:
+                raise Exception(&#34;You need to specify an atom name!&#34;)
+            at_atoms_to_fit = [atom for atom in at_atoms if atom.get_name() == self.atom_name]
+
+            if at_atoms_to_fit.__len__() != 1:
+                raise Exception(f&#34;Found {at_atoms.__len__()} atoms with the name {self.atom_name} in residue {residue_idx}!&#34;)
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0])
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+    def __getitem_all_atoms__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, ), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size)
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></li>
+<li>keras.utils.data_utils.Sequence</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="library.classes.generators.BackmappingBaseGenerator.on_epoch_end" href="#library.classes.generators.BackmappingBaseGenerator.on_epoch_end">on_epoch_end</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="library.classes.generators.AbsolutePositionsNeigbourhoodGenerator"><code class="flex name class">
+<span>class <span class="ident">AbsolutePositionsNeigbourhoodGenerator</span></span>
+<span>(</span><span>input_dir_path, output_dir_path, input_size=(14, 5, 1), output_size=(56, 5, 1), shuffle=False, batch_size=1, validate_split=0.1, validation_mode=False, augmentation=False, only_fit_one_atom=False, atom_name=None, neighbourhood_size=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A data generator class that generates batches of data for the CNN.
+The input and output is the aboslute positions of the atoms and beads and
+includes the neighbourhood of the molecule that should be fitted.</p>
+<p>Initializes a data generator object to generate batches of data.
+:param input_dir_path: The path to the directory where the input data (X) is located
+:param output_dir_path: The path to the directory where the output data (Y) is located
+:param input_size: The size/shape of the input data
+:param output_size: The size/shape of the output data
+:param shuffle: If the data should be shuffled after each epoch
+:param batch_size: The size of each batch
+:param validate_split: The percentage of data that should be used for validation
+:param validation_mode: If the generator should be in validation mode
+:param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+:param atom_name: The name of the atom that should be fitted
+:param neighbourhood_size: The number of the neighbour molecules that should be included</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the aboslute positions of the atoms and beads and 
+        includes the neighbourhood of the molecule that should be fitted.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(12 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more bead position than relativ vectors
+        output_size=(54 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more atom position than relativ vectors
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+        only_fit_one_atom=False,
+        atom_name=None,
+        neighbourhood_size=4,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+            :param only_fit_one_atom: If only one atom should be fitted. The output size will be changed!
+            :param atom_name: The name of the atom that should be fitted
+            :param neighbourhood_size: The number of the neighbour molecules that should be included
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+        self.only_fit_one_atom = only_fit_one_atom
+        self.atom_name = atom_name
+        self.neighbourhood_size = neighbourhood_size
+
+    def __getitem__(self, idx):
+        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+
+    def __getitem_one_atom__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)     # Now is (batch, beades + neighborhood_size, (x, y, z), 1)
+        Y = np.zeros((self.batch_size, 1 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Filter out the atom that should be fitted
+            if not self.atom_name:
+                raise Exception(&#34;You need to specify an atom name!&#34;)
+
+            at_atoms_to_fit = [atom for atom in at_atoms if atom.get_name() == self.atom_name]
+
+            if at_atoms_to_fit.__len__() != 1:
+                raise Exception(f&#34;Found {at_atoms.__len__()} atoms with the name {self.atom_name} in residue {residue_idx}!&#34;)
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Get the neighbourhood
+            neighbourhood = get_neighbour_residues(residue_idx, NEIGHBOURHOOD_PATH)
+
+            # Make the absolute positions out of a vector mapping
+            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0])
+
+            # Add the neighbourhood
+            for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):
+                neighbor_X = self.get_neighbor_X(
+                    residue_idx=neighbourhood[j],
+                    box_size=cg_box_size,
+                    position_origin=[atom.get_vector() for atom in cg_atoms if atom.get_name() == &#34;NC3&#34;][0]
+                )[0, PADDING_X: 12 + PADDING_X, PADDING_Y:-PADDING_Y, 0]
+
+                # Add the neighbour to the input
+                X[i, PADDING_X + 12 + j * 12: PADDING_X + 24 + j * 12, PADDING_Y:-PADDING_Y, 0] = neighbor_X
+
+        # Augment the data
+        if self.augmentation:
+            # Randomly rotate each dataset
+            for i in range(self.batch_size):
+                vectors_X = X[i, :, :, 0]
+                vectors_Y = Y[i, :, :, 0]
+
+                # Randomly rotate the dataset
+                angle_x = random.uniform(-np.pi, np.pi)
+                angle_y = random.uniform(-np.pi, np.pi)
+                angle_z = random.uniform(-np.pi, np.pi)
+
+                # Loop over beads
+                for j in range(vectors_X.shape[0]):
+                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Loop over atoms
+                for j in range(vectors_Y.shape[0]):
+                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                    # Write back
+                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+                # Write the rotated vectors back to the matrix
+                X[i, :, :, 0] = vectors_X
+                Y[i, :, :, 0] = vectors_Y
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y):
+                print_matrix(Y[0:1, :, :, :])
+            if not is_output_matrix_healthy(X):
+                # Find batch that is not healthy
+                for i in range(X.shape[0]):
+                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
+                        print(i)
+                        print_matrix(X[i:i+1, :, :, :])
+                        break
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)
+
+    def get_neighbor_X(self, residue_idx, box_size, position_origin):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)     # Now is (batch, beades
+
+        # Check if end index is reached
+        if self.validation_mode and residue_idx &gt; self.end_index:
+            raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+        # Get the path to the files
+        cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+
+        # Load the files
+        cg_structure = self.parser.get_structure(residue_idx, cg_path)
+
+        # Get the residues
+        cg_residue = list(cg_structure.get_residues())[0]
+
+        # Get the atoms
+        cg_atoms = list(cg_residue.get_atoms())
+
+        # Make the absolute positions out of a vector mapping
+        X = add_absolute_positions(cg_atoms, X, 0, box_size, preset_position_origin=position_origin)
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+
+        # Return tensor as deep copy
+        return tf.identity(X)
+
+    def __getitem_all_atoms__(self, idx):
+        raise Exception(&#34;Not implemented yet!&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></li>
+<li>keras.utils.data_utils.Sequence</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="library.classes.generators.AbsolutePositionsNeigbourhoodGenerator.get_neighbor_X"><code class="name flex">
+<span>def <span class="ident">get_neighbor_X</span></span>(<span>self, residue_idx, box_size, position_origin)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_neighbor_X(self, residue_idx, box_size, position_origin):
+    # Initialize Batch
+    X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)     # Now is (batch, beades
+
+    # Check if end index is reached
+    if self.validation_mode and residue_idx &gt; self.end_index:
+        raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+    # Get the path to the files
+    cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+
+    # Load the files
+    cg_structure = self.parser.get_structure(residue_idx, cg_path)
+
+    # Get the residues
+    cg_residue = list(cg_structure.get_residues())[0]
+
+    # Get the atoms
+    cg_atoms = list(cg_residue.get_atoms())
+
+    # Make the absolute positions out of a vector mapping
+    X = add_absolute_positions(cg_atoms, X, 0, box_size, preset_position_origin=position_origin)
+
+    # Convert to tensor
+    X = tf.convert_to_tensor(X, dtype=tf.float32)
+
+    # Return tensor as deep copy
+    return tf.identity(X)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="library.classes.generators.BackmappingBaseGenerator.on_epoch_end" href="#library.classes.generators.BackmappingBaseGenerator.on_epoch_end">on_epoch_end</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="library.classes.generators.BackmappingBaseGenerator"><code class="flex name class">
+<span>class <span class="ident">BackmappingBaseGenerator</span></span>
+<span>(</span><span>input_dir_path, output_dir_path, input_size=(13, 5, 1), output_size=(55, 5, 1), shuffle=False, batch_size=1, validate_split=0.1, validation_mode=False, augmentation=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is the base class for the backmapping data generator.
+It is used to generate batches of data for the CNN. The children classes specify the structure of the data.
+For example, the RelativeVectorsTrainingDataGenerator generates batches of relative bond vectors.</p>
+<p>Initializes a data generator object to generate batches of data.
+:param input_dir_path: The path to the directory where the input data (X) is located
+:param output_dir_path: The path to the directory where the output data (Y) is located
+:param input_size: The size/shape of the input data
+:param output_size: The size/shape of the output data
+:param shuffle: If the data should be shuffled after each epoch
+:param batch_size: The size of each batch
+:param validate_split: The percentage of data that should be used for validation
+:param validation_mode: If the generator should be in validation mode</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BackmappingBaseGenerator(tf.keras.utils.Sequence):
+    &#34;&#34;&#34;
+        This is the base class for the backmapping data generator.
+        It is used to generate batches of data for the CNN. The children classes specify the structure of the data.
+        For example, the RelativeVectorsTrainingDataGenerator generates batches of relative bond vectors.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+        &#34;&#34;&#34;
+        self.input_dir_path = input_dir_path
+        self.output_dir_path = output_dir_path
+        self.input_size = input_size
+        self.output_size = output_size
+        self.shuffle = shuffle
+        self.batch_size = batch_size
+        self.validation_mode = validation_mode
+        self.augmentation = augmentation
+
+        self.parser = PDBParser(QUIET=True)
+
+        max_index = int(os.listdir(input_dir_path).__len__() - 1)
+
+        self.len = int(max_index * (1 - validate_split))
+        self.start_index = 0
+        self.end_index = self.len
+
+        # Set validation mode
+        if self.validation_mode:
+            self.start_index = self.len + 1
+            self.len = int(max_index * validate_split)
+            self.end_index = max_index
+
+        # Debug
+        print(f&#34;Found {self.len} residues in ({self.input_dir_path})&#34;)
+
+        # Initialize
+        self.on_epoch_end()
+
+    def on_epoch_end(self):
+        pass
+
+    def __len__(self):
+        return self.len // self.batch_size
+
+    def __getitem__(self, idx):
+        raise Exception(&#34;This is an abstract class and should not be used directly!&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>keras.utils.data_utils.Sequence</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="library.classes.generators.AbsolutePositionsGenerator" href="#library.classes.generators.AbsolutePositionsGenerator">AbsolutePositionsGenerator</a></li>
+<li><a title="library.classes.generators.AbsolutePositionsNeigbourhoodGenerator" href="#library.classes.generators.AbsolutePositionsNeigbourhoodGenerator">AbsolutePositionsNeigbourhoodGenerator</a></li>
+<li><a title="library.classes.generators.RelativeVectorsTrainingDataGenerator" href="#library.classes.generators.RelativeVectorsTrainingDataGenerator">RelativeVectorsTrainingDataGenerator</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="library.classes.generators.BackmappingBaseGenerator.on_epoch_end"><code class="name flex">
+<span>def <span class="ident">on_epoch_end</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Method called at the end of every epoch.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_epoch_end(self):
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="library.classes.generators.RelativeVectorsTrainingDataGenerator"><code class="flex name class">
+<span>class <span class="ident">RelativeVectorsTrainingDataGenerator</span></span>
+<span>(</span><span>input_dir_path, output_dir_path, input_size=(13, 5, 1), output_size=(55, 5, 1), shuffle=False, batch_size=1, validate_split=0.1, validation_mode=False, augmentation=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A data generator class that generates batches of data for the CNN.
+The input and output is the relative vectors between the atoms and the beads.</p>
+<p>Initializes a data generator object to generate batches of data.
+:param input_dir_path: The path to the directory where the input data (X) is located
+:param output_dir_path: The path to the directory where the output data (Y) is located
+:param input_size: The size/shape of the input data
+:param output_size: The size/shape of the output data
+:param shuffle: If the data should be shuffled after each epoch
+:param batch_size: The size of each batch
+:param validate_split: The percentage of data that should be used for validation
+:param validation_mode: If the generator should be in validation mode</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
+    &#34;&#34;&#34;
+        A data generator class that generates batches of data for the CNN.
+        The input and output is the relative vectors between the atoms and the beads.
+    &#34;&#34;&#34;
+
+    def __init__(
+        self,
+        input_dir_path,
+        output_dir_path,
+        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
+        shuffle=False,
+        batch_size=1,
+        validate_split=0.1,
+        validation_mode=False,
+        augmentation=False,
+    ):
+        &#34;&#34;&#34;
+            Initializes a data generator object to generate batches of data.
+            :param input_dir_path: The path to the directory where the input data (X) is located
+            :param output_dir_path: The path to the directory where the output data (Y) is located
+            :param input_size: The size/shape of the input data
+            :param output_size: The size/shape of the output data
+            :param shuffle: If the data should be shuffled after each epoch
+            :param batch_size: The size of each batch
+            :param validate_split: The percentage of data that should be used for validation
+            :param validation_mode: If the generator should be in validation mode
+        &#34;&#34;&#34;
+        # Call super constructor
+        super().__init__(
+            input_dir_path,
+            output_dir_path,
+            input_size,
+            output_size,
+            shuffle,
+            batch_size,
+            validate_split,
+            validation_mode,
+            augmentation,
+        )
+
+    def __getitem__(self, idx):
+        # Initialize Batch
+        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
+        Y = np.zeros((self.batch_size, *self.output_size), dtype=np.float32)
+
+        # Loop over the batch
+        for i in range(self.batch_size):
+            # Get the index of the residue
+            residue_idx = idx * self.batch_size + i
+
+            # Check if end index is reached
+            if self.validation_mode and residue_idx &gt; self.end_index:
+                raise Exception(f&#34;You are trying to access a residue that does not exist ({residue_idx})!&#34;)
+
+            # Get the path to the files
+            cg_path = f&#34;{self.input_dir_path}/{residue_idx}.pdb&#34;
+            at_path = f&#34;{self.output_dir_path}/{residue_idx}.pdb&#34;
+
+            # Load the files
+            cg_structure = self.parser.get_structure(residue_idx, cg_path)
+            at_structure = self.parser.get_structure(residue_idx, at_path)
+
+            # Get the residues
+            cg_residue = list(cg_structure.get_residues())[0]
+            at_residue = list(at_structure.get_residues())[0]
+
+            # Get the atoms
+            cg_atoms = list(cg_residue.get_atoms())
+            at_atoms = list(at_residue.get_atoms())
+
+            # Make name -&gt; atom dict
+            cg_atoms_dict = {atom.get_name(): atom for atom in cg_atoms}
+            at_atoms_dict = {atom.get_name(): atom for atom in at_atoms}
+
+            # Get bounding box sizes
+            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
+            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
+
+            # Check if the box sizes are not nan
+            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
+                raise Exception(f&#34;Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!&#34;)
+
+            # Make the relative vectors out of a vector mapping
+            X = add_relative_vectors(cg_atoms_dict, DOPC_CG_MAPPING, X, i, cg_box_size)
+            Y = add_relative_vectors(at_atoms_dict, DOPC_AT_MAPPING, Y, i, at_box_size)
+
+        # Convert to tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        # Check if values that are not in [-1, 1] exist
+        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
+            raise Exception(f&#34;Found values outside of [-1, 1], see print before.&#34;)
+
+        # Return tensor as deep copy
+        return tf.identity(X), tf.identity(Y)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></li>
+<li>keras.utils.data_utils.Sequence</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="library.classes.generators.BackmappingBaseGenerator.on_epoch_end" href="#library.classes.generators.BackmappingBaseGenerator.on_epoch_end">on_epoch_end</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="library.classes" href="index.html">library.classes</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="library.classes.generators.add_absolute_positions" href="#library.classes.generators.add_absolute_positions">add_absolute_positions</a></code></li>
+<li><code><a title="library.classes.generators.add_relative_vectors" href="#library.classes.generators.add_relative_vectors">add_relative_vectors</a></code></li>
+<li><code><a title="library.classes.generators.fix_pbc" href="#library.classes.generators.fix_pbc">fix_pbc</a></code></li>
+<li><code><a title="library.classes.generators.get_bounding_box" href="#library.classes.generators.get_bounding_box">get_bounding_box</a></code></li>
+<li><code><a title="library.classes.generators.get_neighbour_residues" href="#library.classes.generators.get_neighbour_residues">get_neighbour_residues</a></code></li>
+<li><code><a title="library.classes.generators.is_output_matrix_healthy" href="#library.classes.generators.is_output_matrix_healthy">is_output_matrix_healthy</a></code></li>
+<li><code><a title="library.classes.generators.print_matrix" href="#library.classes.generators.print_matrix">print_matrix</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="library.classes.generators.AbsolutePositionsGenerator" href="#library.classes.generators.AbsolutePositionsGenerator">AbsolutePositionsGenerator</a></code></h4>
+</li>
+<li>
+<h4><code><a title="library.classes.generators.AbsolutePositionsNeigbourhoodGenerator" href="#library.classes.generators.AbsolutePositionsNeigbourhoodGenerator">AbsolutePositionsNeigbourhoodGenerator</a></code></h4>
+<ul class="">
+<li><code><a title="library.classes.generators.AbsolutePositionsNeigbourhoodGenerator.get_neighbor_X" href="#library.classes.generators.AbsolutePositionsNeigbourhoodGenerator.get_neighbor_X">get_neighbor_X</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="library.classes.generators.BackmappingBaseGenerator" href="#library.classes.generators.BackmappingBaseGenerator">BackmappingBaseGenerator</a></code></h4>
+<ul class="">
+<li><code><a title="library.classes.generators.BackmappingBaseGenerator.on_epoch_end" href="#library.classes.generators.BackmappingBaseGenerator.on_epoch_end">on_epoch_end</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="library.classes.generators.RelativeVectorsTrainingDataGenerator" href="#library.classes.generators.RelativeVectorsTrainingDataGenerator">RelativeVectorsTrainingDataGenerator</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
