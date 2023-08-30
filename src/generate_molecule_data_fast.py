@@ -57,6 +57,8 @@ at_box_size_dataset_relations = []
 neighbours_counts = []
 neighbourhoods = []     # This is a list of lists, where each list contains the neighbours of one residue. The index of the list is the residue index
 
+coordinates_at = []  # Only used to calculate mean distance to N for debugging
+
 # Loop over both at the same time (these are generators, so they are not loaded into memory immediately)
 for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
     # Open the CG and AT files
@@ -96,6 +98,7 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
     line_stack_at = []
 
     coordinates_cg = []  # Only used to calculate COM
+
     cg_com_list = []    # Used to store all COMs of one membrane. Each entry is a tuple of (COM, idx)
 
     # Loop over the lines of the CG files
@@ -204,6 +207,14 @@ for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
 
             idx_at += 1
 
+        # Get coordinates of the atom and add to dict
+        aton_name = at_line_split[2]
+        coordinates = (float(at_line_split[5]), float(at_line_split[6]), float(at_line_split[7]))
+        if coordinates_at.__len__() <= idx_at:
+            coordinates_at.append({})
+
+        coordinates_at[idx_at][aton_name] = coordinates
+
         # Add the line to the stack
         line_stack_at.append(at_line)
 
@@ -230,7 +241,7 @@ path = os.path.join(output_box_table_path, "box_sizes_at.csv")
 with open(path, "a") as file:
     for entry in at_box_size_dataset_relations:
         file.write(f"{entry[1][0]},{entry[1][1]},{entry[1][2]}\n")
-    
+
 path = os.path.join(output_box_table_path, "neighborhoods.csv")
 with open(path, "a") as file:
     for list in neighbourhoods:
@@ -245,6 +256,46 @@ neighbours_counts_min = np.min(neighbours_counts)
 
 # Print
 print(f"Neighbour count: {neighbours_counts_mean} +- {neighbours_counts_std}, max: {neighbours_counts_max}, min: {neighbours_counts_min}")
+
+
+# Calculate the mean distance to the N atom for each residue
+mean_distances = {}  # Entry is (atom_name, mean_distance)
+
+for i, molecule_dict in enumerate(coordinates_at):
+    for atom_name, coordinates in molecule_dict.items():
+        if atom_name == "N":
+            continue
+
+        if atom_name not in mean_distances:
+            mean_distances[atom_name] = []
+
+        # Check if N is in molecule_dict
+        if "N" in molecule_dict:
+            distance = np.linalg.norm(np.array(coordinates) - np.array(molecule_dict["N"]))
+
+            # Fix PBC if distance is larger than half the box size
+            box = np.array(at_box_size_dataset_relations[i][1])
+            distance = np.min([distance, np.linalg.norm(distance - box)])
+
+            mean_distances[atom_name].append(distance)
+
+# Calculate mean and std
+mean_distances_mean = {}
+mean_distances_std = {}
+for atom_name, distances in mean_distances.items():
+    mean_distances_mean[atom_name] = np.mean(distances)
+    mean_distances_std[atom_name] = np.std(distances)
+
+
+# Write the mean distances to a csv file
+path = os.path.join(output_box_table_path, "mean_distances.csv")
+with open(path, "a") as file:
+    file.write("atom_name,mean,std\n")
+    for atom_name, mean in mean_distances_mean.items():
+        file.write(f"{atom_name},{mean},{mean_distances_std[atom_name]}\n")
+
+####### PLOT HISTOGRAM #######
+
 
 # Make histogram of neighbours counts and plot it
 plt.hist(neighbours_counts, bins=100)
