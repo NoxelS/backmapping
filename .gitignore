@@ -181,3 +181,4 @@ jobs/logs*
 box_sizes_*
 neighborhoods.*
 mean_distances.*
+*.zip
