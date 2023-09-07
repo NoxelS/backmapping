@@ -65,8 +65,6 @@ cnn = CNN(
     test_sample=sample_gen.__getitem__(0),
 )
 
-print(cnn.test(sample_gen))
-
 train_gen = AbsolutePositionsNeigbourhoodGenerator(
     input_dir_path=os.path.join(data_prefix, "training", "input"),
     output_dir_path=os.path.join(data_prefix, "training", "output"),
@@ -100,32 +98,8 @@ validation_gen = AbsolutePositionsNeigbourhoodGenerator(
 cnn.fit(
     train_gen,
     batch_size=BATCH_SIZE,
-    epochs=1,
+    epochs=25,
     validation_gen=validation_gen
 )
 
 cnn.save()
-
-loss_plot_gen = AbsolutePositionsNeigbourhoodGenerator(
-    input_dir_path=os.path.join(data_prefix, "training", "input"),
-    output_dir_path=os.path.join(data_prefix, "training", "output"),
-    input_size=cg_size,
-    output_size=at_size,
-    shuffle=False,
-    batch_size=32,
-    validate_split=VALIDATION_SPLIT,
-    validation_mode=True,
-    augmentation=True,
-    only_fit_one_atom=True,
-    atom_name=atom_name_to_fit,
-    neighbourhood_size=NEIGHBORHOOD_SIZE
-)
-
-cnn.plot_data_loss_growth(loss_plot_gen)
-
-# # Find the best and worst sample
-# sample_highest, loss_highest = cnn.find_dataset_with_highest_loss(validation_gen)
-# sample_lowest, loss_lowest = cnn.find_dataset_with_lowest_loss(validation_gen)
-
-# print(f"Sample with highest loss: {sample_highest} with loss {loss_highest}")
-# print(f"Sample with lowest loss: {sample_lowest} with loss {loss_lowest}")
