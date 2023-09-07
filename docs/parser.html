@@ -1,0 +1,1504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>library.parser API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>library.parser</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os
+from library.classes.dataset import Dataset
+from Bio.PDB.PDBIO import Select
+from Bio.PDB.PDBIO import PDBIO
+from Bio.PDB.PDBParser import PDBParser
+from Bio.PDB import Structure, Residue, Atom, Model, Chain
+import tensorflow as tf
+from library.static.topologies import DOPC_CG_NAME_TO_TYPE_MAP, DOPC_BEAD_TYPE_NAME_IDS, DOPC_ELEMENT_TYPE_NAME_IDS
+import numpy as np
+import time
+from datetime import datetime
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+
+def find_all_pdb_files(path):
+    &#34;&#34;&#34;
+        Find all pdb files recursivly in a given path and return a list of Dataset objects
+    &#34;&#34;&#34;
+    pdb_files = []
+    with os.scandir(path) as entries:
+        for entry in entries:
+            if entry.is_file() and entry.name.endswith(&#39;.pdb&#39;):
+                pdb_files.append(Dataset(entry.name, entry.path, &#39;pdb&#39;))
+            elif entry.is_dir():
+                pdb_files.extend(find_all_pdb_files(entry.path))
+
+    return pdb_files
+
+
+def get_pdb_file_paths_dic(path):
+    &#34;&#34;&#34;
+        Returns a dictionary of pdb datasets where the key is the name of the pdb files folder
+        E.g. {&#39;CG2AT_2023-02-13_20-20-52&#39;: [&lt;Dataset object at 0xa&gt;, ...&#39;]}
+    &#34;&#34;&#34;
+    pdb_files_dic = {}
+    with os.scandir(path) as data_folders:
+        for data_folder in [d for d in data_folders if not d.is_file()]:
+            # Find all pdb files in the data folder
+            datasets = find_all_pdb_files(data_folder.path)
+
+            # Add parent to datasets so we know where they came from
+            for dataset in datasets:
+                dataset.parent = data_folder.name
+
+            # Add the datasets to the dictionary
+            pdb_files_dic[data_folder.name] = datasets
+
+    return pdb_files_dic
+
+
+def get_cg_at_datasets(
+        path,
+        CG_PATTERN=&#39;CG_INPUT.pdb&#39;,
+        AT_PATTERN=&#39;final_cg2at_de_novo.pdb&#39;
+):
+    &#34;&#34;&#34;
+        Get all CG and AT datasets from a given path.
+        This uses the folder structure provided by chetan.
+        E.g data/raw/CG2AT_2023-02-13_20-20-52/
+            /FINAL/final_cg2at_de_novo.pdb
+            /INPUT/CG_INPUT.pdb
+            /INPUT/DOPC_Frame_....pdb
+            /MERGED/merged_cg2at_de_novo.pdb
+            ...
+
+        Parameters:
+            path (str): The path to the data folder
+            CG_RELATIVE_PATH (str): The pattern to match for CG pdb files
+            AT_RELATIVE_PATH (str): The pattern to match for AT pdb files
+
+        Returns:
+            cg_datasets (list): A list of CG datasets
+            at_datasets (list): A list of AT datasets
+    &#34;&#34;&#34;
+
+    all_pdb_files_dic = get_pdb_file_paths_dic(path)
+
+    cg_datasets = []
+    at_datasets = []
+
+    for key in all_pdb_files_dic.keys():
+        for dataset in all_pdb_files_dic[key]:
+            if dataset.path.endswith(CG_PATTERN):
+                cg_datasets.append(dataset)
+            elif dataset.path.endswith(AT_PATTERN):
+                at_datasets.append(dataset)
+
+    return cg_datasets, at_datasets
+
+
+def get_structure_from_dataset(dataset):
+    &#34;&#34;&#34;
+        Returns a Bio.PDB.Structure object from a given dataset
+    &#34;&#34;&#34;
+    parser = PDBParser()
+    return parser.get_structure(dataset.name, dataset.path)
+
+
+class ResidueSelector(Select):
+    def __init__(self, target_id):
+        self.target_id = target_id
+
+    def accept_residue(self, residue):
+        # TODO: improve this
+        return residue._id[1] == self.target_id
+
+def generate_training_data(path_to_raw_data, output_dir_path):
+    # Get all CG and AT datasets (this is only indexing the data, not loading it)
+    cg_datasets, at_datasets = get_cg_at_datasets(path_to_raw_data)
+
+    io = PDBIO()
+    idx = 0
+
+    # Loop over both at the same time (these are generators, so they are not loaded into memory immediately)
+    for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
+        for j, (cg_residue, at_residue) in enumerate(zip(cg_dataset.get_residues(), at_dataset.get_residues())):
+            # Create folder for the idx
+            if not os.path.exists(f&#34;{output_dir_path}/{idx}&#34;):
+                os.makedirs(f&#34;{output_dir_path}/{idx}&#34;)
+
+            io.set_structure(cg_dataset.get_structure())
+            io.save(f&#34;{output_dir_path}/{idx}/cg.pdb&#34;,
+                    ResidueSelector(cg_residue._id[1]), preserve_atom_numbering=True)
+
+            io.set_structure(at_dataset.get_structure())
+            io.save(f&#34;{output_dir_path}/{idx}/at.pdb&#34;,
+                    ResidueSelector(at_residue._id[1]), preserve_atom_numbering=True)
+
+            idx += 1
+
+            if idx % 10 == 0:
+                timestamp = datetime.fromtimestamp(time.time()).strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)
+                print(f&#34;[{timestamp}] Generated {idx} training examples&#34;)
+
+
+def pdb_data_to_xyz(batch_size, idx, input_dir_path, input_size, output_size):
+    &#34;&#34;&#34;
+        Converts a pdb file to a xyz file
+    &#34;&#34;&#34;      
+
+    # Initialize Batch
+    X = np.empty((batch_size, *input_size))
+    Y = np.empty((batch_size, *output_size))
+
+    # Load the two files in the idx folder
+    for i in range(batch_size):
+        # Get the index of the residue
+        residue_idx = idx * batch_size + i
+
+        # Get the path to the files
+        cg_path = f&#34;{input_dir_path}/{residue_idx}/cg.pdb&#34;
+        at_path = f&#34;{input_dir_path}/{residue_idx}/at.pdb&#34;
+
+
+        # Load the files
+        parser = PDBParser(QUIET=True)
+        cg_structure = parser.get_structure(residue_idx, cg_path)
+        at_structure = parser.get_structure(residue_idx, at_path)
+
+        print(cg_structure, at_structure)
+
+        # Get the residues
+        cg_residue = list(cg_structure.get_residues())[0]
+        at_residue = list(at_structure.get_residues())[0]
+
+        # Get the atoms
+        cg_atoms = list(cg_residue.get_atoms())
+        at_atoms = list(at_residue.get_atoms())
+
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+        # Make the cg data (batchsize, 12, 8)
+        for j, bead in enumerate(cg_atoms):
+            # Get coordinates
+            x, y, z = bead.get_coord()
+
+            # Make the coordinates relative to the box
+            X[i, j, 0] = x / X_MAX
+            X[i, j, 1] = y / Y_MAX
+            X[i, j, 2] = z / Z_MAX
+
+            # Make one hot encoding for the bead type
+            X[i, j, 3:8] = 0
+            bead_type_id = DOPC_BEAD_TYPE_NAME_IDS[DOPC_CG_NAME_TO_TYPE_MAP[bead.get_name(
+            )]]
+            X[i, j, 3 + bead_type_id] = 1
+
+        # Make the at data (batchsize, 138, 8)
+        for j, atom in enumerate(at_atoms):
+            # Get coordinates
+            x, y, z = atom.get_coord()
+
+            # Make the coordinates relative to the box
+            Y[i, j, 0] = x / X_MAX
+            Y[i, j, 1] = y / Y_MAX
+            Y[i, j, 2] = z / Z_MAX
+
+            # Make one hot encoding for the bead type
+            Y[i, j, 3:8] = 0
+            at_type_id = DOPC_ELEMENT_TYPE_NAME_IDS[atom.element]
+            Y[i, j, 3 + at_type_id] = 1
+
+    # Convert to tensor
+    X = tf.convert_to_tensor(X, dtype=tf.float32)
+    Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+    return X, Y
+
+
+
+def cg_xyz_to_pdb_data(X, output_dir_path):
+    &#34;&#34;&#34;
+        Converts a xyz file to a pdb file
+    &#34;&#34;&#34;
+
+    batch_size = X.shape[0]
+
+    # Make the output directory
+    if not os.path.exists(output_dir_path):
+        os.makedirs(output_dir_path)
+
+    # Loop over the batch
+    for i in range(batch_size):
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+
+        # Get the relative coordinates
+        coords = X[i, :, :3]
+
+        # Get bead_type index
+        bead_type = X[i, :, 3:]
+        bead_type_idx = np.argmax(bead_type, axis=1)
+
+        # Make the structure
+        residue_id = (&#39; &#39;, i, &#39; &#39;)
+        residue_name = &#39;DOP&#39;
+        residue = Residue.Residue(residue_id, residue_name, segid=&#39;&#39;)
+
+        # Add the atoms
+        for j, coord in enumerate(coords):
+
+            # Recover the original coordinates
+            x = float(coord[0] * X_MAX)
+            y = float(coord[1] * Y_MAX)
+            z = float(coord[2] * Z_MAX)
+
+            # Convert to number with 5 total decimals including the sign and decimals before the point
+            # x = &#34;{:2.3f}&#34;.format(x)
+            # y = &#34;{:2.3f}&#34;.format(y)
+            # z = &#34;{:2.3f}&#34;.format(z)
+
+            # Find the bead type in dict name -&gt; id
+            
+            bead_name = [
+                &#34;NC3&#34;,
+                &#34;PO4&#34;,
+                &#34;GL1&#34;,
+                &#34;GL2&#34;,
+                &#34;C1A&#34;,
+                &#34;D2A&#34;,
+                &#34;C3A&#34;,
+                &#34;C4A&#34;,
+                &#34;C1B&#34;,
+                &#34;D2B&#34;,
+                &#34;C3B&#34;,
+                &#34;C4B&#34;,
+            ][ j ]
+            
+            name_to_ele = {
+                &#34;NC3&#34;:  &#34;N&#34;,
+                &#34;PO4&#34;:  &#34;P&#34;,
+                &#34;GL1&#34;:  &#34;X&#34;,
+                &#34;GL2&#34;:  &#34;X&#34;,
+                &#34;C1A&#34;:  &#34;C&#34;,
+                &#34;D2A&#34;:  &#34;D&#34;,
+                &#34;C3A&#34;:  &#34;C&#34;,
+                &#34;C4A&#34;:  &#34;C&#34;,
+                &#34;C1B&#34;:  &#34;C&#34;,
+                &#34;D2B&#34;:  &#34;D&#34;,
+                &#34;C3B&#34;:  &#34;C&#34;,
+                &#34;C4B&#34;:  &#34;C&#34;,
+            }
+
+            element = name_to_ele[bead_name]
+
+            # Add the atom
+            atom = Atom.Atom(
+                name=bead_name,
+                coord=(x, y, z),
+                bfactor=0.0,
+                occupancy=1.0,
+                altloc=&#34; &#34;,
+                fullname=f&#34; {bead_name} &#34;,
+                serial_number=j,
+                element=element
+            )
+            residue.add(atom)        
+
+        io = PDBIO()
+        io.set_structure(residue)
+        io.save(f&#34;{output_dir_path}/cg_{i}.pdb&#34;, preserve_atom_numbering=True)
+
+def at_xyz_to_pdb_data(X, output_dir_path):
+    &#34;&#34;&#34;
+        Converts a xyz file to a pdb file
+    &#34;&#34;&#34;
+
+    batch_size = X.shape[0]
+
+    # Make the output directory
+    if not os.path.exists(output_dir_path):
+        os.makedirs(output_dir_path)
+
+    # Loop over the batch
+    for i in range(batch_size):
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+
+        # Get the relative coordinates
+        coords = X[i, :, :3]
+
+        # Get bead_type index
+        bead_type = X[i, :, 3:]
+        bead_type_idx = np.argmax(bead_type, axis=1)
+
+        # Make the structure
+        residue_id = (&#39; &#39;, i, &#39; &#39;)
+        residue_name = &#39;DOP&#39;
+        residue = Residue.Residue(residue_id, residue_name, segid=&#39;&#39;)
+
+        # Add the atoms
+        for j, coord in enumerate(coords):
+
+            # Recover the original coordinates
+            x = float(coord[0] * X_MAX)
+            y = float(coord[1] * Y_MAX)
+            z = float(coord[2] * Z_MAX)
+
+            # Convert to number with 5 total decimals including the sign and decimals before the point
+            # x = &#34;{:2.3f}&#34;.format(x)
+            # y = &#34;{:2.3f}&#34;.format(y)
+            # z = &#34;{:2.3f}&#34;.format(z)
+
+            # Find the bead type in dict name -&gt; id
+            
+            bead_name = [
+                &#34; N  &#34;,
+                &#34; C12&#34;,
+                &#34;H12A&#34;,
+                &#34;H12B&#34;,
+                &#34; C13&#34;,
+                &#34;H13A&#34;,
+                &#34;H13B&#34;,
+                &#34;H13C&#34;,
+                &#34; C14&#34;,
+                &#34;H14A&#34;,
+                &#34;H14B&#34;,
+                &#34;H14C&#34;,
+                &#34; C15&#34;,
+                &#34;H15A&#34;,
+                &#34;H15B&#34;,
+                &#34;H15C&#34;,
+                &#34; C11&#34;,
+                &#34;H11A&#34;,
+                &#34;H11B&#34;,
+                &#34; P  &#34;,
+                &#34; O13&#34;,
+                &#34; O14&#34;,
+                &#34; O12&#34;,
+                &#34; O11&#34;,
+                &#34; C1 &#34;,
+                &#34; HA &#34;,
+                &#34; HB &#34;,
+                &#34; C2 &#34;,
+                &#34; HS &#34;,
+                &#34; O21&#34;,
+                &#34; C21&#34;,
+                &#34; O22&#34;,
+                &#34; C22&#34;,
+                &#34; H2R&#34;,
+                &#34; H2S&#34;,
+                &#34; C3 &#34;,
+                &#34; HX &#34;,
+                &#34; HY &#34;,
+                &#34; O31&#34;,
+                &#34; C31&#34;,
+                &#34; O32&#34;,
+                &#34; C32&#34;,
+                &#34; H2X&#34;,
+                &#34; H2Y&#34;,
+                &#34; C23&#34;,
+                &#34; H3R&#34;,
+                &#34; H3S&#34;,
+                &#34; C24&#34;,
+                &#34; H4R&#34;,
+                &#34; H4S&#34;,
+                &#34; C25&#34;,
+                &#34; H5R&#34;,
+                &#34; H5S&#34;,
+                &#34; C26&#34;,
+                &#34; H6R&#34;,
+                &#34; H6S&#34;,
+                &#34; C27&#34;,
+                &#34; H7R&#34;,
+                &#34; H7S&#34;,
+                &#34; C28&#34;,
+                &#34; H8R&#34;,
+                &#34; H8S&#34;,
+                &#34; C29&#34;,
+                &#34; H9R&#34;,
+                &#34;C210&#34;,
+                &#34;H10R&#34;,
+                &#34;C211&#34;,
+                &#34;H11R&#34;,
+                &#34;H11S&#34;,
+                &#34;C212&#34;,
+                &#34;H12R&#34;,
+                &#34;H12S&#34;,
+                &#34;C213&#34;,
+                &#34;H13R&#34;,
+                &#34;H13S&#34;,
+                &#34;C214&#34;,
+                &#34;H14R&#34;,
+                &#34;H14S&#34;,
+                &#34;C215&#34;,
+                &#34;H15R&#34;,
+                &#34;H15S&#34;,
+                &#34;C216&#34;,
+                &#34;H16R&#34;,
+                &#34;H16S&#34;,
+                &#34;C217&#34;,
+                &#34;H17R&#34;,
+                &#34;H17S&#34;,
+                &#34;C218&#34;,
+                &#34;H18R&#34;,
+                &#34;H18S&#34;,
+                &#34;H18T&#34;,
+                &#34; C33&#34;,
+                &#34; H3X&#34;,
+                &#34; H3Y&#34;,
+                &#34; C34&#34;,
+                &#34; H4X&#34;,
+                &#34; H4Y&#34;,
+                &#34; C35&#34;,
+                &#34; H5X&#34;,
+                &#34; H5Y&#34;,
+                &#34; C36&#34;,
+                &#34; H6X&#34;,
+                &#34; H6Y&#34;,
+                &#34; C37&#34;,
+                &#34; H7X&#34;,
+                &#34; H7Y&#34;,
+                &#34; C38&#34;,
+                &#34; H8X&#34;,
+                &#34; H8Y&#34;,
+                &#34; C39&#34;,
+                &#34; H9X&#34;,
+                &#34;C310&#34;,
+                &#34;H10X&#34;,
+                &#34;C311&#34;,
+                &#34;H11X&#34;,
+                &#34;H11Y&#34;,
+                &#34;C312&#34;,
+                &#34;H12X&#34;,
+                &#34;H12Y&#34;,
+                &#34;C313&#34;,
+                &#34;H13X&#34;,
+                &#34;H13Y&#34;,
+                &#34;C314&#34;,
+                &#34;H14X&#34;,
+                &#34;H14Y&#34;,
+                &#34;C315&#34;,
+                &#34;H15X&#34;,
+                &#34;H15Y&#34;,
+                &#34;C316&#34;,
+                &#34;H16X&#34;,
+                &#34;H16Y&#34;,
+                &#34;C317&#34;,
+                &#34;H17X&#34;,
+                &#34;H17Y&#34;,
+                &#34;C318&#34;,
+                &#34;H18X&#34;,
+                &#34;H18Y&#34;,
+                &#34;H18Z&#34;,
+            ][ j ]
+            
+            name_to_ele = {
+                &#34; N  &#34;: &#34;N&#34;,
+                &#34; C12&#34;: &#34;C&#34;,
+                &#34;H12A&#34;: &#34;H&#34;,
+                &#34;H12B&#34;: &#34;H&#34;,
+                &#34; C13&#34;: &#34;C&#34;,
+                &#34;H13A&#34;: &#34;H&#34;,
+                &#34;H13B&#34;: &#34;H&#34;,
+                &#34;H13C&#34;: &#34;H&#34;,
+                &#34; C14&#34;: &#34;C&#34;,
+                &#34;H14A&#34;: &#34;H&#34;,
+                &#34;H14B&#34;: &#34;H&#34;,
+                &#34;H14C&#34;: &#34;H&#34;,
+                &#34; C15&#34;: &#34;C&#34;,
+                &#34;H15A&#34;: &#34;H&#34;,
+                &#34;H15B&#34;: &#34;H&#34;,
+                &#34;H15C&#34;: &#34;H&#34;,
+                &#34; C11&#34;: &#34;C&#34;,
+                &#34;H11A&#34;: &#34;H&#34;,
+                &#34;H11B&#34;: &#34;H&#34;,
+                &#34; P  &#34;: &#34;P&#34;,
+                &#34; O13&#34;: &#34;O&#34;,
+                &#34; O14&#34;: &#34;O&#34;,
+                &#34; O12&#34;: &#34;O&#34;,
+                &#34; O11&#34;: &#34;O&#34;,
+                &#34; C1 &#34;: &#34;C&#34;,
+                &#34; HA &#34;: &#34;H&#34;,
+                &#34; HB &#34;: &#34;H&#34;,
+                &#34; C2 &#34;: &#34;C&#34;,
+                &#34; HS &#34;: &#34;H&#34;,
+                &#34; O21&#34;: &#34;O&#34;,
+                &#34; C21&#34;: &#34;C&#34;,
+                &#34; O22&#34;: &#34;O&#34;,
+                &#34; C22&#34;: &#34;C&#34;,
+                &#34; H2R&#34;: &#34;H&#34;,
+                &#34; H2S&#34;: &#34;H&#34;,
+                &#34; C3 &#34;: &#34;C&#34;,
+                &#34; HX &#34;: &#34;H&#34;,
+                &#34; HY &#34;: &#34;H&#34;,
+                &#34; O31&#34;: &#34;O&#34;,
+                &#34; C31&#34;: &#34;C&#34;,
+                &#34; O32&#34;: &#34;O&#34;,
+                &#34; C32&#34;: &#34;C&#34;,
+                &#34; H2X&#34;: &#34;H&#34;,
+                &#34; H2Y&#34;: &#34;H&#34;,
+                &#34; C23&#34;: &#34;C&#34;,
+                &#34; H3R&#34;: &#34;H&#34;,
+                &#34; H3S&#34;: &#34;H&#34;,
+                &#34; C24&#34;: &#34;C&#34;,
+                &#34; H4R&#34;: &#34;H&#34;,
+                &#34; H4S&#34;: &#34;H&#34;,
+                &#34; C25&#34;: &#34;C&#34;,
+                &#34; H5R&#34;: &#34;H&#34;,
+                &#34; H5S&#34;: &#34;H&#34;,
+                &#34; C26&#34;: &#34;C&#34;,
+                &#34; H6R&#34;: &#34;H&#34;,
+                &#34; H6S&#34;: &#34;H&#34;,
+                &#34; C27&#34;: &#34;C&#34;,
+                &#34; H7R&#34;: &#34;H&#34;,
+                &#34; H7S&#34;: &#34;H&#34;,
+                &#34; C28&#34;: &#34;C&#34;,
+                &#34; H8R&#34;: &#34;H&#34;,
+                &#34; H8S&#34;: &#34;H&#34;,
+                &#34; C29&#34;: &#34;C&#34;,
+                &#34; H9R&#34;: &#34;H&#34;,
+                &#34;C210&#34;: &#34;C&#34;,
+                &#34;H10R&#34;: &#34;H&#34;,
+                &#34;C211&#34;: &#34;C&#34;,
+                &#34;H11R&#34;: &#34;H&#34;,
+                &#34;H11S&#34;: &#34;H&#34;,
+                &#34;C212&#34;: &#34;C&#34;,
+                &#34;H12R&#34;: &#34;H&#34;,
+                &#34;H12S&#34;: &#34;H&#34;,
+                &#34;C213&#34;: &#34;C&#34;,
+                &#34;H13R&#34;: &#34;H&#34;,
+                &#34;H13S&#34;: &#34;H&#34;,
+                &#34;C214&#34;: &#34;C&#34;,
+                &#34;H14R&#34;: &#34;H&#34;,
+                &#34;H14S&#34;: &#34;H&#34;,
+                &#34;C215&#34;: &#34;C&#34;,
+                &#34;H15R&#34;: &#34;H&#34;,
+                &#34;H15S&#34;: &#34;H&#34;,
+                &#34;C216&#34;: &#34;C&#34;,
+                &#34;H16R&#34;: &#34;H&#34;,
+                &#34;H16S&#34;: &#34;H&#34;,
+                &#34;C217&#34;: &#34;C&#34;,
+                &#34;H17R&#34;: &#34;H&#34;,
+                &#34;H17S&#34;: &#34;H&#34;,
+                &#34;C218&#34;: &#34;C&#34;,
+                &#34;H18R&#34;: &#34;H&#34;,
+                &#34;H18S&#34;: &#34;H&#34;,
+                &#34;H18T&#34;: &#34;H&#34;,
+                &#34; C33&#34;: &#34;C&#34;,
+                &#34; H3X&#34;: &#34;H&#34;,
+                &#34; H3Y&#34;: &#34;H&#34;,
+                &#34; C34&#34;: &#34;C&#34;,
+                &#34; H4X&#34;: &#34;H&#34;,
+                &#34; H4Y&#34;: &#34;H&#34;,
+                &#34; C35&#34;: &#34;C&#34;,
+                &#34; H5X&#34;: &#34;H&#34;,
+                &#34; H5Y&#34;: &#34;H&#34;,
+                &#34; C36&#34;: &#34;C&#34;,
+                &#34; H6X&#34;: &#34;H&#34;,
+                &#34; H6Y&#34;: &#34;H&#34;,
+                &#34; C37&#34;: &#34;C&#34;,
+                &#34; H7X&#34;: &#34;H&#34;,
+                &#34; H7Y&#34;: &#34;H&#34;,
+                &#34; C38&#34;: &#34;C&#34;,
+                &#34; H8X&#34;: &#34;H&#34;,
+                &#34; H8Y&#34;: &#34;H&#34;,
+                &#34; C39&#34;: &#34;C&#34;,
+                &#34; H9X&#34;: &#34;H&#34;,
+                &#34;C310&#34;: &#34;C&#34;,
+                &#34;H10X&#34;: &#34;H&#34;,
+                &#34;C311&#34;: &#34;C&#34;,
+                &#34;H11X&#34;: &#34;H&#34;,
+                &#34;H11Y&#34;: &#34;H&#34;,
+                &#34;C312&#34;: &#34;C&#34;,
+                &#34;H12X&#34;: &#34;H&#34;,
+                &#34;H12Y&#34;: &#34;H&#34;,
+                &#34;C313&#34;: &#34;C&#34;,
+                &#34;H13X&#34;: &#34;H&#34;,
+                &#34;H13Y&#34;: &#34;H&#34;,
+                &#34;C314&#34;: &#34;C&#34;,
+                &#34;H14X&#34;: &#34;H&#34;,
+                &#34;H14Y&#34;: &#34;H&#34;,
+                &#34;C315&#34;: &#34;C&#34;,
+                &#34;H15X&#34;: &#34;H&#34;,
+                &#34;H15Y&#34;: &#34;H&#34;,
+                &#34;C316&#34;: &#34;C&#34;,
+                &#34;H16X&#34;: &#34;H&#34;,
+                &#34;H16Y&#34;: &#34;H&#34;,
+                &#34;C317&#34;: &#34;C&#34;,
+                &#34;H17X&#34;: &#34;H&#34;,
+                &#34;H17Y&#34;: &#34;H&#34;,
+                &#34;C318&#34;: &#34;C&#34;,
+                &#34;H18X&#34;: &#34;H&#34;,
+                &#34;H18Y&#34;: &#34;H&#34;,
+                &#34;H18Z&#34;: &#34;H&#34;,
+            }
+
+            element = name_to_ele[bead_name]
+
+            # Add the atom
+            atom = Atom.Atom(
+                name=bead_name,
+                coord=(x, y, z),
+                bfactor=0.0,
+                occupancy=1.0,
+                altloc=&#34; &#34;,
+                fullname=f&#34; {bead_name} &#34;,
+                serial_number=j,
+                element=element
+            )
+            residue.add(atom)
+
+        io = PDBIO()
+        io.set_structure(residue)
+        io.save(f&#34;{output_dir_path}/at_{i}.pdb&#34;, preserve_atom_numbering=True)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="library.parser.at_xyz_to_pdb_data"><code class="name flex">
+<span>def <span class="ident">at_xyz_to_pdb_data</span></span>(<span>X, output_dir_path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts a xyz file to a pdb file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def at_xyz_to_pdb_data(X, output_dir_path):
+    &#34;&#34;&#34;
+        Converts a xyz file to a pdb file
+    &#34;&#34;&#34;
+
+    batch_size = X.shape[0]
+
+    # Make the output directory
+    if not os.path.exists(output_dir_path):
+        os.makedirs(output_dir_path)
+
+    # Loop over the batch
+    for i in range(batch_size):
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+
+        # Get the relative coordinates
+        coords = X[i, :, :3]
+
+        # Get bead_type index
+        bead_type = X[i, :, 3:]
+        bead_type_idx = np.argmax(bead_type, axis=1)
+
+        # Make the structure
+        residue_id = (&#39; &#39;, i, &#39; &#39;)
+        residue_name = &#39;DOP&#39;
+        residue = Residue.Residue(residue_id, residue_name, segid=&#39;&#39;)
+
+        # Add the atoms
+        for j, coord in enumerate(coords):
+
+            # Recover the original coordinates
+            x = float(coord[0] * X_MAX)
+            y = float(coord[1] * Y_MAX)
+            z = float(coord[2] * Z_MAX)
+
+            # Convert to number with 5 total decimals including the sign and decimals before the point
+            # x = &#34;{:2.3f}&#34;.format(x)
+            # y = &#34;{:2.3f}&#34;.format(y)
+            # z = &#34;{:2.3f}&#34;.format(z)
+
+            # Find the bead type in dict name -&gt; id
+            
+            bead_name = [
+                &#34; N  &#34;,
+                &#34; C12&#34;,
+                &#34;H12A&#34;,
+                &#34;H12B&#34;,
+                &#34; C13&#34;,
+                &#34;H13A&#34;,
+                &#34;H13B&#34;,
+                &#34;H13C&#34;,
+                &#34; C14&#34;,
+                &#34;H14A&#34;,
+                &#34;H14B&#34;,
+                &#34;H14C&#34;,
+                &#34; C15&#34;,
+                &#34;H15A&#34;,
+                &#34;H15B&#34;,
+                &#34;H15C&#34;,
+                &#34; C11&#34;,
+                &#34;H11A&#34;,
+                &#34;H11B&#34;,
+                &#34; P  &#34;,
+                &#34; O13&#34;,
+                &#34; O14&#34;,
+                &#34; O12&#34;,
+                &#34; O11&#34;,
+                &#34; C1 &#34;,
+                &#34; HA &#34;,
+                &#34; HB &#34;,
+                &#34; C2 &#34;,
+                &#34; HS &#34;,
+                &#34; O21&#34;,
+                &#34; C21&#34;,
+                &#34; O22&#34;,
+                &#34; C22&#34;,
+                &#34; H2R&#34;,
+                &#34; H2S&#34;,
+                &#34; C3 &#34;,
+                &#34; HX &#34;,
+                &#34; HY &#34;,
+                &#34; O31&#34;,
+                &#34; C31&#34;,
+                &#34; O32&#34;,
+                &#34; C32&#34;,
+                &#34; H2X&#34;,
+                &#34; H2Y&#34;,
+                &#34; C23&#34;,
+                &#34; H3R&#34;,
+                &#34; H3S&#34;,
+                &#34; C24&#34;,
+                &#34; H4R&#34;,
+                &#34; H4S&#34;,
+                &#34; C25&#34;,
+                &#34; H5R&#34;,
+                &#34; H5S&#34;,
+                &#34; C26&#34;,
+                &#34; H6R&#34;,
+                &#34; H6S&#34;,
+                &#34; C27&#34;,
+                &#34; H7R&#34;,
+                &#34; H7S&#34;,
+                &#34; C28&#34;,
+                &#34; H8R&#34;,
+                &#34; H8S&#34;,
+                &#34; C29&#34;,
+                &#34; H9R&#34;,
+                &#34;C210&#34;,
+                &#34;H10R&#34;,
+                &#34;C211&#34;,
+                &#34;H11R&#34;,
+                &#34;H11S&#34;,
+                &#34;C212&#34;,
+                &#34;H12R&#34;,
+                &#34;H12S&#34;,
+                &#34;C213&#34;,
+                &#34;H13R&#34;,
+                &#34;H13S&#34;,
+                &#34;C214&#34;,
+                &#34;H14R&#34;,
+                &#34;H14S&#34;,
+                &#34;C215&#34;,
+                &#34;H15R&#34;,
+                &#34;H15S&#34;,
+                &#34;C216&#34;,
+                &#34;H16R&#34;,
+                &#34;H16S&#34;,
+                &#34;C217&#34;,
+                &#34;H17R&#34;,
+                &#34;H17S&#34;,
+                &#34;C218&#34;,
+                &#34;H18R&#34;,
+                &#34;H18S&#34;,
+                &#34;H18T&#34;,
+                &#34; C33&#34;,
+                &#34; H3X&#34;,
+                &#34; H3Y&#34;,
+                &#34; C34&#34;,
+                &#34; H4X&#34;,
+                &#34; H4Y&#34;,
+                &#34; C35&#34;,
+                &#34; H5X&#34;,
+                &#34; H5Y&#34;,
+                &#34; C36&#34;,
+                &#34; H6X&#34;,
+                &#34; H6Y&#34;,
+                &#34; C37&#34;,
+                &#34; H7X&#34;,
+                &#34; H7Y&#34;,
+                &#34; C38&#34;,
+                &#34; H8X&#34;,
+                &#34; H8Y&#34;,
+                &#34; C39&#34;,
+                &#34; H9X&#34;,
+                &#34;C310&#34;,
+                &#34;H10X&#34;,
+                &#34;C311&#34;,
+                &#34;H11X&#34;,
+                &#34;H11Y&#34;,
+                &#34;C312&#34;,
+                &#34;H12X&#34;,
+                &#34;H12Y&#34;,
+                &#34;C313&#34;,
+                &#34;H13X&#34;,
+                &#34;H13Y&#34;,
+                &#34;C314&#34;,
+                &#34;H14X&#34;,
+                &#34;H14Y&#34;,
+                &#34;C315&#34;,
+                &#34;H15X&#34;,
+                &#34;H15Y&#34;,
+                &#34;C316&#34;,
+                &#34;H16X&#34;,
+                &#34;H16Y&#34;,
+                &#34;C317&#34;,
+                &#34;H17X&#34;,
+                &#34;H17Y&#34;,
+                &#34;C318&#34;,
+                &#34;H18X&#34;,
+                &#34;H18Y&#34;,
+                &#34;H18Z&#34;,
+            ][ j ]
+            
+            name_to_ele = {
+                &#34; N  &#34;: &#34;N&#34;,
+                &#34; C12&#34;: &#34;C&#34;,
+                &#34;H12A&#34;: &#34;H&#34;,
+                &#34;H12B&#34;: &#34;H&#34;,
+                &#34; C13&#34;: &#34;C&#34;,
+                &#34;H13A&#34;: &#34;H&#34;,
+                &#34;H13B&#34;: &#34;H&#34;,
+                &#34;H13C&#34;: &#34;H&#34;,
+                &#34; C14&#34;: &#34;C&#34;,
+                &#34;H14A&#34;: &#34;H&#34;,
+                &#34;H14B&#34;: &#34;H&#34;,
+                &#34;H14C&#34;: &#34;H&#34;,
+                &#34; C15&#34;: &#34;C&#34;,
+                &#34;H15A&#34;: &#34;H&#34;,
+                &#34;H15B&#34;: &#34;H&#34;,
+                &#34;H15C&#34;: &#34;H&#34;,
+                &#34; C11&#34;: &#34;C&#34;,
+                &#34;H11A&#34;: &#34;H&#34;,
+                &#34;H11B&#34;: &#34;H&#34;,
+                &#34; P  &#34;: &#34;P&#34;,
+                &#34; O13&#34;: &#34;O&#34;,
+                &#34; O14&#34;: &#34;O&#34;,
+                &#34; O12&#34;: &#34;O&#34;,
+                &#34; O11&#34;: &#34;O&#34;,
+                &#34; C1 &#34;: &#34;C&#34;,
+                &#34; HA &#34;: &#34;H&#34;,
+                &#34; HB &#34;: &#34;H&#34;,
+                &#34; C2 &#34;: &#34;C&#34;,
+                &#34; HS &#34;: &#34;H&#34;,
+                &#34; O21&#34;: &#34;O&#34;,
+                &#34; C21&#34;: &#34;C&#34;,
+                &#34; O22&#34;: &#34;O&#34;,
+                &#34; C22&#34;: &#34;C&#34;,
+                &#34; H2R&#34;: &#34;H&#34;,
+                &#34; H2S&#34;: &#34;H&#34;,
+                &#34; C3 &#34;: &#34;C&#34;,
+                &#34; HX &#34;: &#34;H&#34;,
+                &#34; HY &#34;: &#34;H&#34;,
+                &#34; O31&#34;: &#34;O&#34;,
+                &#34; C31&#34;: &#34;C&#34;,
+                &#34; O32&#34;: &#34;O&#34;,
+                &#34; C32&#34;: &#34;C&#34;,
+                &#34; H2X&#34;: &#34;H&#34;,
+                &#34; H2Y&#34;: &#34;H&#34;,
+                &#34; C23&#34;: &#34;C&#34;,
+                &#34; H3R&#34;: &#34;H&#34;,
+                &#34; H3S&#34;: &#34;H&#34;,
+                &#34; C24&#34;: &#34;C&#34;,
+                &#34; H4R&#34;: &#34;H&#34;,
+                &#34; H4S&#34;: &#34;H&#34;,
+                &#34; C25&#34;: &#34;C&#34;,
+                &#34; H5R&#34;: &#34;H&#34;,
+                &#34; H5S&#34;: &#34;H&#34;,
+                &#34; C26&#34;: &#34;C&#34;,
+                &#34; H6R&#34;: &#34;H&#34;,
+                &#34; H6S&#34;: &#34;H&#34;,
+                &#34; C27&#34;: &#34;C&#34;,
+                &#34; H7R&#34;: &#34;H&#34;,
+                &#34; H7S&#34;: &#34;H&#34;,
+                &#34; C28&#34;: &#34;C&#34;,
+                &#34; H8R&#34;: &#34;H&#34;,
+                &#34; H8S&#34;: &#34;H&#34;,
+                &#34; C29&#34;: &#34;C&#34;,
+                &#34; H9R&#34;: &#34;H&#34;,
+                &#34;C210&#34;: &#34;C&#34;,
+                &#34;H10R&#34;: &#34;H&#34;,
+                &#34;C211&#34;: &#34;C&#34;,
+                &#34;H11R&#34;: &#34;H&#34;,
+                &#34;H11S&#34;: &#34;H&#34;,
+                &#34;C212&#34;: &#34;C&#34;,
+                &#34;H12R&#34;: &#34;H&#34;,
+                &#34;H12S&#34;: &#34;H&#34;,
+                &#34;C213&#34;: &#34;C&#34;,
+                &#34;H13R&#34;: &#34;H&#34;,
+                &#34;H13S&#34;: &#34;H&#34;,
+                &#34;C214&#34;: &#34;C&#34;,
+                &#34;H14R&#34;: &#34;H&#34;,
+                &#34;H14S&#34;: &#34;H&#34;,
+                &#34;C215&#34;: &#34;C&#34;,
+                &#34;H15R&#34;: &#34;H&#34;,
+                &#34;H15S&#34;: &#34;H&#34;,
+                &#34;C216&#34;: &#34;C&#34;,
+                &#34;H16R&#34;: &#34;H&#34;,
+                &#34;H16S&#34;: &#34;H&#34;,
+                &#34;C217&#34;: &#34;C&#34;,
+                &#34;H17R&#34;: &#34;H&#34;,
+                &#34;H17S&#34;: &#34;H&#34;,
+                &#34;C218&#34;: &#34;C&#34;,
+                &#34;H18R&#34;: &#34;H&#34;,
+                &#34;H18S&#34;: &#34;H&#34;,
+                &#34;H18T&#34;: &#34;H&#34;,
+                &#34; C33&#34;: &#34;C&#34;,
+                &#34; H3X&#34;: &#34;H&#34;,
+                &#34; H3Y&#34;: &#34;H&#34;,
+                &#34; C34&#34;: &#34;C&#34;,
+                &#34; H4X&#34;: &#34;H&#34;,
+                &#34; H4Y&#34;: &#34;H&#34;,
+                &#34; C35&#34;: &#34;C&#34;,
+                &#34; H5X&#34;: &#34;H&#34;,
+                &#34; H5Y&#34;: &#34;H&#34;,
+                &#34; C36&#34;: &#34;C&#34;,
+                &#34; H6X&#34;: &#34;H&#34;,
+                &#34; H6Y&#34;: &#34;H&#34;,
+                &#34; C37&#34;: &#34;C&#34;,
+                &#34; H7X&#34;: &#34;H&#34;,
+                &#34; H7Y&#34;: &#34;H&#34;,
+                &#34; C38&#34;: &#34;C&#34;,
+                &#34; H8X&#34;: &#34;H&#34;,
+                &#34; H8Y&#34;: &#34;H&#34;,
+                &#34; C39&#34;: &#34;C&#34;,
+                &#34; H9X&#34;: &#34;H&#34;,
+                &#34;C310&#34;: &#34;C&#34;,
+                &#34;H10X&#34;: &#34;H&#34;,
+                &#34;C311&#34;: &#34;C&#34;,
+                &#34;H11X&#34;: &#34;H&#34;,
+                &#34;H11Y&#34;: &#34;H&#34;,
+                &#34;C312&#34;: &#34;C&#34;,
+                &#34;H12X&#34;: &#34;H&#34;,
+                &#34;H12Y&#34;: &#34;H&#34;,
+                &#34;C313&#34;: &#34;C&#34;,
+                &#34;H13X&#34;: &#34;H&#34;,
+                &#34;H13Y&#34;: &#34;H&#34;,
+                &#34;C314&#34;: &#34;C&#34;,
+                &#34;H14X&#34;: &#34;H&#34;,
+                &#34;H14Y&#34;: &#34;H&#34;,
+                &#34;C315&#34;: &#34;C&#34;,
+                &#34;H15X&#34;: &#34;H&#34;,
+                &#34;H15Y&#34;: &#34;H&#34;,
+                &#34;C316&#34;: &#34;C&#34;,
+                &#34;H16X&#34;: &#34;H&#34;,
+                &#34;H16Y&#34;: &#34;H&#34;,
+                &#34;C317&#34;: &#34;C&#34;,
+                &#34;H17X&#34;: &#34;H&#34;,
+                &#34;H17Y&#34;: &#34;H&#34;,
+                &#34;C318&#34;: &#34;C&#34;,
+                &#34;H18X&#34;: &#34;H&#34;,
+                &#34;H18Y&#34;: &#34;H&#34;,
+                &#34;H18Z&#34;: &#34;H&#34;,
+            }
+
+            element = name_to_ele[bead_name]
+
+            # Add the atom
+            atom = Atom.Atom(
+                name=bead_name,
+                coord=(x, y, z),
+                bfactor=0.0,
+                occupancy=1.0,
+                altloc=&#34; &#34;,
+                fullname=f&#34; {bead_name} &#34;,
+                serial_number=j,
+                element=element
+            )
+            residue.add(atom)
+
+        io = PDBIO()
+        io.set_structure(residue)
+        io.save(f&#34;{output_dir_path}/at_{i}.pdb&#34;, preserve_atom_numbering=True)</code></pre>
+</details>
+</dd>
+<dt id="library.parser.cg_xyz_to_pdb_data"><code class="name flex">
+<span>def <span class="ident">cg_xyz_to_pdb_data</span></span>(<span>X, output_dir_path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts a xyz file to a pdb file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cg_xyz_to_pdb_data(X, output_dir_path):
+    &#34;&#34;&#34;
+        Converts a xyz file to a pdb file
+    &#34;&#34;&#34;
+
+    batch_size = X.shape[0]
+
+    # Make the output directory
+    if not os.path.exists(output_dir_path):
+        os.makedirs(output_dir_path)
+
+    # Loop over the batch
+    for i in range(batch_size):
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+
+        # Get the relative coordinates
+        coords = X[i, :, :3]
+
+        # Get bead_type index
+        bead_type = X[i, :, 3:]
+        bead_type_idx = np.argmax(bead_type, axis=1)
+
+        # Make the structure
+        residue_id = (&#39; &#39;, i, &#39; &#39;)
+        residue_name = &#39;DOP&#39;
+        residue = Residue.Residue(residue_id, residue_name, segid=&#39;&#39;)
+
+        # Add the atoms
+        for j, coord in enumerate(coords):
+
+            # Recover the original coordinates
+            x = float(coord[0] * X_MAX)
+            y = float(coord[1] * Y_MAX)
+            z = float(coord[2] * Z_MAX)
+
+            # Convert to number with 5 total decimals including the sign and decimals before the point
+            # x = &#34;{:2.3f}&#34;.format(x)
+            # y = &#34;{:2.3f}&#34;.format(y)
+            # z = &#34;{:2.3f}&#34;.format(z)
+
+            # Find the bead type in dict name -&gt; id
+            
+            bead_name = [
+                &#34;NC3&#34;,
+                &#34;PO4&#34;,
+                &#34;GL1&#34;,
+                &#34;GL2&#34;,
+                &#34;C1A&#34;,
+                &#34;D2A&#34;,
+                &#34;C3A&#34;,
+                &#34;C4A&#34;,
+                &#34;C1B&#34;,
+                &#34;D2B&#34;,
+                &#34;C3B&#34;,
+                &#34;C4B&#34;,
+            ][ j ]
+            
+            name_to_ele = {
+                &#34;NC3&#34;:  &#34;N&#34;,
+                &#34;PO4&#34;:  &#34;P&#34;,
+                &#34;GL1&#34;:  &#34;X&#34;,
+                &#34;GL2&#34;:  &#34;X&#34;,
+                &#34;C1A&#34;:  &#34;C&#34;,
+                &#34;D2A&#34;:  &#34;D&#34;,
+                &#34;C3A&#34;:  &#34;C&#34;,
+                &#34;C4A&#34;:  &#34;C&#34;,
+                &#34;C1B&#34;:  &#34;C&#34;,
+                &#34;D2B&#34;:  &#34;D&#34;,
+                &#34;C3B&#34;:  &#34;C&#34;,
+                &#34;C4B&#34;:  &#34;C&#34;,
+            }
+
+            element = name_to_ele[bead_name]
+
+            # Add the atom
+            atom = Atom.Atom(
+                name=bead_name,
+                coord=(x, y, z),
+                bfactor=0.0,
+                occupancy=1.0,
+                altloc=&#34; &#34;,
+                fullname=f&#34; {bead_name} &#34;,
+                serial_number=j,
+                element=element
+            )
+            residue.add(atom)        
+
+        io = PDBIO()
+        io.set_structure(residue)
+        io.save(f&#34;{output_dir_path}/cg_{i}.pdb&#34;, preserve_atom_numbering=True)</code></pre>
+</details>
+</dd>
+<dt id="library.parser.find_all_pdb_files"><code class="name flex">
+<span>def <span class="ident">find_all_pdb_files</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find all pdb files recursivly in a given path and return a list of Dataset objects</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def find_all_pdb_files(path):
+    &#34;&#34;&#34;
+        Find all pdb files recursivly in a given path and return a list of Dataset objects
+    &#34;&#34;&#34;
+    pdb_files = []
+    with os.scandir(path) as entries:
+        for entry in entries:
+            if entry.is_file() and entry.name.endswith(&#39;.pdb&#39;):
+                pdb_files.append(Dataset(entry.name, entry.path, &#39;pdb&#39;))
+            elif entry.is_dir():
+                pdb_files.extend(find_all_pdb_files(entry.path))
+
+    return pdb_files</code></pre>
+</details>
+</dd>
+<dt id="library.parser.generate_training_data"><code class="name flex">
+<span>def <span class="ident">generate_training_data</span></span>(<span>path_to_raw_data, output_dir_path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_training_data(path_to_raw_data, output_dir_path):
+    # Get all CG and AT datasets (this is only indexing the data, not loading it)
+    cg_datasets, at_datasets = get_cg_at_datasets(path_to_raw_data)
+
+    io = PDBIO()
+    idx = 0
+
+    # Loop over both at the same time (these are generators, so they are not loaded into memory immediately)
+    for i, (cg_dataset, at_dataset) in enumerate(zip(cg_datasets, at_datasets)):
+        for j, (cg_residue, at_residue) in enumerate(zip(cg_dataset.get_residues(), at_dataset.get_residues())):
+            # Create folder for the idx
+            if not os.path.exists(f&#34;{output_dir_path}/{idx}&#34;):
+                os.makedirs(f&#34;{output_dir_path}/{idx}&#34;)
+
+            io.set_structure(cg_dataset.get_structure())
+            io.save(f&#34;{output_dir_path}/{idx}/cg.pdb&#34;,
+                    ResidueSelector(cg_residue._id[1]), preserve_atom_numbering=True)
+
+            io.set_structure(at_dataset.get_structure())
+            io.save(f&#34;{output_dir_path}/{idx}/at.pdb&#34;,
+                    ResidueSelector(at_residue._id[1]), preserve_atom_numbering=True)
+
+            idx += 1
+
+            if idx % 10 == 0:
+                timestamp = datetime.fromtimestamp(time.time()).strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)
+                print(f&#34;[{timestamp}] Generated {idx} training examples&#34;)</code></pre>
+</details>
+</dd>
+<dt id="library.parser.get_cg_at_datasets"><code class="name flex">
+<span>def <span class="ident">get_cg_at_datasets</span></span>(<span>path, CG_PATTERN='CG_INPUT.pdb', AT_PATTERN='final_cg2at_de_novo.pdb')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get all CG and AT datasets from a given path.
+This uses the folder structure provided by chetan.
+E.g data/raw/CG2AT_2023-02-13_20-20-52/
+/FINAL/final_cg2at_de_novo.pdb
+/INPUT/CG_INPUT.pdb
+/INPUT/DOPC_Frame_....pdb
+/MERGED/merged_cg2at_de_novo.pdb
+&hellip;</p>
+<h2 id="parameters">Parameters</h2>
+<p>path (str): The path to the data folder
+CG_RELATIVE_PATH (str): The pattern to match for CG pdb files
+AT_RELATIVE_PATH (str): The pattern to match for AT pdb files</p>
+<h2 id="returns">Returns</h2>
+<p>cg_datasets (list): A list of CG datasets
+at_datasets (list): A list of AT datasets</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_cg_at_datasets(
+        path,
+        CG_PATTERN=&#39;CG_INPUT.pdb&#39;,
+        AT_PATTERN=&#39;final_cg2at_de_novo.pdb&#39;
+):
+    &#34;&#34;&#34;
+        Get all CG and AT datasets from a given path.
+        This uses the folder structure provided by chetan.
+        E.g data/raw/CG2AT_2023-02-13_20-20-52/
+            /FINAL/final_cg2at_de_novo.pdb
+            /INPUT/CG_INPUT.pdb
+            /INPUT/DOPC_Frame_....pdb
+            /MERGED/merged_cg2at_de_novo.pdb
+            ...
+
+        Parameters:
+            path (str): The path to the data folder
+            CG_RELATIVE_PATH (str): The pattern to match for CG pdb files
+            AT_RELATIVE_PATH (str): The pattern to match for AT pdb files
+
+        Returns:
+            cg_datasets (list): A list of CG datasets
+            at_datasets (list): A list of AT datasets
+    &#34;&#34;&#34;
+
+    all_pdb_files_dic = get_pdb_file_paths_dic(path)
+
+    cg_datasets = []
+    at_datasets = []
+
+    for key in all_pdb_files_dic.keys():
+        for dataset in all_pdb_files_dic[key]:
+            if dataset.path.endswith(CG_PATTERN):
+                cg_datasets.append(dataset)
+            elif dataset.path.endswith(AT_PATTERN):
+                at_datasets.append(dataset)
+
+    return cg_datasets, at_datasets</code></pre>
+</details>
+</dd>
+<dt id="library.parser.get_pdb_file_paths_dic"><code class="name flex">
+<span>def <span class="ident">get_pdb_file_paths_dic</span></span>(<span>path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a dictionary of pdb datasets where the key is the name of the pdb files folder
+E.g. {'CG2AT_2023-02-13_20-20-52': [<Dataset object at 0xa>, &hellip;']}</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_pdb_file_paths_dic(path):
+    &#34;&#34;&#34;
+        Returns a dictionary of pdb datasets where the key is the name of the pdb files folder
+        E.g. {&#39;CG2AT_2023-02-13_20-20-52&#39;: [&lt;Dataset object at 0xa&gt;, ...&#39;]}
+    &#34;&#34;&#34;
+    pdb_files_dic = {}
+    with os.scandir(path) as data_folders:
+        for data_folder in [d for d in data_folders if not d.is_file()]:
+            # Find all pdb files in the data folder
+            datasets = find_all_pdb_files(data_folder.path)
+
+            # Add parent to datasets so we know where they came from
+            for dataset in datasets:
+                dataset.parent = data_folder.name
+
+            # Add the datasets to the dictionary
+            pdb_files_dic[data_folder.name] = datasets
+
+    return pdb_files_dic</code></pre>
+</details>
+</dd>
+<dt id="library.parser.get_structure_from_dataset"><code class="name flex">
+<span>def <span class="ident">get_structure_from_dataset</span></span>(<span>dataset)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a Bio.PDB.Structure object from a given dataset</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_structure_from_dataset(dataset):
+    &#34;&#34;&#34;
+        Returns a Bio.PDB.Structure object from a given dataset
+    &#34;&#34;&#34;
+    parser = PDBParser()
+    return parser.get_structure(dataset.name, dataset.path)</code></pre>
+</details>
+</dd>
+<dt id="library.parser.pdb_data_to_xyz"><code class="name flex">
+<span>def <span class="ident">pdb_data_to_xyz</span></span>(<span>batch_size, idx, input_dir_path, input_size, output_size)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts a pdb file to a xyz file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pdb_data_to_xyz(batch_size, idx, input_dir_path, input_size, output_size):
+    &#34;&#34;&#34;
+        Converts a pdb file to a xyz file
+    &#34;&#34;&#34;      
+
+    # Initialize Batch
+    X = np.empty((batch_size, *input_size))
+    Y = np.empty((batch_size, *output_size))
+
+    # Load the two files in the idx folder
+    for i in range(batch_size):
+        # Get the index of the residue
+        residue_idx = idx * batch_size + i
+
+        # Get the path to the files
+        cg_path = f&#34;{input_dir_path}/{residue_idx}/cg.pdb&#34;
+        at_path = f&#34;{input_dir_path}/{residue_idx}/at.pdb&#34;
+
+
+        # Load the files
+        parser = PDBParser(QUIET=True)
+        cg_structure = parser.get_structure(residue_idx, cg_path)
+        at_structure = parser.get_structure(residue_idx, at_path)
+
+        print(cg_structure, at_structure)
+
+        # Get the residues
+        cg_residue = list(cg_structure.get_residues())[0]
+        at_residue = list(at_structure.get_residues())[0]
+
+        # Get the atoms
+        cg_atoms = list(cg_residue.get_atoms())
+        at_atoms = list(at_residue.get_atoms())
+
+        # Make a 200x200x200 box for coordinates
+        X_MAX = 200
+        Y_MAX = 200
+        Z_MAX = 200
+
+        # Make the cg data (batchsize, 12, 8)
+        for j, bead in enumerate(cg_atoms):
+            # Get coordinates
+            x, y, z = bead.get_coord()
+
+            # Make the coordinates relative to the box
+            X[i, j, 0] = x / X_MAX
+            X[i, j, 1] = y / Y_MAX
+            X[i, j, 2] = z / Z_MAX
+
+            # Make one hot encoding for the bead type
+            X[i, j, 3:8] = 0
+            bead_type_id = DOPC_BEAD_TYPE_NAME_IDS[DOPC_CG_NAME_TO_TYPE_MAP[bead.get_name(
+            )]]
+            X[i, j, 3 + bead_type_id] = 1
+
+        # Make the at data (batchsize, 138, 8)
+        for j, atom in enumerate(at_atoms):
+            # Get coordinates
+            x, y, z = atom.get_coord()
+
+            # Make the coordinates relative to the box
+            Y[i, j, 0] = x / X_MAX
+            Y[i, j, 1] = y / Y_MAX
+            Y[i, j, 2] = z / Z_MAX
+
+            # Make one hot encoding for the bead type
+            Y[i, j, 3:8] = 0
+            at_type_id = DOPC_ELEMENT_TYPE_NAME_IDS[atom.element]
+            Y[i, j, 3 + at_type_id] = 1
+
+    # Convert to tensor
+    X = tf.convert_to_tensor(X, dtype=tf.float32)
+    Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+    return X, Y</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="library.parser.ResidueSelector"><code class="flex name class">
+<span>class <span class="ident">ResidueSelector</span></span>
+<span>(</span><span>target_id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select everything for PDB output (for use as a base class).</p>
+<p>Default selection (everything) during writing - can be used as base class
+to implement selective output. This selects which entities will be written out.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ResidueSelector(Select):
+    def __init__(self, target_id):
+        self.target_id = target_id
+
+    def accept_residue(self, residue):
+        # TODO: improve this
+        return residue._id[1] == self.target_id</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>Bio.PDB.PDBIO.Select</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="library.parser.ResidueSelector.accept_residue"><code class="name flex">
+<span>def <span class="ident">accept_residue</span></span>(<span>self, residue)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Overload this to reject residues for output.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def accept_residue(self, residue):
+    # TODO: improve this
+    return residue._id[1] == self.target_id</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="library" href="index.html">library</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="library.parser.at_xyz_to_pdb_data" href="#library.parser.at_xyz_to_pdb_data">at_xyz_to_pdb_data</a></code></li>
+<li><code><a title="library.parser.cg_xyz_to_pdb_data" href="#library.parser.cg_xyz_to_pdb_data">cg_xyz_to_pdb_data</a></code></li>
+<li><code><a title="library.parser.find_all_pdb_files" href="#library.parser.find_all_pdb_files">find_all_pdb_files</a></code></li>
+<li><code><a title="library.parser.generate_training_data" href="#library.parser.generate_training_data">generate_training_data</a></code></li>
+<li><code><a title="library.parser.get_cg_at_datasets" href="#library.parser.get_cg_at_datasets">get_cg_at_datasets</a></code></li>
+<li><code><a title="library.parser.get_pdb_file_paths_dic" href="#library.parser.get_pdb_file_paths_dic">get_pdb_file_paths_dic</a></code></li>
+<li><code><a title="library.parser.get_structure_from_dataset" href="#library.parser.get_structure_from_dataset">get_structure_from_dataset</a></code></li>
+<li><code><a title="library.parser.pdb_data_to_xyz" href="#library.parser.pdb_data_to_xyz">pdb_data_to_xyz</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="library.parser.ResidueSelector" href="#library.parser.ResidueSelector">ResidueSelector</a></code></h4>
+<ul class="">
+<li><code><a title="library.parser.ResidueSelector.accept_residue" href="#library.parser.ResidueSelector.accept_residue">accept_residue</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

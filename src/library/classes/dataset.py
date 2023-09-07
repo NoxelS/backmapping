@@ -7,13 +7,18 @@ from Bio.PDB.Residue import Residue
 from Bio.PDB.Atom import Atom
 
 class Dataset:
+    """
+        A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.
+    """
+
     def __init__(self, name, path, type, parent=None):
         self.name = name
         self.path = path
         self.parent = parent
         self.type = type
 
-    def __repr__(self):
+
+    def __repr__(self) -> str:
         return f'<Dataset {self.name} at {hex(id(self))}>'
     
     def get_structure(self) -> Structure: 

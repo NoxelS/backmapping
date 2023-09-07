@@ -20,7 +20,7 @@ with open(os.path.join("data", "mean_distances.csv"), "r") as f:
         line = line.split(",")
         # Get mean distance
         mean_distances[line[0]] = float(line[1])
-    
+
 # Normalize mean distances
 mean_distances = {k: v / max(mean_distances.values()) for k, v in mean_distances.items()}
 
@@ -60,7 +60,7 @@ ax2 = fig.add_axes([0.78, 0.07, 0.2, 0.05])
 cmap = plt.cm.cool
 norm = plt.Normalize(vmin=0, vmax=1)
 cb1 = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap),
-                     cax=ax2, orientation='horizontal')
+                   cax=ax2, orientation='horizontal')
 ax2.set_title("NMD")
 
 
