@@ -43,4 +43,5 @@ python src/train_one_with_neighborhood.py $1
 
 echo "####################### POST ANALYSIS ###########################"
 date
+python src/plot_cluster_hist.py
 echo "Finished!"
