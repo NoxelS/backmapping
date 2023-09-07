@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from library.classes.generators import ABSOLUT_POSITION_SCALE
 
 # Plot the training history of all models in a single plot
 
@@ -33,16 +34,26 @@ for i, hist in enumerate(os.listdir(PATH_TO_HIST)):
     mean_distance = mean_distances[atom_name]
     # Load csv
     hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1)
+    
+    # There are maybe multiple train cylces so only start plotting after finding the last 0 epoch
+    for i, row in enumerate(hist):
+        if int(row[0]) == 0:
+            hist = hist[i:]
+
     # Plot
-    ax.plot(hist[:, 0], hist[:, 2], label=atom_name, color=plt.cm.cool(mean_distance))
+    ax.plot(hist[:, 0] + 1, hist[:, 2] * ABSOLUT_POSITION_SCALE, label=atom_name, color=plt.cm.cool(mean_distance))
     
 # Add labels
 ax.set_xlabel("Epoch")
-ax.set_ylabel("Loss")
+ax.set_ylabel("MSE Loss (Å)")
 ax.set_title("Training History")
+
+# Make log scale
+ax.set_yscale("log")
 
 # Plot legend outside of plot in two columns
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=2)
+ax.get_legend().set_title("Atom Names")
 
 # Add legend that explains color to the bottom
 ax2 = fig.add_axes([0.78, 0.07, 0.2, 0.05])
