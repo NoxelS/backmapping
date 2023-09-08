@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 from Bio.PDB import PDBParser
 import tensorflow as tf
 import numpy as np
+import socket
 import sys
 import os
+from master import PORT, encode_data, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
 
@@ -26,19 +28,27 @@ at_size = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 
 print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
 
-##### TRAINING #####
-
 # Those are the atom names that are used for the training, currently all 54 atoms (without hydrogen) will be used
 atom_names_to_fit = [name for name in DOPC_AT_NAMES if not name.startswith("H")]
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     raise Exception(f"Please provide the name of the atom that should be fitted as an argument, choose one of: {', '.join(atom_names_to_fit)}")
 
 atom_name_to_fit = sys.argv[1]
+host_ip_address = sys.argv[2]
 
 if atom_name_to_fit not in atom_names_to_fit:
     raise Exception(f"Invalid atom name: {atom_name_to_fit}, choose one of: {', '.join(atom_names_to_fit)}")
 
+##### SOCKET #####
+
+print(f"Trying to connect to parent {host_ip_address}")
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((host_ip_address, PORT))
+client.send(encode_starting(atom_name_to_fit))
+client.close()
+
+##### TRAINING #####
 
 sample_gen = AbsolutePositionsNeigbourhoodGenerator(
     input_dir_path=os.path.join(data_prefix, "training", "input"),
@@ -63,6 +73,9 @@ cnn = CNN(
     load_path=os.path.join("data", "models", f"{atom_name_to_fit}.h5"),
     loss=BackmappingAbsolutePositionLoss(),
     test_sample=sample_gen.__getitem__(0),
+    socket=client,
+    host_ip_address=host_ip_address,
+    port=PORT,
 )
 
 train_gen = AbsolutePositionsNeigbourhoodGenerator(
@@ -98,8 +111,14 @@ validation_gen = AbsolutePositionsNeigbourhoodGenerator(
 cnn.fit(
     train_gen,
     batch_size=BATCH_SIZE,
-    epochs=25,
+    epochs=2,
     validation_gen=validation_gen
 )
 
 cnn.save()
+
+# Send finished signal
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((host_ip_address, PORT))
+client.send(encode_finished(atom_name_to_fit))
+client.close()

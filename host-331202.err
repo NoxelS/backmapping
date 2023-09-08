@@ -1,0 +1,6 @@
+2023-09-08 18:46:07.926734: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.10.1
+Matplotlib created a temporary config/cache directory at /tmp/matplotlib-da75_zaf because the default path (/home/users/noel/.cache/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+Traceback (most recent call last):
+  File "/home/users/noel/projects/backmapping/src/master.py", line 135, in <module>
+    master_socket.bind(server_address)
+OSError: [Errno 98] Address already in use

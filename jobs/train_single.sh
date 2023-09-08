@@ -31,17 +31,11 @@ echo "SLURM_GPUS_PER_TASK = $SLURM_GPUS_PER_TASK"
 echo "SLURM_GPUS_ON_NODE = $SLURM_GPUS_ON_NODE"
 echo ""
 
-# Set envs
-# export PYENV_ROOT="/home/global/pyenv"
-# export PATH="$PYENV_ROOT/bin:$PATH"
-# eval "$(pyenv init -)"
-
 date
 echo "####################### TRAINING FOR $1 ###########################"
 
-python src/train_one_with_neighborhood.py $1
+python src/train_one_with_neighborhood.py $1 $2
 
 echo "####################### POST ANALYSIS ###########################"
 date
-python src/plot_cluster_hist.py
 echo "Finished!"

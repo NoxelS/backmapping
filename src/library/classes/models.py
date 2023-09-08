@@ -1,11 +1,11 @@
-import os
-import numpy as np
-import tensorflow as tf
 from library.classes.losses import BackmappingRelativeVectorLoss
 from library.classes.generators import PADDING_X, PADDING_Y
-
-import time
 import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+import socket
+import time
+import os
 
 
 class CNN:
@@ -19,6 +19,9 @@ class CNN:
         load_path: str = None,
         loss: tf.keras.losses.Loss = tf.keras.losses.MeanSquaredError(),
         test_sample: tuple = None,
+        socket = None,
+        host_ip_address = None,
+        port = None
     ):
         """
         This is the base class for all CNNs. It contains the basic structure of the CNN and the fit function.
@@ -32,6 +35,9 @@ class CNN:
             load_path (str, optional): The path to the weights to load. Defaults to None.
             loss (tf.keras.losses.Loss, optional): The loss function to use. Defaults to tf.keras.losses.MeanSquaredError().
             test_sample (tuple, optional): The test sample to track after each epoch. Defaults to None.
+            socket (socket, optional): The socket to send data to. Defaults to None.
+            host_ip_address (str, optional): The ip address of the host. Defaults to None.
+            port (int, optional): The port to send data to. Defaults to None.
         """
         super().__init__()
 
@@ -42,6 +48,9 @@ class CNN:
         self.loss = loss
         self.test_sample = test_sample
         self.current_epoch = 0
+        self.socket = socket
+        self.host_ip_address = host_ip_address
+        self.port = port
 
         # For showing samples
         self.fig = plt.figure()
@@ -226,6 +235,9 @@ class CNN:
 
             # Callback to save weights after each epoch
             tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.save()),
+            
+            # Callback to send data to the socket after each epoch
+            tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.send_data_to_socket(epoch, logs)),
         ]
 
         if early_stop:
@@ -401,6 +413,17 @@ class CNN:
         # Update the plot
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
+        
+    def send_data_to_socket(self, epoch, logs):
+        """
+            Sends the data to the socket
+        """
+        # Send data to socket
+        if self.socket is not None:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((self.host_ip_address, self.port))
+            self.socket.send(f"{self.display_name}:{epoch}:{logs['loss']:.6f}".encode())
+            self.socket.close()
 
     def update_internals(self, epoch, logs):
         """
