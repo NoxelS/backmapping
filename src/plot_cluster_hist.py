@@ -37,7 +37,6 @@ def plot_cluster_hist():
             # Load csv
             hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1)
         except:
-            print(f"Could not load {hist}, skipping...")
             continue
 
         # If only one row, add dimension

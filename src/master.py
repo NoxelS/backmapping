@@ -20,6 +20,7 @@ ENCODING_START_SYMBOL = "s"
 # Email Settings
 EMAIL_SERVER = "alef"
 EMAIL_TARGET = "noel@schwabenland.ch" # This is the email address that will receive the training history plots
+EMAIL_USER = 'noel' # The user that is sending the email
 
 ##### MASTER SOCKER #####
 
@@ -39,7 +40,7 @@ def sendUpdateMail(finished_models: list, number_of_models: int):
 
     msg = EmailMessage()
     msg['Subject'] = f"Done: {(len(finished_models)/number_of_models)*100:.2f}%"
-    msg['From'] = f"Slurm Master 🤖 <{os.getlogin()}@lusi.uni-sb.de>"
+    msg['From'] = f"Slurm Master 🤖 <{EMAIL_USER}@lusi.uni-sb.de>"
     msg['To'] = EMAIL_TARGET
     msg.set_content(f"{len(finished_models)}/{number_of_models} models finished training")
 
@@ -58,6 +59,23 @@ def sendUpdateMail(finished_models: list, number_of_models: int):
     s.quit()
     
     print(f"{ts()}: Update email sent")
+    
+def sendStartMail():
+    """
+    This function will send an email to the user and notify him that the training has started.
+    """
+    msg = EmailMessage()
+    msg['Subject'] = "Training has started!"
+    msg['From'] = f"Slurm Master 🤖 <{EMAIL_USER}@lusi.uni-sb.de>"
+    msg['To'] = EMAIL_TARGET
+    msg.set_content(f"The training has started!")
+
+    # Send the message via our own SMTP server.
+    s = smtplib.SMTP(EMAIL_SERVER)
+    s.send_message(msg)
+    s.quit()
+    
+    print(f"{ts()}: Starting email sent")
     
 def decode_data(datastring: str) -> tuple:
     """
@@ -124,6 +142,9 @@ if __name__ == "__main__":
     # To keep track of all models that are finished
     number_of_models = int(sys.argv[1])
     finished_models = []
+    
+    # Send initial email
+    sendStartMail()
     
     # Create a TCP/IP socket
     master_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
