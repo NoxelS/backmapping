@@ -1,5 +1,8 @@
 import tensorflow as tf
-from library.classes.generators import BOX_SCALE_FACTOR, PADDING_X, PADDING_Y, print_matrix, ABSOLUT_POSITION_SCALE
+
+from library.classes.generators import PADDING_X, PADDING_Y, BOX_SCALE_FACTOR, ABSOLUT_POSITION_SCALE, print_matrix
+
+
 class BackmappingRelativeVectorLoss(tf.keras.losses.Loss):
     def __init__(self, name="backmapping_rel_loss"):
         super().__init__(name=name)

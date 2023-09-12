@@ -1,20 +1,23 @@
 import os
-import tensorflow as tf
-import numpy as np
-from scipy.ndimage import gaussian_filter
 import sys
-import linecache
-from library.parser import get_cg_at_datasets
-from library.static.topologies import DOPC_CG_NAME_TO_TYPE_MAP, DOPC_BEAD_TYPE_NAME_IDS, DOPC_ELEMENT_TYPE_NAME_IDS
-from Bio.PDB.PDBIO import Select
-from Bio.PDB.PDBIO import PDBIO
-from Bio.PDB.PDBParser import PDBParser
-from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
-import matplotlib.pyplot as plt
 import random
+import linecache
+
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from Bio.PDB.PDBIO import PDBIO, Select
+from scipy.ndimage import gaussian_filter
+from Bio.PDB.PDBParser import PDBParser
+
+from library.parser import get_cg_at_datasets
+from library.static.topologies import DOPC_BEAD_TYPE_NAME_IDS, DOPC_CG_NAME_TO_TYPE_MAP, DOPC_ELEMENT_TYPE_NAME_IDS
+from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
 
 PADDING_X = 1  # Padding on left and right
 PADDING_Y = 1  # Padding on top and bottom
+
+# TODO: Add config for this
 
 AVERAGE_SIMULATION_BOX_SIZE = (191.05054545, 191.05054545, 111.67836364)  # This is the average box size as fallback if the box size cannot be found in the csv file
 PBC_CUTOFF = 10.0  # If a bond is longer than this, it is considered to be on the other side of the simulation box

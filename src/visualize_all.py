@@ -1,12 +1,13 @@
 import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 from Bio.PDB.PDBParser import PDBParser
 
-from library.classes.dataset import Dataset
 from library.viz import plot_residue
 from library.parser import get_cg_at_datasets
-from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict
+from library.classes.dataset import Dataset
+from library.static.topologies import cg_bond_map_dict, cg_name_to_type_dict
 
 # Get all CG and AT datasets
 cg_datasets, at_datasets = get_cg_at_datasets(os.path.join("data", "raw"))

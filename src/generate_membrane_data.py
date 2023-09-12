@@ -1,6 +1,6 @@
 import os
 
-MEMBRANE_PATH = "data/membranes"
+MEMBRANE_PATH = "data/membranes"    # TODO: make with config
 RAW_PATH = "data/raw"
 
 index = 0

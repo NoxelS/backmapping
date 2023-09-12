@@ -1,7 +1,9 @@
-from library.classes.generators import ABSOLUT_POSITION_SCALE
-import matplotlib.pyplot as plt
-import numpy as np
 import os
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from library.classes.generators import ABSOLUT_POSITION_SCALE
 
 PATH_TO_HIST = os.path.join("data", "hist")
 
@@ -26,6 +28,8 @@ def plot_cluster_hist():
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
+    
+    min_loss = 99999
 
     # Loop over all files in the hist folder
     for i, hist in enumerate(os.listdir(PATH_TO_HIST)):
@@ -43,10 +47,11 @@ def plot_cluster_hist():
         if len(hist.shape) == 1:
             hist = hist.reshape(1, -1)
 
-        # There are maybe multiple train cylces so only start plotting after finding the last 0 epoch
-        for i, row in enumerate(hist):
-            if int(row[0]) == 0:
-                hist = hist[i:]
+        # There are maybe multiple train cylces so reindex the epochs accordingly
+        hist[:, 0] = np.arange(hist.shape[0])
+        
+        if np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE) < min_loss:
+            min_loss = np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE)
 
         # Plot
         ax.plot(hist[:, 0] + 1, hist[:, 2] * ABSOLUT_POSITION_SCALE, label=atom_name, color=plt.cm.cool(mean_distance))
@@ -58,13 +63,25 @@ def plot_cluster_hist():
 
     # Make log scale
     ax.set_yscale("log")
+    
+    # Add 10 y-ticks between min and max
+    ax.set_yticks(np.logspace(np.log10(ax.get_ylim()[0]), np.log10(ax.get_ylim()[1]), 10))
+    
+    # Add 10 y-tick labels
+    ax.set_yticklabels([f"{i:.2f}" for i in np.logspace(np.log10(ax.get_ylim()[0]), np.log10(ax.get_ylim()[1]), 10)])
+    
+    # Add line where the minimum loss is
+    ax.axhline(y=min_loss, color="black", linestyle="--", alpha=0.4)
+    
+    # Add label
+    ax.text(2, min_loss, f"Minimum Loss: {min_loss:.2f} Å", horizontalalignment='center', verticalalignment='bottom', fontsize=12, color="black", alpha=0.4)
 
     # Plot legend outside of plot in two columns
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=2)
     ax.get_legend().set_title("Atom Names")
 
     # Add legend that explains color to the bottom
-    ax2 = fig.add_axes([0.78, 0.07, 0.2, 0.05])
+    ax2 = fig.add_axes([0.93, 0.11, 0.2, 0.05])
     cmap = plt.cm.cool
     norm = plt.Normalize(vmin=0, vmax=1)
     cb1 = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=ax2, orientation='horizontal')

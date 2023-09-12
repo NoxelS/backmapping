@@ -1,21 +1,20 @@
+import os
+
+import numpy as np
+import matplotlib.pyplot as plt
 from Bio.PDB.Atom import Atom
-from Bio.PDB.Model import Model
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
+from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from Bio.PDB.NeighborSearch import NeighborSearch
-from Bio.PDB.PDBParser import PDBParser
-
-from library.classes.dataset import Dataset
-from library.parser import get_cg_at_datasets
-from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
-from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict
-
-import os
-import matplotlib.pyplot as plt
-import numpy as np
 
 from library.viz import plot_residue
+from library.parser import get_cg_at_datasets
+from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
+from library.classes.dataset import Dataset
+from library.static.topologies import cg_bond_map_dict, cg_name_to_type_dict
 
 # Load residue
 cg_struct = PDBParser().get_structure("DOPC", "data/training/0/cg.pdb")

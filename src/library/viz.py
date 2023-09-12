@@ -1,18 +1,18 @@
+import os
+
+import numpy as np
+import matplotlib.pyplot as plt
 from Bio.PDB.Atom import Atom
-from Bio.PDB.Model import Model
 from Bio.PDB.Chain import Chain
+from Bio.PDB.Model import Model
 from Bio.PDB.Residue import Residue
 from Bio.PDB.Structure import Structure
 from Bio.PDB.NeighborSearch import NeighborSearch
 
-from library.classes import dataset
 from library.parser import get_cg_at_datasets
+from library.classes import dataset
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
-from library.static.topologies import cg_name_to_type_dict, cg_bond_map_dict
-
-import os
-import matplotlib.pyplot as plt
-import numpy as np
+from library.static.topologies import cg_bond_map_dict, cg_name_to_type_dict
 
 
 def __get_name(atom: Atom):

@@ -1,11 +1,13 @@
+import os
+import time
+import socket
+
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
 from library.classes.losses import BackmappingRelativeVectorLoss
 from library.classes.generators import PADDING_X, PADDING_Y
-import matplotlib.pyplot as plt
-import tensorflow as tf
-import numpy as np
-import socket
-import time
-import os
 
 
 class CNN:
@@ -262,7 +264,7 @@ class CNN:
         # Check history for last epoch
         if os.path.exists(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv")):
             with open(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv"), "r") as f:
-                last_line = f.readlines()[-1]
+                last_line = f.readlines()[-2]   # -2 because the last line is empty
                 self.current_epoch = int(last_line.split(",")[0]) + 1
                 print(f"Starting from epoch {self.current_epoch}")
 

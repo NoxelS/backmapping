@@ -1,16 +1,17 @@
 import os
-from library.classes.dataset import Dataset
-from Bio.PDB.PDBIO import Select
-from Bio.PDB.PDBIO import PDBIO
-from Bio.PDB.PDBParser import PDBParser
-from Bio.PDB import Structure, Residue, Atom, Model, Chain
-import tensorflow as tf
-from library.static.topologies import DOPC_CG_NAME_TO_TYPE_MAP, DOPC_BEAD_TYPE_NAME_IDS, DOPC_ELEMENT_TYPE_NAME_IDS
-import numpy as np
 import time
 from datetime import datetime
+
+import numpy as np
+import tensorflow as tf
+from Bio.PDB import Atom, Chain, Model, Residue, Structure
 from Bio.Seq import Seq
+from Bio.PDB.PDBIO import PDBIO, Select
 from Bio.SeqRecord import SeqRecord
+from Bio.PDB.PDBParser import PDBParser
+
+from library.classes.dataset import Dataset
+from library.static.topologies import DOPC_BEAD_TYPE_NAME_IDS, DOPC_CG_NAME_TO_TYPE_MAP, DOPC_ELEMENT_TYPE_NAME_IDS
 
 
 def find_all_pdb_files(path):

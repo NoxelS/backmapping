@@ -1,26 +1,26 @@
-from email.message import EmailMessage
-from plot_cluster_hist import plot_cluster_hist
-import datetime
-import smtplib
-import socket
-import sys
 import os
+import sys
+import socket
+import smtplib
+import datetime
+from email.message import EmailMessage
+
+from library.config import Keys, config
+from plot_cluster_hist import plot_cluster_hist
 
 ##### CONFIGURATION #####
 
-# data_prefix = "/data/users/noel/data/"        # For smaug
-# data_prefix = "/localdisk/noel/"              # For fluffy
-data_prefix = "data/"                           # For local
+DATA_PREFIX = config(Keys.DATA_PATH)
 
-PORT = 10001
 ENCODING_STOP_SYMBOL = ":"
 ENCODING_FINISHED_SYMBOL = "q"
 ENCODING_START_SYMBOL = "s"
 
-# Email Settings
-EMAIL_SERVER = "alef"
-EMAIL_TARGET = "noel@schwabenland.ch" # This is the email address that will receive the training history plots
-EMAIL_USER = 'noel' # The user that is sending the email
+EMAIL_SERVER =  config(Keys.EMAIL_SERVER)
+EMAIL_TARGET = config(Keys.EMAIL_TARGET)    # This is the email address that will receive the training history plots
+EMAIL_USER = config(Keys.EMAIL_USER)        # The user that is sending the email
+
+PORT = config(Keys.PORT)
 
 ##### MASTER SOCKER #####
 

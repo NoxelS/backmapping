@@ -1,19 +1,22 @@
 import os
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Disable tensorflow warnings
+import sys
 
-# from lib.cnn import CNN
-import tensorflow as tf
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import numpy as np
-from scipy.ndimage import gaussian_filter
-import sys
-from library.classes.models import CNN
-from library.classes.generators import RelativeVectorsTrainingDataGenerator, AbsolutePositionsGenerator, PADDING_X, PADDING_Y, print_matrix
-from library.parser import pdb_data_to_xyz, cg_xyz_to_pdb_data, at_xyz_to_pdb_data
-from Bio.PDB import PDBParser
-from library.classes.losses import BackmappingRelativeVectorLoss, BackmappingAbsolutePositionLoss
+# from lib.cnn import CNN
+import tensorflow as tf
 import matplotlib.pyplot as plt
+from Bio.PDB import PDBParser
+from scipy.ndimage import gaussian_filter
+
+from library.parser import pdb_data_to_xyz, at_xyz_to_pdb_data, cg_xyz_to_pdb_data
+from library.classes.losses import BackmappingRelativeVectorLoss, BackmappingAbsolutePositionLoss
+from library.classes.models import CNN
 from library.static.topologies import DOPC_AT_NAMES
+from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsGenerator, RelativeVectorsTrainingDataGenerator, print_matrix
+
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Disable tensorflow warnings
+
 
 ##### CONFIGURATION #####
 

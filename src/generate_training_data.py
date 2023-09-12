@@ -1,8 +1,11 @@
 import os
-from Bio.PDB.PDBIO import PDBIO
 import time
 from datetime import datetime
+
+from Bio.PDB.PDBIO import PDBIO
+
 from library.parser import get_cg_at_datasets
+
 
 def copy_file(source, destination):
     with open(source, 'rb') as file:
@@ -10,7 +13,7 @@ def copy_file(source, destination):
     with open(destination, 'wb') as file:
         file.write(myFile)
 
-input_dir_path = "data/molecules"
+input_dir_path = "data/molecules"   # TODO: make with config
 output_dir_path = "data/training"
 
 # Create output dir if it does not exist

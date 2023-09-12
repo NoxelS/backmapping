@@ -1,9 +1,10 @@
 import glob
 import contextlib
+
 from PIL import Image
 
 # filepaths
-fp_in = "data/hist/pred/*.png"
+fp_in = "data/hist/pred/*.png"  # TODO: make with config
 fp_out = "training.gif"
 
 # use exit stack to automatically close opened images

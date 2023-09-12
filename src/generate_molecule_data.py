@@ -1,11 +1,12 @@
 import os
-from Bio.PDB.PDBIO import PDBIO
 import time
 from datetime import datetime
+
+from Bio.PDB.PDBIO import PDBIO
+
 from library.parser import get_cg_at_datasets
 
-
-input_dir_path = "data/membranes"
+input_dir_path = "data/membranes"   # TODO: make with config
 output_dir_path = "data/molecules_test"
 cg_datasets, at_datasets = [], []
 io = PDBIO()

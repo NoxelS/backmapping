@@ -1,13 +1,14 @@
-from Bio.PDB.PDBIO import PDBIO
-from datetime import datetime
-from library.parser import get_cg_at_datasets
-
 import os
 import time
+from datetime import datetime
+
 import numpy as np
 import matplotlib.pyplot as plt
+from Bio.PDB.PDBIO import PDBIO
 
-input_dir_path = "data/membranes"
+from library.parser import get_cg_at_datasets
+
+input_dir_path = "data/membranes"   # TODO: make with config
 output_dir_path = "data/molecules"
 output_box_table_path = "data"    # <- This is the path where the box sizes are saved
 training_dir_path = "data/training"
