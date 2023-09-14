@@ -1,7 +1,10 @@
 import os
 import sys
+import json
+import pickle
 import random
 import linecache
+from sys import getsizeof
 
 import numpy as np
 import tensorflow as tf
@@ -10,6 +13,7 @@ from Bio.PDB.PDBIO import PDBIO, Select
 from scipy.ndimage import gaussian_filter
 from Bio.PDB.PDBParser import PDBParser
 
+from library.config import Keys, config
 from library.parser import get_cg_at_datasets
 from library.static.topologies import DOPC_BEAD_TYPE_NAME_IDS, DOPC_CG_NAME_TO_TYPE_MAP, DOPC_ELEMENT_TYPE_NAME_IDS
 from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
@@ -230,6 +234,26 @@ def print_matrix(matrix):
         print(matrix.shape[1] * 8 * "-")
 
 
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
+
 class BackmappingBaseGenerator(tf.keras.utils.Sequence):
     """
         This is the base class for the backmapping data generator.
@@ -248,6 +272,7 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
         validate_split: float = 0.1,
         validation_mode: bool = False,
         augmentation: bool = False,
+        data_usage: float = 1.0,
     ):
         """
         This is the base class for the backmapping data generator.
@@ -262,6 +287,7 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
             validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
             validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
             augmentation (bool, optional): If the generator should augment the data. Defaults to False.
+            data_usage (float, optional): The percentage of data that should be used. Defaults to 100%
         """
         self.input_dir_path = input_dir_path
         self.output_dir_path = output_dir_path
@@ -273,6 +299,7 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
         self.augmentation = augmentation
 
         self.parser = PDBParser(QUIET=True)
+        self.cache = {}
 
         max_index = int(os.listdir(input_dir_path).__len__() - 1)
 
@@ -283,11 +310,32 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
         # Set validation mode
         if self.validation_mode:
             self.start_index = self.len + 1
-            self.len = int(max_index * validate_split)
             self.end_index = max_index
+            self.len = self.end_index - self.start_index + 1
+            
+        # Set data use
+        if data_usage < 1.0:
+            self.len = np.max([int(self.len * data_usage), self.batch_size])
+            self.end_index = self.start_index + self.len - 1
+            
+        # Use biggest multiple of batch size that fits
+        self.len = np.max([(self.len // self.batch_size) * self.batch_size, self.batch_size])
+        self.end_index = self.start_index + self.len - 1
 
         # Debug
         print(f"Found {self.len} residues in ({self.input_dir_path})")
+        
+        # Try load cache from file
+        self.cache_name = ("validation" if self.validation_mode else "training") + "_" + str(self.batch_size) + "_cache"
+        self.cache_path = os.path.join(config(Keys.DATA_PATH), self.cache_name + ".pkl")
+        
+        if os.path.exists(self.cache_path):
+            try:
+                with open(self.cache_path, "rb") as f:
+                    self.cache = pickle.load(f)
+                    print(f"Loaded cache from file ({self.cache_path}) with {len(self.cache)} items!")
+            except Exception as e:
+                print(f"Could not load cache from file!")
 
         # Initialize
         self.on_epoch_end()
@@ -300,7 +348,57 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
 
     def __getitem__(self, idx):
         raise Exception("This is an abstract class and should not be used directly!")
+    
+    def __cache_item__(self, idx, output):
+        """
+        This function tries to cache the output of the generator. If the cache already exists, it will be overwritten.
+        Also checks if enough memories is available.
+        
+        Args:
+            idx (int): The index of the batch
+            output (tuple): The output (X, Y) 
+        """
+        
+        try:
+            self.cache[idx] = output
+        except MemoryError:
+            print(f"Not enough memory to cache batch {idx}/{self.__len__()}!")
+        except Exception as e:
+            print(f"Could not cache batch {idx}/{self.__len__()}!")
+            print(e)
+            
+        # Try save to file
+        try:
+            with open(self.cache_path, "wb") as f:
+                pickle.dump(self.cache, f, protocol=pickle.HIGHEST_PROTOCOL)
+        except Exception as e:
+            print(f"Could not save cache to file!")
+            print(e)
 
+
+    def __load_cached_item__(self, idx):
+        """
+        This function tries to load a cached item from the cache.
+        
+        Args:
+            idx (int): The index of the batch
+            
+        Returns:
+            tuple: The output (X, Y) 
+        """
+        
+        try:
+            return self.cache[idx]
+        except KeyError:
+            return None
+        except Exception as e:
+            print(f"Could not load cached batch {idx}/{self.__len__()}!")
+            print(e)
+            return None
+
+    def __get_cache_size__(self):
+        return get_size(self.cache)
+        # return getsizeof(self.cache)
 
 class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
     """
@@ -686,6 +784,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
         only_fit_one_atom=False,
         atom_name=None,
         neighbourhood_size=4,
+        data_usage: float = 1.0,
     ):
         """
         Args:
@@ -701,6 +800,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
             only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
             atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
             neighbourhood_size (int, optional): The amount of the neighbours to take into place. Defaults to 4.
+            data_use (float, optional): The percentage of data that should be used. Defaults to 100%
         """
         # Call super constructor
         super().__init__(
@@ -713,6 +813,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
             validate_split,
             validation_mode,
             augmentation,
+            data_usage,
         )
 
         self.only_fit_one_atom = only_fit_one_atom
@@ -720,7 +821,26 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
         self.neighbourhood_size = neighbourhood_size
 
     def __getitem__(self, idx):
-        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+        X, Y = None, None
+        
+        # Check if the item is cached
+        cached_item = self.__load_cached_item__(idx)
+        if cached_item is not None:
+            X, Y = cached_item
+        else:
+            # Get the item
+            X, Y = self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
+            
+            # Try to cache the item
+            self.__cache_item__(idx, (X, Y))
+        
+            print(f"Cache size: {self.__get_cache_size__()}")
+
+        # Augment data
+        if self.augmentation:
+            X, Y = self.__augment_data__(X, Y)
+
+        return X, Y
 
     def __getitem_one_atom__(self, idx):
         # Initialize Batch
@@ -788,42 +908,42 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
                 X[i, PADDING_X + 12 + j * 12: PADDING_X + 24 + j * 12, PADDING_Y:-PADDING_Y, 0] = neighbor_X
 
         # Augment the data
-        if self.augmentation:
-            # Randomly rotate each dataset
-            for i in range(self.batch_size):
-                vectors_X = X[i, :, :, 0]
-                vectors_Y = Y[i, :, :, 0]
+        # if self.augmentation:
+        #     # Randomly rotate each dataset
+        #     for i in range(self.batch_size):
+        #         vectors_X = X[i, :, :, 0]
+        #         vectors_Y = Y[i, :, :, 0]
 
-                # Randomly rotate the dataset
-                angle_x = random.uniform(-np.pi, np.pi)
-                angle_y = random.uniform(-np.pi, np.pi)
-                angle_z = random.uniform(-np.pi, np.pi)
+        #         # Randomly rotate the dataset
+        #         angle_x = random.uniform(-np.pi, np.pi)
+        #         angle_y = random.uniform(-np.pi, np.pi)
+        #         angle_z = random.uniform(-np.pi, np.pi)
 
-                # Loop over beads
-                for j in range(vectors_X.shape[0]):
-                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+        #         # Loop over beads
+        #         for j in range(vectors_X.shape[0]):
+        #             vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+        #             # Rotate
+        #             vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+        #             vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+        #             vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
 
-                    # Write back
-                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+        #             # Write back
+        #             vectors_X[j, PADDING_Y:-PADDING_Y] = vec
 
-                # Loop over atoms
-                for j in range(vectors_Y.shape[0]):
-                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+        #         # Loop over atoms
+        #         for j in range(vectors_Y.shape[0]):
+        #             vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+        #             # Rotate
+        #             vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+        #             vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+        #             vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
 
-                    # Write back
-                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+        #             # Write back
+        #             vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
 
-                # Write the rotated vectors back to the matrix
-                X[i, :, :, 0] = vectors_X
-                Y[i, :, :, 0] = vectors_Y
+        #         # Write the rotated vectors back to the matrix
+        #         X[i, :, :, 0] = vectors_X
+        #         Y[i, :, :, 0] = vectors_Y
 
         # Convert to tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)
@@ -876,3 +996,50 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
 
     def __getitem_all_atoms__(self, idx):
         raise Exception("Not implemented yet!")
+
+    def __augment_data__(self, X, Y):
+        # Make into numpy array
+        X = X.numpy()
+        Y = Y.numpy()
+
+        # Augment the data by randomly rotating the dataset
+        for i in range(self.batch_size):
+            vectors_X = X[i, :, :, 0]
+            vectors_Y = Y[i, :, :, 0]
+
+            # Randomly rotate the dataset
+            angle_x = random.uniform(-np.pi, np.pi)
+            angle_y = random.uniform(-np.pi, np.pi)
+            angle_z = random.uniform(-np.pi, np.pi)
+
+            # Loop over beads
+            for j in range(vectors_X.shape[0]):
+                vec = vectors_X[j, PADDING_Y:-PADDING_Y]
+                # Rotate
+                vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                # Write back
+                vectors_X[j, PADDING_Y:-PADDING_Y] = vec
+
+            # Loop over atoms
+            for j in range(vectors_Y.shape[0]):
+                vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
+                # Rotate
+                vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+
+                # Write back
+                vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
+
+            # Write the rotated vectors back to the matrix
+            X[i, :, :, 0] = vectors_X
+            Y[i, :, :, 0] = vectors_Y
+
+        # Make into tensor
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
+        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+
+        return X, Y

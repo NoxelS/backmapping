@@ -3,9 +3,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from library.config import Keys, config
 from library.classes.generators import ABSOLUT_POSITION_SCALE
 
-PATH_TO_HIST = os.path.join("data", "hist")
+PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
 
 # Plot the training history of all models in a single plot
 def plot_cluster_hist():
@@ -39,8 +40,8 @@ def plot_cluster_hist():
 
         try:
             # Load csv
-            hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1)
-        except:
+            hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1, usecols=(0, 1, 2))
+        except Exception as e:
             continue
 
         # If only one row, add dimension
@@ -49,7 +50,8 @@ def plot_cluster_hist():
 
         # There are maybe multiple train cylces so reindex the epochs accordingly
         hist[:, 0] = np.arange(hist.shape[0])
-        
+
+
         if np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE) < min_loss:
             min_loss = np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE)
 

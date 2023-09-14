@@ -183,3 +183,4 @@ neighborhoods.*
 mean_distances.*
 *.zip
 *.png
+*.pkl

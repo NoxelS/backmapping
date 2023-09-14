@@ -4,18 +4,7 @@
 #SBATCH --error=./logs/jobs/data-gen-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
-# #SBATCH --cpus-per-task=4
-# #SBATCH --gpus=0
-# #SBATCH --mem=60000
-# #SBATCH --mem-per-gpu=140G        # make sure to at least get 140GB of total vram
-# #SBATCH --mem=140G                # make sure to at least get 140GB of total vram
-# #SBTACH --contiguous
 #SBATCH --partition=long
-# #SBATCH --time=02:00:00:00             # make sure to change the time if running something real
-#SBATCH --mail-type=begin           # send email when job begins
-#SBATCH --mail-type=end             # send email when job ends
-#SBATCH --mail-type=fail            # send email if job fails
-#SBATCH --mail-user=noel@lust.uni-sb.de
 
 
 # This block is echoing some SLURM variables
@@ -31,11 +20,6 @@ echo "SLURM_CPUS_ON_NODE = $SLURM_CPUS_ON_NODE"
 echo "SLURM_GPUS_PER_TASK = $SLURM_GPUS_PER_TASK"
 echo "SLURM_GPUS_ON_NODE = $SLURM_GPUS_ON_NODE"
 echo ""
-
-# Set envs
-# export PYENV_ROOT="/home/global/pyenv"
-# export PATH="$PYENV_ROOT/bin:$PATH"
-# eval "$(pyenv init -)"
 
 echo "####################### CODE ###########################"
 

@@ -22,16 +22,25 @@ class Keys(Enum):
     VALIDATION_SPLIT=301
     NEIGHBORHOOD_SIZE=302
     EPOCHS=303
+    MODEL_NAME_PREFIX=304
+    DATA_USAGE=305
+    USE_TENSORBOARD=306
 
+def _removeInlineComments(cfgparser):
+    for section in cfgparser.sections():
+        for item in cfgparser.items(section):
+            cfgparser.set(section, item[0], item[1].split(";")[0].strip())
+            
 def _get_config() -> configparser.ConfigParser:
     config_ = configparser.ConfigParser()
     config_.read(filenames= "config.ini", encoding='utf-8')
+    _removeInlineComments(config_)
     return config_
 
 def config(key: Keys):
     value = ""
     try:
-        value = _get_config()[CONFIG_SECTIONS[key.value // 100]][key.name.lower()]
+        value = _get_config()[CONFIG_SECTIONS[key.value // 100]][key.name.lower()].strip()
     except KeyError:
         # Retuzrn null
         value = None
@@ -47,6 +56,11 @@ def config(key: Keys):
             value = int(value)
         except ValueError:
             pass
+        
+    if value == "True":
+        value = True
+    elif value == "False":
+        value = False
 
     return value
 

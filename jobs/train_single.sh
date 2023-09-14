@@ -1,21 +1,6 @@
 #!/bin/bash
-# #SBATCH --nice=0
-# #SBATCH --nodes=1
-# #SBATCH --cpus-per-task=4
-# #SBATCH --gpus=0
-# #SBATCH --mem=60000
-# #SBATCH --mem-per-gpu=140G            # make sure to at least get 140GB of total vram
-# #SBATCH --mem=140G                    # make sure to at least get 140GB of total vram
-# #SBTACH --contiguous
-#SBTACH --exclusive
-#SBTACH --mem=0
-# #SBATCH --partition=long
-#SBATCH --time=00:03:00:00              # make sure to change the time if running something real
-#SBATCH --mail-type=begin               # send email when job begins
-#SBATCH --mail-type=end                 # send email when job ends
-#SBATCH --mail-type=fail                # send email if job fails
-#SBATCH --mail-user=noel@lust.uni-sb.de
-
+#SBATCH --partition=deflt
+#SBATCH --nice=100
 
 # This block is echoing some SLURM variables
 echo "###################### JOB DETAILS ########################"

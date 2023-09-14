@@ -161,6 +161,7 @@ if __name__ == "__main__":
     some_models_train = True
     while some_models_train:
         conn, addr = master_socket.accept()
+
         # Read data from the socket
         from_client = ''
         send_update = False
