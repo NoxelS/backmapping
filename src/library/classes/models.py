@@ -275,7 +275,7 @@ class CNN:
             last_epoch = 0
             with open(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv"), "r") as f:
                 last_epoch = len(f.readlines()) - 2     # -2 because header and last empty line
-            self.current_epoch = last_epoch
+            self.current_epoch = np.max([last_epoch, 0])
             print(f"Starting from epoch {self.current_epoch}")
 
         # Here we use generators to generate batches of data for the training.
