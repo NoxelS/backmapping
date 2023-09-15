@@ -273,6 +273,7 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
         validation_mode: bool = False,
         augmentation: bool = False,
         data_usage: float = 1.0,
+        cache_name: str = "",
     ):
         """
         This is the base class for the backmapping data generator.
@@ -324,11 +325,16 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
 
         # Debug
         print(f"Found {self.len} residues in ({self.input_dir_path})")
-        
-        # Try load cache from file
-        self.cache_name = ("validation" if self.validation_mode else "training") + "_" + str(self.batch_size) + "_cache"
+
+        self.cache_name = cache_name
+
+        # Make a default cache name if not set by the inheriting class
+        if not self.cache_name:
+            self.cache_name = ("validation" if self.validation_mode else "training") + "_" + str(self.batch_size) + "_cache"
+
         self.cache_path = os.path.join(config(Keys.DATA_PATH), self.cache_name + ".pkl")
-        
+
+        # Try load cache from file
         if os.path.exists(self.cache_path):
             try:
                 with open(self.cache_path, "rb") as f:
@@ -441,6 +447,7 @@ class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
             validate_split,
             validation_mode,
             augmentation,
+            cache_name="RVT_" + ("validation" if validation_mode else "training") + "_" + str(batch_size) + "_cache"
         )
 
     def __getitem__(self, idx):
@@ -546,6 +553,7 @@ class AbsolutePositionsGenerator(BackmappingBaseGenerator):
             validate_split,
             validation_mode,
             augmentation,
+            cache_name="AP_" + ("validation" if validation_mode else "training") + "_" + str(batch_size) + "_cache"
         )
 
         self.only_fit_one_atom = only_fit_one_atom
@@ -814,6 +822,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
             validation_mode,
             augmentation,
             data_usage,
+            cache_name="APN_" + ("validation" if validation_mode else "training") + "_" + atom_name + "_" + str(batch_size) + "_cache"
         )
 
         self.only_fit_one_atom = only_fit_one_atom
@@ -833,8 +842,6 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
             
             # Try to cache the item
             self.__cache_item__(idx, (X, Y))
-        
-            print(f"Cache size: {self.__get_cache_size__()}")
 
         # Augment data
         if self.augmentation:
@@ -906,44 +913,6 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
 
                 # Add the neighbour to the input
                 X[i, PADDING_X + 12 + j * 12: PADDING_X + 24 + j * 12, PADDING_Y:-PADDING_Y, 0] = neighbor_X
-
-        # Augment the data
-        # if self.augmentation:
-        #     # Randomly rotate each dataset
-        #     for i in range(self.batch_size):
-        #         vectors_X = X[i, :, :, 0]
-        #         vectors_Y = Y[i, :, :, 0]
-
-        #         # Randomly rotate the dataset
-        #         angle_x = random.uniform(-np.pi, np.pi)
-        #         angle_y = random.uniform(-np.pi, np.pi)
-        #         angle_z = random.uniform(-np.pi, np.pi)
-
-        #         # Loop over beads
-        #         for j in range(vectors_X.shape[0]):
-        #             vec = vectors_X[j, PADDING_Y:-PADDING_Y]
-        #             # Rotate
-        #             vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-        #             vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-        #             vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-        #             # Write back
-        #             vectors_X[j, PADDING_Y:-PADDING_Y] = vec
-
-        #         # Loop over atoms
-        #         for j in range(vectors_Y.shape[0]):
-        #             vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
-        #             # Rotate
-        #             vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-        #             vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-        #             vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-        #             # Write back
-        #             vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
-
-        #         # Write the rotated vectors back to the matrix
-        #         X[i, :, :, 0] = vectors_X
-        #         Y[i, :, :, 0] = vectors_Y
 
         # Convert to tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)
