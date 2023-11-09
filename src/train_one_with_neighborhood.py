@@ -114,7 +114,7 @@ with strategy.scope():
         data_prefix=DATA_PREFIX,
         display_name=atom_name_to_fit,
         keep_checkpoints=True,
-        load_path=os.path.join("data", "models", f"{MODEL_NAME_PREFIX}{atom_name_to_fit}.h5"),
+        load_path=os.path.join(DATA_PREFIX, "models", f"{MODEL_NAME_PREFIX}{atom_name_to_fit}.h5"),
         loss=BackmappingAbsolutePositionLoss(),
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,

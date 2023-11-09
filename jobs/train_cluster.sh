@@ -81,12 +81,39 @@ atoms_to_fit=(
 )
 
 nodes_to_use=(
-    "fang41"
-    "fang42"
-    "fang43"
-    "fang47"
-    "fang48"
-    "fang49"
+    # "fang2"
+    # "fang3"
+    # "fang4"
+    # "fang5"
+    "fang6"
+    "fang7"
+    "fang8"
+    "fang9"
+    "fang11"
+    "fang12"
+    "fang13"
+    "fang14"
+    "fang15"
+    "fang16"
+    "fang17"
+    "fang18"
+    "fang19"
+    "fang20"
+    "fang21"
+    "fang22"
+    "fang23"
+    "fang24"
+    "fang25"
+    "fang26"
+    "fang27"
+    "fang28"
+    "fang29"
+    # "fang41"
+    # "fang42"
+    # "fang43"
+    # "fang47"
+    # "fang48"
+    # "fang49"
 )
 
 length=${#atoms_to_fit[@]}
@@ -103,7 +130,7 @@ for ((i = 0; i < length; i++))
 do
     current_node=${nodes_to_use[i % node_length]}  # Cycle through nodes
     current_atom=${atoms_to_fit[i]}
-    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
+    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 -w $current_node --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
 done
 
 # Start master socket (automatically waits for all jobs to finish)

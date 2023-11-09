@@ -14,7 +14,7 @@ def plot_cluster_hist():
     mean_distances = {}
 
     # Read csv
-    with open(os.path.join("data", "mean_distances.csv"), "r") as f:
+    with open(os.path.join(config(Keys.DATA_PATH), "mean_distances.csv"), "r") as f:
         # Skip header
         f.readline()
 
