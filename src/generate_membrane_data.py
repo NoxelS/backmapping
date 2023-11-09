@@ -1,7 +1,11 @@
 import os
 
-MEMBRANE_PATH = "data/membranes"    # TODO: make with config
-RAW_PATH = "data/raw"
+from library.config import Keys, config
+
+DATA_PREFIX = config(Keys.DATA_PATH)
+
+MEMBRANE_PATH = os.path.join(DATA_PREFIX, "membranes")
+RAW_PATH = os.path.join(DATA_PREFIX, "raw")
 
 index = 0
 

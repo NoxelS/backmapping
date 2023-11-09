@@ -1,6 +1,7 @@
-import os
-import time
+from library.config import Keys, config
 from datetime import datetime
+import time
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,10 +9,12 @@ from Bio.PDB.PDBIO import PDBIO
 
 from library.parser import get_cg_at_datasets
 
-input_dir_path = "data/membranes"   # TODO: make with config
-output_dir_path = "data/molecules"
-output_box_table_path = "data"    # <- This is the path where the box sizes are saved
-training_dir_path = "data/training"
+DATA_PREFIX = config(Keys.DATA_PATH)
+
+input_dir_path = os.path.join(DATA_PREFIX, "membranes")
+output_dir_path = os.path.join(DATA_PREFIX, "molecules")
+output_box_table_path = DATA_PREFIX  # <- This is the path where the box sizes are saved
+training_dir_path = os.path.join(DATA_PREFIX, "training")
 
 TRAINING_DATA_MODE = True
 MAX_SAMPLES = 15 * (10 + 1) * 1024  # 102400
