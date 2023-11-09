@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=gen_data
-#SBATCH --output=./logs/jobs/data-gen-%j.log
-#SBATCH --error=./logs/jobs/data-gen-%j.err
+#SBATCH --output=./jobs/logs/data-gen-%j.log
+#SBATCH --error=./jobs/logs/data-gen-%j.err
 #SBATCH --nice=0
 #SBATCH --nodes=1
 #SBATCH --partition=long
