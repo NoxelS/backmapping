@@ -7,6 +7,7 @@ from library.config import Keys, config
 from library.classes.generators import ABSOLUT_POSITION_SCALE
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
+HIGHLIGHT_ATOM = "C318"     # If a highlight atom is set, it will be highlighted in the plot
 
 # Plot the training history of all models in a single plot
 def plot_cluster_hist():
@@ -56,7 +57,8 @@ def plot_cluster_hist():
             min_loss = np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE)
 
         # Plot
-        ax.plot(hist[:, 0] + 1, hist[:, 2] * ABSOLUT_POSITION_SCALE, label=atom_name, color=plt.cm.cool(mean_distance))
+        color = plt.cm.cool(mean_distance) if atom_name != HIGHLIGHT_ATOM else "red"
+        ax.plot(hist[:, 0] + 1, hist[:, 2] * ABSOLUT_POSITION_SCALE, label=atom_name, color=color)
 
     # Add labels
     ax.set_xlabel("Epoch")
