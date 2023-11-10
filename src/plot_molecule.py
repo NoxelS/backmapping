@@ -158,10 +158,13 @@ for sample_index in range(10):
                     ax.plot([from_atom[0], to_atom[0]], [from_atom[1], to_atom[1]], [from_atom[2], to_atom[2]], color='blue', linestyle='solid', linewidth=1, alpha=0.25)
                     ax.plot([from_atom_predicted[0], to_atom_name_predicted[0]], [from_atom_predicted[1], to_atom_name_predicted[1]], [from_atom_predicted[2], to_atom_name_predicted[2]], color='blue', linestyle='dotted', linewidth=1, alpha=0.25)
 
-    # Add legend
+    # Add axes labels
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_zlabel("z")
+
+    # Add fig title
+    ax.set_title(f"Predicted atomic positions for sample {sample_index}")
 
     # Save image
     plt.savefig(f"data/images/{sample_index}_predictions.png")
