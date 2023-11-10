@@ -48,12 +48,16 @@ if atom_name_to_fit not in atom_names_to_fit:
 use_socket = len(sys.argv) > 2
 
 if use_socket:
-    host_ip_address = sys.argv[2]
-    print(f"Trying to connect to parent {host_ip_address}")
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((host_ip_address, PORT))
-    client.send(encode_starting(atom_name_to_fit))
-    client.close()
+    try:
+        host_ip_address = sys.argv[2]
+        print(f"Trying to connect to parent {host_ip_address}")
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host_ip_address, PORT))
+        client.send(encode_starting(atom_name_to_fit))
+        client.close()
+    except ConnectionRefusedError:
+        print("No parent found, not using socket")
+        use_socket = False
 else:
     print("No host ip address provided, not using socket")
 
@@ -130,11 +134,17 @@ with strategy.scope():
         use_tensorboard=USE_TENSORBOARD
     )
 
-    cnn.save()
+    try:
+        cnn.save()
+    except Exception as e:
+        print(f"Could not save model: {e}")
 
 # Send finished signal
 if use_socket:
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((host_ip_address, PORT))
-    client.send(encode_finished(atom_name_to_fit))
-    client.close()
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host_ip_address, PORT))
+        client.send(encode_finished(atom_name_to_fit))
+        client.close()
+    except Exception as e:
+        print(f"Could not send finished signal: {e}")

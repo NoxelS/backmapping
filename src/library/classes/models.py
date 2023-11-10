@@ -248,6 +248,7 @@ class CNN:
                 ),
             )
 
+
         if early_stop:
             # The EarlyStopping callback is used to exit the training early if
             # the validation loss does not improve after 20 epochs.
