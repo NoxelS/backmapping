@@ -81,10 +81,9 @@ atoms_to_fit=(
 )
 
 nodes_to_use=(
-    # "fang2"
-    # "fang3"
-    # "fang4"
-    # "fang5"
+    "fang3"
+    "fang4"
+    "fang5"
     "fang6"
     "fang7"
     "fang8"
@@ -108,12 +107,12 @@ nodes_to_use=(
     "fang27"
     "fang28"
     "fang29"
-    # "fang41"
-    # "fang42"
-    # "fang43"
-    # "fang47"
-    # "fang48"
-    # "fang49"
+    "fang41"
+    "fang42"
+    "fang43"
+    "fang47"
+    "fang48"
+    "fang49"
 )
 
 length=${#atoms_to_fit[@]}
@@ -130,7 +129,8 @@ for ((i = 0; i < length; i++))
 do
     current_node=${nodes_to_use[i % node_length]}  # Cycle through nodes
     current_atom=${atoms_to_fit[i]}
-    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 -w $current_node --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
+    # sbatch --exclude=fang1,fang51,fang52,fang53,fang54 -w $current_node --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
+    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
 done
 
 # Start master socket (automatically waits for all jobs to finish)
@@ -145,12 +145,6 @@ if [ ! -s ./jobs/logs/$folder_name/host-$SLURM_JOBID.err ]
 then
     rm ./jobs/logs/$folder_name/master-$SLURM_JOBID.err
 fi
-
-# Copy the models to the folder
-cp -r ./data/models ./jobs/logs/$folder_name/models
-
-# Copy hist to the folder
-cp -r ./data/hist ./jobs/logs/$folder_name/hist
 
 # Copy the plot to the folder
 cp training_history.png ./jobs/logs/$folder_name/training_history.png
