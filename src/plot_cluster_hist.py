@@ -1,16 +1,17 @@
 import os
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from library.config import Keys, config
-from library.classes.generators import ABSOLUT_POSITION_SCALE
+from library.classes.generators import ABSOLUTE_POSITION_SCALE_Y
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
-HIGHLIGHT_ATOM = "C318"     # If a highlight atom is set, it will be highlighted in the plot
+HIGHLIGHT_ATOM = "" # If a highlight atom is set, it will be highlighted in the plot
 
 # Plot the training history of all models in a single plot
-def plot_cluster_hist():
+def plot_cluster_hist(data_col = 2):
     # Get mean distances to color the plot accordingly
     mean_distances = {}
 
@@ -41,7 +42,7 @@ def plot_cluster_hist():
 
         try:
             # Load csv
-            hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1, usecols=(0, 1, 2))
+            hist = np.loadtxt(os.path.join(PATH_TO_HIST, hist), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
         except Exception as e:
             continue
 
@@ -53,21 +54,24 @@ def plot_cluster_hist():
         hist[:, 0] = np.arange(hist.shape[0])
 
 
-        if np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE) < min_loss:
-            min_loss = np.min(hist[:, 2] * ABSOLUT_POSITION_SCALE)
+        if np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y) < min_loss:
+            min_loss = np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y)
 
         # Plot
         color = plt.cm.cool(mean_distance) if atom_name != HIGHLIGHT_ATOM else "red"
-        ax.plot(hist[:, 0] + 1, hist[:, 2] * ABSOLUT_POSITION_SCALE, label=atom_name, color=color)
+        ax.plot(hist[:, 0] + 1, hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y, label=atom_name, color=color, alpha=1.0)
+
+    # Get name of data
+    data_name = ["", "Accuracy", "MSE Loss (Å)", "Learning Rate", "Mean Average Error", "Val. Accuracy", "Val. MSE Loss (Å)", "Val. Mean Average Error"][data_col]
 
     # Add labels
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("MSE Loss (Å)")
+    ax.set_ylabel(data_name)
     ax.set_title("Training History")
 
     # Make log scale
     ax.set_yscale("log")
-    
+
     # Add 10 y-ticks between min and max
     ax.set_yticks(np.logspace(np.log10(ax.get_ylim()[0]), np.log10(ax.get_ylim()[1]), 10))
     
@@ -92,8 +96,16 @@ def plot_cluster_hist():
     ax2.set_title("NMD") # Normalized Mean Distance
 
     # Save
-    plt.savefig("training_history.png",bbox_inches='tight')
+    file_name = "training_history.png" if data_col == 2 else f"training_history_{data_name.lower().replace(' ', '_')}.png"
+    plt.savefig(file_name, bbox_inches='tight')
 
 
 if __name__ == "__main__":
-    plot_cluster_hist()
+    # Get arguments
+    args = sys.argv[1:]
+
+    if len(args) > 0:
+        plot_cluster_hist(int(args[0]))
+    else:
+        print("You can specify the plotdata by using an argument 2-7")
+        plot_cluster_hist()
