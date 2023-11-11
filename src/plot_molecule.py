@@ -13,7 +13,7 @@ from library.classes.models import CNN
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.vector_mappings import DOPC_AT_MAPPING
-from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNeigbourhoodGenerator, print_matrix, ABSOLUT_POSITION_SCALE
+from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNeigbourhoodGenerator, print_matrix, ABSOLUTE_POSITION_SCALE_Y
 
 ##### CONFIGURATION #####
 
@@ -93,8 +93,8 @@ for sample_index in range(10):
                 # Predict atom postion
                 test_sample_pred = cnn.model.predict(test_sample[0])
 
-                position = test_sample_pred[0, PADDING_X: - PADDING_X, PADDING_Y: -PADDING_Y, 0][0] * ABSOLUT_POSITION_SCALE        # In Angstrom
-                true_position = test_sample[1][0, PADDING_X: - PADDING_X, PADDING_Y: -PADDING_Y, 0][0] * ABSOLUT_POSITION_SCALE     # In Angstrom
+                position = test_sample_pred[0, PADDING_X: - PADDING_X, PADDING_Y: -PADDING_Y, 0][0] * ABSOLUTE_POSITION_SCALE_Y        # In Angstrom
+                true_position = test_sample[1][0, PADDING_X: - PADDING_X, PADDING_Y: -PADDING_Y, 0][0] * ABSOLUTE_POSITION_SCALE_Y     # In Angstrom
                 data_point = {"atom_name": atom_name, "position": position, "loss": cnn.model.evaluate(test_sample[0], test_sample[1]), "input": test_sample[0][0], "output": true_position}
 
                 atom_position_predictions.append(data_point)
@@ -114,6 +114,19 @@ for sample_index in range(10):
 
     # Print all prediction points
     for data_point in atom_position_predictions:
+        # Get hist file for the model
+        hist_file = os.path.join(DATA_PREFIX, "hist", f"training_history_{data_point['atom_name']}.csv")
+        total_epochs = 0
+
+        # Get the total number of epochs
+        if os.path.exists(hist_file):
+            with open(hist_file, "r") as f:
+                total_epochs = len(f.readlines())
+        total_epochs = np.max([total_epochs - 2, 2])
+
+        if total_epochs < 50:
+            continue
+
         # Random color for atom
         color = DEFAULT_ELEMENT_COLOR_MAP[data_point["atom_name"][0]]
 
@@ -121,6 +134,9 @@ for sample_index in range(10):
         ax.scatter(data_point["position"][0], data_point["position"][1], data_point["position"][2], label=data_point["atom_name"], color=color)
         ax.scatter(data_point["output"][0], data_point["output"][1], data_point["output"][2], label=data_point["atom_name"]+"-true", color=color, alpha=0.25)
 
+        # # Write the epoch number above the predicted position
+        # ax.text(data_point["position"][0], data_point["position"][1], data_point["position"][2], f"$\mu={total_epochs}$", color='red', fontsize=6, alpha=0.5)
+        
         # Draw lines between the predicted and true positions
         ax.plot([data_point["position"][0], data_point["output"][0]], [data_point["position"][1], data_point["output"][1]], [data_point["position"][2], data_point["output"][2]], color='black', linestyle='dashed', linewidth=1, alpha=0.1)
 
