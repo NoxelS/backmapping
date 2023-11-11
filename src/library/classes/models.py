@@ -59,7 +59,7 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 2          # Scaled the filter dimensions by this factor
+        scale = 4          # Scaled the filter dimensions by this factor
 
         # The activation function to use for the convolutional layers
         conv_activation = tf.keras.layers.LeakyReLU(alpha=0.01)
@@ -223,9 +223,6 @@ class CNN:
             # Track the test sample after each batch (live)
             # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.live_track_test_samle(batch, logs)),
 
-            # Add custom metrics to tensorboard
-            tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.custom_tensorboard_metrics(batch, logs)),
-
             # Callback to save weights after each epoch
             tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.save()),
             
@@ -246,6 +243,11 @@ class CNN:
                     write_images=True,
                     update_freq='batch',
                 ),
+            )
+
+            # Add custom metrics to tensorboard
+            callbacks.append(
+                tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.custom_tensorboard_metrics(batch, logs)),
             )
 
 
@@ -433,10 +435,14 @@ class CNN:
         """
         # Send data to socket
         if self.socket is not None:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.connect((self.host_ip_address, self.port))
-            self.socket.send(f"{self.display_name}:{epoch}:{logs['loss']:.6f}".encode())
-            self.socket.close()
+            try:
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.connect((self.host_ip_address, self.port))
+                self.socket.send(f"{self.display_name}:{epoch}:{logs['loss']:.6f}".encode())
+                self.socket.close()
+            except Exception as e:
+                print("Could not send data to socket")
+                print(e)
 
     def update_internals(self, epoch, logs):
         """
@@ -459,7 +465,7 @@ class CNN:
         # Add custom metrics to tensorboard for each batch
 
         # Write loss to tensorboard
-        summary_dir1 = os.path.join("data", "tensorboard", self.display_name, "custom")
+        summary_dir1 = os.path.join(self.data_prefix, "tensorboard", self.display_name, "custom")
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
 
         # Set step
