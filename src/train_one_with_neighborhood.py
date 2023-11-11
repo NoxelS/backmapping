@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import socket
 
 import tensorflow as tf
@@ -46,18 +47,35 @@ if atom_name_to_fit not in atom_names_to_fit:
 ##### SOCKET #####
 
 use_socket = len(sys.argv) > 2
+client = None
 
 if use_socket:
+
+    # Try to connect to the parent process
     try:
-        host_ip_address = sys.argv[2]
         print(f"Trying to connect to parent {host_ip_address}")
+        host_ip_address = sys.argv[2]
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host_ip_address, PORT))
         client.send(encode_starting(atom_name_to_fit))
         client.close()
-    except ConnectionRefusedError:
-        print("No parent found, not using socket")
-        use_socket = False
+    except Exception as _:
+        # Sleep for 30 seconds to give the parent process time to start the server
+        print("Sleeping for 30 seconds to give the parent process time to start the server...")
+        time.sleep(30)
+        
+        # Try again
+        try:
+            print("Retrying to connect to parent...")
+            host_ip_address = sys.argv[2]
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((host_ip_address, PORT))
+            client.send(encode_starting(atom_name_to_fit))
+            client.close()
+        except ConnectionRefusedError:
+            print("No parent found, not using socket")
+            use_socket = False
+
 else:
     print("No host ip address provided, not using socket")
 
