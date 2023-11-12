@@ -53,8 +53,8 @@ if use_socket:
 
     # Try to connect to the parent process
     try:
-        print(f"Trying to connect to parent {host_ip_address}")
         host_ip_address = sys.argv[2]
+        print(f"Trying to connect to parent {host_ip_address}")
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host_ip_address, PORT))
         client.send(encode_starting(atom_name_to_fit))
@@ -136,8 +136,10 @@ with strategy.scope():
         data_prefix=DATA_PREFIX,
         display_name=atom_name_to_fit,
         keep_checkpoints=True,
-        load_path=os.path.join(DATA_PREFIX, "models", f"{MODEL_NAME_PREFIX}{atom_name_to_fit}.h5"),
-        loss=BackmappingAbsolutePositionLoss(),
+        load_path=os.path.join(DATA_PREFIX, "models", atom_name_to_fit, f"{MODEL_NAME_PREFIX}.h5"),
+        # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model 
+        # in the current tensorflow version. This hopefully will change in the future.
+        loss=tf.keras.losses.MeanAbsoluteError(),
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,
         host_ip_address=host_ip_address if use_socket else None,

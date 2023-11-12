@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from library.classes.losses import BackmappingRelativeVectorLoss
+from library.classes.losses import BackmappingRelativeVectorLoss, BackmappingAbsolutePositionLoss
 from library.classes.generators import PADDING_X, PADDING_Y
 
 
@@ -149,8 +149,12 @@ class CNN:
 
         # Load weights if path is given
         if load_path is not None and os.path.exists(load_path):
-            self.model.load_weights(load_path)
-            print("Loaded weights from " + load_path)
+            # Load the model as whole
+            self.model = tf.keras.models.load_model(load_path, custom_objects={
+                "BackmappingAbsolutePositionLoss": self.loss,
+                "LeakyReLU": conv_activation,
+            })
+            print("Loaded model from " + load_path)
         else:
             print("No backup found, starting from scratch...")
 
@@ -575,4 +579,5 @@ class CNN:
         if not path:
             raise Exception("No path given to save the model")
 
-        self.model.save_weights(path, overwrite=True, save_format="H5")
+        # Save the model as whole
+        self.model.save(path, overwrite=True, save_format="h5")
