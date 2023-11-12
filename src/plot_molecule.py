@@ -17,6 +17,8 @@ from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNe
 
 ##### CONFIGURATION #####
 
+LINE_MODE = False
+
 DATA_PREFIX = config(Keys.DATA_PATH)
 BATCH_SIZE = config(Keys.BATCH_SIZE)
 VALIDATION_SPLIT = config(Keys.VALIDATION_SPLIT)
@@ -98,9 +100,15 @@ for sample_index in range(10):
                 data_point = {"atom_name": atom_name, "position": position, "loss": cnn.model.evaluate(test_sample[0], test_sample[1]), "input": test_sample[0][0], "output": true_position}
 
                 atom_position_predictions.append(data_point)
+                print(data_point["position"])
+                print(data_point["position"].shape)
 
             except OSError:
                 print(f"Could not load model for atom {atom_name}! Probably the model is currently being trained.")
+
+        # Add N as origin to the data points
+        atom_position_predictions.append({"atom_name": "N", "position": np.array([0, 0, 0]), "loss": [0, 0, 0], "input": np.zeros((1, cg_size[0], cg_size[1], cg_size[2])), "output": np.array([0, 0, 0])})
+
 
     print("Finished predicting atom positions!")
 
@@ -130,18 +138,19 @@ for sample_index in range(10):
         # Random color for atom
         color = DEFAULT_ELEMENT_COLOR_MAP[data_point["atom_name"][0]]
 
-        # Print the predicted and true positions
-        ax.scatter(data_point["position"][0], data_point["position"][1], data_point["position"][2], label=data_point["atom_name"], color=color)
-        ax.scatter(data_point["output"][0], data_point["output"][1], data_point["output"][2], label=data_point["atom_name"]+"-true", color=color, alpha=0.25)
+        if not LINE_MODE:
+            # Print the predicted and true positions
+            ax.scatter(data_point["position"][0], data_point["position"][1], data_point["position"][2], label=data_point["atom_name"], color=color)
+            ax.scatter(data_point["output"][0], data_point["output"][1], data_point["output"][2], label=data_point["atom_name"]+"-true", color=color, alpha=0.25)
 
-        # # Write the epoch number above the predicted position
-        # ax.text(data_point["position"][0], data_point["position"][1], data_point["position"][2], f"$\mu={total_epochs}$", color='red', fontsize=6, alpha=0.5)
-        
-        # Draw lines between the predicted and true positions
-        ax.plot([data_point["position"][0], data_point["output"][0]], [data_point["position"][1], data_point["output"][1]], [data_point["position"][2], data_point["output"][2]], color='black', linestyle='dashed', linewidth=1, alpha=0.1)
+            # # Write the epoch number above the predicted position
+            # ax.text(data_point["position"][0], data_point["position"][1], data_point["position"][2], f"$\mu={total_epochs}$", color='red', fontsize=6, alpha=0.5)
+            
+            # Draw lines between the predicted and true positions
+            ax.plot([data_point["position"][0], data_point["output"][0]], [data_point["position"][1], data_point["output"][1]], [data_point["position"][2], data_point["output"][2]], color='black', linestyle='dashed', linewidth=1, alpha=0.1)
 
-        # Write the distance between the predicted and true positions above the line
-        ax.text((data_point["position"][0] + data_point["output"][0]) / 2, (data_point["position"][1] + data_point["output"][1]) / 2, (data_point["position"][2] + data_point["output"][2]) / 2, f"{np.linalg.norm(data_point['position'] - data_point['output']):.2f}Å", color='black', fontsize=6)
+            # Write the distance between the predicted and true positions above the line
+            ax.text((data_point["position"][0] + data_point["output"][0]) / 2, (data_point["position"][1] + data_point["output"][1]) / 2, (data_point["position"][2] + data_point["output"][2]) / 2, f"{np.linalg.norm(data_point['position'] - data_point['output']):.2f}Å", color='black', fontsize=6)
 
         # Print backbones connections of the molecule (predicted and true)
         for connection in DOPC_AT_MAPPING:
