@@ -9,6 +9,11 @@ from library.classes.generators import ABSOLUTE_POSITION_SCALE_Y
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
 HIGHLIGHT_ATOM = "" # If a highlight atom is set, it will be highlighted in the plot
+THEME = "dark-background" # Use pyplot theme
+
+# Use pyplot theme
+if THEME in plt.style.available:
+    plt.style.use(THEME)
 
 # Plot the training history of all models in a single plot
 def plot_cluster_hist(data_col = 2):
@@ -34,8 +39,17 @@ def plot_cluster_hist(data_col = 2):
     
     min_loss = 99999
 
+    hist_files = os.listdir(PATH_TO_HIST)
+
+    # Sort by average distance
+    hist_files.sort(key=lambda x: mean_distances[x.split("_")[2].split(".")[0]])
+    hist_files.reverse()
+
+    # Data to find the average graph
+    avg_data = []
+
     # Loop over all files in the hist folder
-    for i, hist in enumerate(os.listdir(PATH_TO_HIST)):
+    for i, hist in enumerate(hist_files):
         # file is named: training_history_C1.csv
         atom_name = hist.split("_")[2].split(".")[0]
         mean_distance = mean_distances[atom_name]
@@ -53,13 +67,27 @@ def plot_cluster_hist(data_col = 2):
         # There are maybe multiple train cylces so reindex the epochs accordingly
         hist[:, 0] = np.arange(hist.shape[0])
 
-
         if np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y) < min_loss:
             min_loss = np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y)
 
         # Plot
         color = plt.cm.cool(mean_distance) if atom_name != HIGHLIGHT_ATOM else "red"
-        ax.plot(hist[:, 0] + 1, hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y, label=atom_name, color=color, alpha=1.0)
+        ax.plot(hist[:, 0] + 1, hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y, label=atom_name, color=color, alpha=(1 - 0.5 * mean_distance))
+
+        # Add to average data
+        avg_data.append(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y)
+
+    # Plot average avg_data = list for every atom with the history of the loss
+    max_epoch = np.max([len(i) for i in avg_data])
+    avg_data_y = [[] for _ in range(max_epoch)]
+    for atom_data in avg_data:
+        for epoch, data in enumerate(atom_data):
+            avg_data_y[epoch].append(data)
+    
+    avg_data = np.array([np.mean(i) for i in avg_data_y])
+
+    # Plot average
+    ax.plot(np.arange(len(avg_data)) + 1, avg_data, label="Average", color="black", alpha=0.5)
 
     # Get name of data
     data_name = ["", "Accuracy", "MSE Loss (Å)", "Learning Rate", "Mean Average Error", "Val. Accuracy", "Val. MSE Loss (Å)", "Val. Mean Average Error"][data_col]
@@ -82,7 +110,9 @@ def plot_cluster_hist(data_col = 2):
     ax.axhline(y=min_loss, color="black", linestyle="--", alpha=0.4)
     
     # Add label
-    ax.text(2, min_loss, f"Minimum Loss: {min_loss:.2f} Å", horizontalalignment='center', verticalalignment='bottom', fontsize=12, color="black", alpha=0.4)
+    text_center_y = min_loss - 0.66 * (min_loss - ax.get_ylim()[0])
+    text_center_x = ax.get_xlim()[1] / 2
+    ax.text(text_center_x, text_center_y, f"Minimum Loss: {min_loss:.2f} Å", horizontalalignment='center', verticalalignment='bottom', fontsize=12, color="black", alpha=0.75)
 
     # Plot legend outside of plot in two columns
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., ncol=2)
