@@ -148,7 +148,7 @@ class CNN:
         self.model.summary()
 
         # Load weights if path is given
-        if load_path is not None and os.path.exists(load_path):
+        if load_path is not None:
             # Load the model as whole
             self.model = tf.keras.models.load_model(load_path, custom_objects={
                 "BackmappingAbsolutePositionLoss": self.loss,
@@ -156,7 +156,7 @@ class CNN:
             })
             print("Loaded model from " + load_path)
         else:
-            print("No backup found, starting from scratch...")
+            print(f"No backup found at {load_path}, starting from scratch...")
 
     def fit(self,
             train_generator,
@@ -228,7 +228,7 @@ class CNN:
             # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.live_track_test_samle(batch, logs)),
 
             # Callback to save weights after each epoch
-            tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.save()),
+            tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.save()),
             
             # Callback to send data to the socket after each epoch
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.send_data_to_socket(epoch, logs)),
