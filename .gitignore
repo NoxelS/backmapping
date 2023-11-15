@@ -184,5 +184,8 @@ mean_distances.*
 *.zip
 *.png
 *.pkl
+*.h5
+*.mp4
+
 
 config.ini
