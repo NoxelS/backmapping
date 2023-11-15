@@ -145,16 +145,20 @@ class CNN:
             run_eagerly=True
         )
 
-        self.model.summary()
+        # self.model.summary()
 
         # Load weights if path is given
         if load_path is not None:
-            # Load the model as whole
-            self.model = tf.keras.models.load_model(load_path, custom_objects={
-                "BackmappingAbsolutePositionLoss": self.loss,
-                "LeakyReLU": conv_activation,
-            })
-            print("Loaded model from " + load_path)
+            try:
+                # Load the model as whole
+                self.model = tf.keras.models.load_model(load_path, custom_objects={
+                    "BackmappingAbsolutePositionLoss": self.loss,
+                    "LeakyReLU": conv_activation,
+                })
+                print("Loaded model from " + load_path)
+            except Exception as e:
+                print("Could not load model from " + load_path)
+                print(e)
         else:
             print(f"No backup found at {load_path}, starting from scratch...")
 

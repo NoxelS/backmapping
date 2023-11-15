@@ -252,6 +252,33 @@ def get_size(obj, seen=None):
         size += sum([get_size(i, seen) for i in obj])
     return size
 
+
+def get_mean_distance_and_std(atom_name):
+
+    # Get mean distances to color the plot accordingly
+    mean_distances = {}
+    std = {}
+
+    # Read csv
+    with open(os.path.join(config(Keys.DATA_PATH), "mean_distances.csv"), "r") as f:
+        # Skip header
+        f.readline()
+
+        for line in f.readlines():
+            # Split line
+            line = line.split(",")
+            # Get mean distance
+            mean_distances[line[0]] = float(line[1])
+            # Get std
+            std[line[0]] = float(line[2])
+
+    return mean_distances[atom_name], std[atom_name]
+
+def get_scale_factor(atom_name):
+    mean, std = get_mean_distance_and_std(atom_name)
+    return mean + 2 * std
+
+
 class BackmappingBaseGenerator(tf.keras.utils.Sequence):
     """
         This is the base class for the backmapping data generator.
@@ -899,7 +926,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
 
             # Make the absolute positions out of a vector mapping
             X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
-            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0], position_scale=ABSOLUTE_POSITION_SCALE_Y)
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0], position_scale=get_scale_factor(at_atoms_to_fit[0].get_name()))
 
             # Add the neighbourhood
             for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):

@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from library.config import Keys, config
-from library.classes.generators import ABSOLUTE_POSITION_SCALE_Y
+from library.classes.generators import ABSOLUTE_POSITION_SCALE_Y, get_scale_factor
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
 HIGHLIGHT_ATOM = "" # If a highlight atom is set, it will be highlighted in the plot
@@ -67,15 +67,18 @@ def plot_cluster_hist(data_col = 2):
         # There are maybe multiple train cylces so reindex the epochs accordingly
         hist[:, 0] = np.arange(hist.shape[0])
 
-        if np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y) < min_loss:
-            min_loss = np.min(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y)
+        # Get scaling factor
+        scale_factor = get_scale_factor(atom_name)
+
+        if np.min(hist[:, data_col] * scale_factor) < min_loss:
+            min_loss = np.min(hist[:, data_col] * scale_factor)
 
         # Plot
         color = plt.cm.cool(mean_distance) if atom_name != HIGHLIGHT_ATOM else "red"
-        ax.plot(hist[:, 0] + 1, hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y, label=atom_name, color=color, alpha=(1 - 0.5 * mean_distance))
+        ax.plot(hist[:, 0] + 1, hist[:, data_col] * scale_factor, label=atom_name, color=color, alpha=(1 - 0.5 * mean_distance))
 
         # Add to average data
-        avg_data.append(hist[:, data_col] * ABSOLUTE_POSITION_SCALE_Y)
+        avg_data.append(hist[:, data_col] * scale_factor)
 
     # Plot average avg_data = list for every atom with the history of the loss
     max_epoch = np.max([len(i) for i in avg_data])
