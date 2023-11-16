@@ -1,12 +1,11 @@
 import os
-import time
 import socket
+import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
-from library.classes.losses import BackmappingRelativeVectorLoss, BackmappingAbsolutePositionLoss
 from library.classes.generators import PADDING_X, PADDING_Y
 
 

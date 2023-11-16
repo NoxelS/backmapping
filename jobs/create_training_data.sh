@@ -23,6 +23,4 @@ echo ""
 
 echo "####################### CODE ###########################"
 
-python src/generate_membrane_data.py
-
-python src/generate_molecule_data_fast.py
+python src/gen_train_data.py
