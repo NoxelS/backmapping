@@ -19,7 +19,7 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 ###########################"
 
-python src/train_one_with_neighborhood.py $1 $2
+python src/train.py $1 $2
 
 echo "####################### POST ANALYSIS ###########################"
 date

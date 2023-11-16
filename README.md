@@ -153,11 +153,11 @@ The `master.py` script acts as the master controller for training multiple model
 - Email updates provide insights into the training progress and completion.
 
 
-### Training a single-atom model with train_one_with_neighborhood.py
+### Training a single-atom model with train.py
 
 #### Overview:
 
-The `train_one_with_neighborhood.py` script is designed for training a model specific to a single atom with neighborhood information. It uses TensorFlow and communicates training progress to the master process through sockets.
+The `train.py` script is designed for training a model specific to a single atom with neighborhood information. It uses TensorFlow and communicates training progress to the master process through sockets.
 
 #### Configuration:
 
