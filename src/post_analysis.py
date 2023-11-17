@@ -25,7 +25,7 @@ from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.vector_mappings import DOPC_AT_MAPPING
 from library.analysis.data import get_analysis_data
-from library.analysis.plots import plot_loss_atom_name, plot_loss_nmd
+from library.analysis.plots import plot_loss_atom_name, plot_loss_nmd,plot_cluster_hist
 from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
@@ -55,7 +55,7 @@ plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}
 
 
 
-##### PREDICTIONS #####
+##### ANALYSIS #####
 
 # Load predictions from cache or generate new ones
 predictions = get_analysis_data(ATOM_NAMES_TO_FIT_WITH_MODEL, SAMPLE_SIZE)
@@ -67,3 +67,11 @@ plot_loss_atom_name(predictions, 'mae').savefig("mae_atom_name.png", dpi=300, bb
 
 # Make loss(nmd) scatter plot
 plot_loss_nmd(predictions).savefig("loss_nmd.png", dpi=300, bbox_inches='tight')
+
+# Plot training evolution for different metrics
+plot_cluster_hist(2).savefig("training_loss.png", dpi=300, bbox_inches='tight')
+plot_cluster_hist(3).savefig("training_lr.png", dpi=300, bbox_inches='tight')
+plot_cluster_hist(4).savefig("training_mae.png", dpi=300, bbox_inches='tight')
+plot_cluster_hist(5).savefig("training_val_acc.png", dpi=300,  bbox_inches='tight')
+plot_cluster_hist(6).savefig("training_val_loss.png", dpi=300, bbox_inches='tight')
+plot_cluster_hist(7).savefig("training_val_mae.png", dpi=300, bbox_inches='tight')
