@@ -14,17 +14,18 @@ import numpy as np
 import tensorflow as tf
 from matplotlib.lines import Line2D
 
+from library.analysis.data import get_analysis_data
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
                                         PADDING_Y,
                                         AbsolutePositionsNeigbourhoodGenerator,
-                                        get_scale_factor, print_matrix, get_mean_distance_and_std)
+                                        get_mean_distance_and_std,
+                                        get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.vector_mappings import DOPC_AT_MAPPING
-from library.analysis.data import get_analysis_data
 from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
@@ -33,7 +34,7 @@ from master import PORT, encode_finished, encode_starting
 SAMPLE_SIZE = 64
 
 # Plot config
-THEME = "seaborn-v0_8-paper"
+THEME = "seaborn-paper" #"seaborn-v0_8-paper"
 FIG_SIZE_RECT = (16, 9)
 FIG_SIZE_SQUARE = (10, 10)
 
@@ -70,7 +71,7 @@ def plot_loss_atom_name(predictions, loss = "loss"):
     colors = [plt.cm.cool(mean_distance) for mean_distance in nmd]
 
     # Sort everything by mean distance
-    atom_names, losses, colors = zip(*sorted(zip(atom_names, losses, colors), key=lambda x: x[0]))
+    # atom_names, losses, colors = zip(*sorted(zip(atom_names, losses, colors), key=lambda x: get_mean_distance_and_std(x[0])[0]))
 
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
@@ -100,8 +101,6 @@ def plot_loss_nmd(predictions):
     
     return fig
 
-
-# Plot the training history of all models in a single plot
 def plot_cluster_hist(data_col = 2):
     # Get mean distances to color the plot accordingly
     mean_distances = {}
@@ -220,13 +219,60 @@ def plot_cluster_hist(data_col = 2):
 
 def plot_molecule(predictions, sample: int):
     """
+        This function plots the molecule with the predicted coordinates. It also plots the real coordinates if they are available and the difference between the predicted and real coordinates.
+        Also plots neighbor atoms if available.
     """
     pass
 
 def plot_bond_length_distribution(predictions):
     """
+        Finds all bond lengths in the predictions and true positions and plots them in a histogram.
     """
-    pass
+    
+    atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
+    
+    bond_lengths_pred = []
+    bond_lengths_true = []
+    
+    for atom_name, X, y_true, y_pred, losses in predictions:
+    
+        for bond in DOPC_AT_MAPPING:
+            from_atom_name = bond[0]
+            to_atom_name = bond[1]
+            
+            from_atom_pos_pred = np.array([0,0,0])  if from_atom_name == "N" else y_pred[atom_names.index(from_atom_name)]
+            to_atom_name_pred = np.array([0,0,0])   if to_atom_name == "N"   else y_pred[atom_names.index(to_atom_name)]
+
+            from_atom_pos_true = np.array([0,0,0])  if from_atom_name == "N" else y_true[atom_names.index(from_atom_name)]
+            to_atom_name_true = np.array([0,0,0])   if to_atom_name == "N"   else y_true[atom_names.index(to_atom_name)]
+        
+            # Calculate bond length
+            bond_length_pred = np.linalg.norm(from_atom_pos_pred - to_atom_name_pred)
+            bond_length_true = np.linalg.norm(from_atom_pos_true - to_atom_name_true)
+            
+            # Add to list
+            bond_lengths_pred.append(bond_length_pred)
+            bond_lengths_true.append(bond_length_true)
+    
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    n_true, b_true, p_true = plt.hist(bond_lengths_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
+    n_pred, b_pred, p_pred = plt.hist(bond_lengths_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
+    
+    # Plot difference
+    plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
+    
+    # Plot mean of true and pred
+    plt.axvline(x=np.mean(bond_lengths_true), color="blue", alpha=0.5, linestyle="--")
+    plt.axvline(x=np.mean(bond_lengths_pred), color="orange", alpha=0.5, linestyle="--")
+    
+    # Add labels
+    plt.title("Bond length distribution")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond length (Å)")
+    plt.legend()
+    
+    return fig
 
 def plot_bond_angle_distribution(predictions):
     """

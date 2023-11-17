@@ -7,8 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 
 import tensorflow as tf
 
-from library.classes.generators import (PADDING_X,
-                                        PADDING_Y,
+from library.classes.generators import (PADDING_X, PADDING_Y,
                                         AbsolutePositionsNeigbourhoodGenerator,
                                         get_scale_factor, print_matrix)
 from library.classes.models import CNN
@@ -41,7 +40,7 @@ CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING
 AT_SIZE = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 
 
-def get_analysis_data(atom_names_to_fit_with_model, sample_size = 64):
+def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches = 15):
     """
     Generates predictions for a given set of atom names using a pre-trained CNN model.
     If the prediction cache is available and up-to-date, it will be loaded instead of re-generating the predictions.
@@ -87,7 +86,7 @@ def get_analysis_data(atom_names_to_fit_with_model, sample_size = 64):
                         input_size=CG_SIZE,
                         output_size=AT_SIZE,
                         shuffle=False,
-                        batch_size=sample_size,
+                        batch_size=batch_size,
                         validate_split=VALIDATION_SPLIT,
                         validation_mode=VALIDATION_MODE,
                         augmentation=AUGMENT_DATA,
@@ -108,17 +107,18 @@ def get_analysis_data(atom_names_to_fit_with_model, sample_size = 64):
                         load_path=os.path.join(DATA_PREFIX, "models", atom_name, f"{MODEL_NAME_PREFIX}.h5"),
                         loss=tf.keras.losses.MeanAbsoluteError(),
                     )
-
-                    # Load sample
-                    test_sample = sample_gen.__getitem__(0)  # This contains SAMPLE_N samples
-
-                    X = test_sample[0]
-                    Y_true = test_sample[1]
-                    Y_pred = cnn.model.predict(X)
-                    loss   = cnn.model.evaluate(X, Y_true, verbose=0, return_dict=True)
                     
-                    # Add to list
-                    predictions.append((atom_name, X, Y_true, Y_pred, loss))
+                    for batch in range(batches):
+                        # Load sample
+                        test_sample = sample_gen.__getitem__(batch)  # This contains SAMPLE_N samples
+
+                        X = test_sample[0]
+                        Y_true = test_sample[1]
+                        Y_pred = cnn.model.predict(X)
+                        loss   = cnn.model.evaluate(X, Y_true, verbose=0, return_dict=True)
+                        
+                        # Add to list
+                        predictions.append((atom_name, X, Y_true, Y_pred, loss))
 
                 except OSError:
                     print(f"Could not load model for atom {atom_name}! Probably the model is currently being trained.")
@@ -129,6 +129,7 @@ def get_analysis_data(atom_names_to_fit_with_model, sample_size = 64):
         pickle.dump(predictions, open(ANALYSIS_PREDICTION_CACHE_PATH, "wb"))
         
         print(f"Saved prediction cache to {ANALYSIS_PREDICTION_CACHE_PATH}")
+
 
     # Load predictions
     predictions = pickle.load(open(ANALYSIS_PREDICTION_CACHE_PATH, "rb"))   # List of tuples (atom_name, X, Y_true, Y_pred, loss)

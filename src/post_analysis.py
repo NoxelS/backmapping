@@ -14,6 +14,10 @@ import numpy as np
 import tensorflow as tf
 from matplotlib.lines import Line2D
 
+from library.analysis.data import get_analysis_data
+from library.analysis.plots import (plot_bond_length_distribution,
+                                    plot_cluster_hist, plot_loss_atom_name,
+                                    plot_loss_nmd)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
                                         PADDING_Y,
                                         AbsolutePositionsNeigbourhoodGenerator,
@@ -24,14 +28,12 @@ from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.vector_mappings import DOPC_AT_MAPPING
-from library.analysis.data import get_analysis_data
-from library.analysis.plots import plot_loss_atom_name, plot_loss_nmd,plot_cluster_hist
 from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
 
 # Analysis config
-SAMPLE_SIZE = 64
+N_BATCHES = 15
 
 # Plot config
 THEME = "seaborn-v0_8-paper"
@@ -58,8 +60,9 @@ plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}
 ##### ANALYSIS #####
 
 # Load predictions from cache or generate new ones
-predictions = get_analysis_data(ATOM_NAMES_TO_FIT_WITH_MODEL, SAMPLE_SIZE)
-
+predictions = get_analysis_data(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZE, batches=N_BATCHES)
+print(len(predictions))
+   
 # Make loss(atom_bame) bar-chart plot
 plot_loss_atom_name(predictions, 'loss').savefig("loss_atom_name.png", dpi=300, bbox_inches='tight')
 plot_loss_atom_name(predictions, 'accuracy').savefig("acc_atom_name.png", dpi=300, bbox_inches='tight')
@@ -75,3 +78,5 @@ plot_cluster_hist(4).savefig("training_mae.png", dpi=300, bbox_inches='tight')
 plot_cluster_hist(5).savefig("training_val_acc.png", dpi=300,  bbox_inches='tight')
 plot_cluster_hist(6).savefig("training_val_loss.png", dpi=300, bbox_inches='tight')
 plot_cluster_hist(7).savefig("training_val_mae.png", dpi=300, bbox_inches='tight')
+
+plot_bond_length_distribution(predictions).savefig("bond_length_distribution.png", dpi=300, bbox_inches='tight')
