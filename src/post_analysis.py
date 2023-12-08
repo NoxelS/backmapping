@@ -17,7 +17,9 @@ from matplotlib.lines import Line2D
 from library.analysis.data import get_analysis_data
 from library.analysis.plots import (plot_bond_length_distribution,
                                     plot_cluster_hist, plot_loss_atom_name,
-                                    plot_loss_nmd)
+                                    plot_loss_nmd,
+                                    plot_bond_angle_distribution,
+                                    plot_bond_dihedral_angle_distribution)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
                                         PADDING_Y,
                                         AbsolutePositionsNeigbourhoodGenerator,
@@ -79,4 +81,7 @@ plot_cluster_hist(5).savefig("training_val_acc.png", dpi=300,  bbox_inches='tigh
 plot_cluster_hist(6).savefig("training_val_loss.png", dpi=300, bbox_inches='tight')
 plot_cluster_hist(7).savefig("training_val_mae.png", dpi=300, bbox_inches='tight')
 
+# Plot distributions
 plot_bond_length_distribution(predictions).savefig("bond_length_distribution.png", dpi=300, bbox_inches='tight')
+plot_bond_angle_distribution(predictions).savefig("bond_length_distribution.png", dpi=300, bbox_inches='tight')
+plot_bond_dihedral_angle_distribution(predictions).savefig("bond_length_distribution.png", dpi=300, bbox_inches='tight')

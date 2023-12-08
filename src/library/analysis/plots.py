@@ -231,8 +231,8 @@ def plot_bond_length_distribution(predictions):
     
     atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
     
-    bond_lengths_pred = []
-    bond_lengths_true = []
+    bond_angles_pred = []
+    bond_angles_true = []
     
     for atom_name, X, y_true, y_pred, losses in predictions:
     
@@ -251,20 +251,20 @@ def plot_bond_length_distribution(predictions):
             bond_length_true = np.linalg.norm(from_atom_pos_true - to_atom_name_true)
             
             # Add to list
-            bond_lengths_pred.append(bond_length_pred)
-            bond_lengths_true.append(bond_length_true)
+            bond_angles_pred.append(bond_length_pred)
+            bond_angles_true.append(bond_length_true)
     
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
-    n_true, b_true, p_true = plt.hist(bond_lengths_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
-    n_pred, b_pred, p_pred = plt.hist(bond_lengths_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
+    n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
+    n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
     
     # Plot difference
     plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
     
     # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_lengths_true), color="blue", alpha=0.5, linestyle="--")
-    plt.axvline(x=np.mean(bond_lengths_pred), color="orange", alpha=0.5, linestyle="--")
+    plt.axvline(x=np.mean(bond_angles_true), color="blue", alpha=0.5, linestyle="--")
+    plt.axvline(x=np.mean(bond_angles_pred), color="orange", alpha=0.5, linestyle="--")
     
     # Add labels
     plt.title("Bond length distribution")
@@ -276,10 +276,74 @@ def plot_bond_length_distribution(predictions):
 
 def plot_bond_angle_distribution(predictions):
     """
+        Finds all bond angles in the predictions and true positions and plots them in a histogram.
     """
-    pass
+    
+    atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
+    
+    bond_angles_pred = []
+    bond_angles_true = []
+    
+    for atom_name, X, y_true, y_pred, losses in predictions:
+        
+        for bond1 in DOPC_AT_MAPPING:
+            for bond2 in DOPC_AT_MAPPING:
+                if bond1 == bond2:
+                    continue
+                
+                if bond1[0] == bond2[0] or bond1[0] == bond2[1] or bond1[1] == bond2[0] or bond1[1] == bond2[1]:
+                    from_atom_name1 = bond1[0]
+                    to_atom_name1 = bond1[1]
 
-def plot_dihedrial_angle_distribution(predictions):
+                    from_atom_pos_pred1 = np.array([0,0,0])  if from_atom_name1 == "N" else y_pred[atom_names.index(from_atom_name1)]
+                    to_atom_name_pred1 = np.array([0,0,0])   if to_atom_name1 == "N"   else y_pred[atom_names.index(to_atom_name1)]
+
+                    from_atom_pos_true1 = np.array([0,0,0])  if from_atom_name1 == "N" else y_true[atom_names.index(from_atom_name1)]
+                    to_atom_name_true1 = np.array([0,0,0])   if to_atom_name1 == "N"   else y_true[atom_names.index(to_atom_name1)]
+
+                    from_atom_name2 = bond2[0]
+                    to_atom_name2 = bond2[1]
+
+                    from_atom_pos_pred2 = np.array([0,0,0])  if from_atom_name2 == "N" else y_pred[atom_names.index(from_atom_name2)]
+                    to_atom_name_pred2 = np.array([0,0,0])   if to_atom_name2 == "N"   else y_pred[atom_names.index(to_atom_name2)]
+
+                    from_atom_pos_true2 = np.array([0,0,0])  if from_atom_name2 == "N" else y_true[atom_names.index(from_atom_name2)]
+                    to_atom_name_true2 = np.array([0,0,0])   if to_atom_name2 == "N"   else y_true[atom_names.index(to_atom_name2)]
+
+                    v0_pred = to_atom_name_pred1 - from_atom_pos_pred1
+                    v1_pred = to_atom_name_pred2 - from_atom_pos_pred2
+                    
+                    v0_true = to_atom_name_true1 - from_atom_pos_true1
+                    v1_true = to_atom_name_true2 - from_atom_pos_true2
+
+                    # Calculate angle between the two bonds
+                    theta_pred = np.math.atan2(np.linalg.det([v0_pred,v1_pred]),np.dot(v0_pred,v1_pred))
+                    theta_true = np.math.atan2(np.linalg.det([v0_pred,v1_pred]),np.dot(v0_pred,v1_pred))
+
+                    bond_angles_pred.append(theta_pred)
+                    bond_angles_true.append(theta_true)
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
+    n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
+    
+    # Plot difference
+    plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
+    
+    # Plot mean of true and pred
+    plt.axvline(x=np.mean(bond_angles_true), color="blue", alpha=0.5, linestyle="--")
+    plt.axvline(x=np.mean(bond_angles_pred), color="orange", alpha=0.5, linestyle="--")
+    
+    # Add labels
+    plt.title("Bond angle distribution")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond length (Å)")
+    plt.legend()
+    
+    return fig
+
+def plot_bond_dihedral_angle_distribution(predictions):
     """
     """
     pass
