@@ -133,7 +133,7 @@ do
     current_node=${nodes_to_use[i % node_length]}  # Cycle through nodes
     current_atom=${atoms_to_fit[i]}
     # sbatch --exclude=fang1,fang51,fang52,fang53,fang54 -w $current_node --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
-    sbatch --exclude=fang1,fang48,fang51,fang52,fang53,fang54 --job-name=$current_atom --gres=gpu:4 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
+    sbatch --exclude=fang1,fang48,fang51,fang52,fang53,fang54 --job-name=$current_atom --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/$current_atom.log --error=./jobs/logs/$folder_name/$current_atom.err --wrap="jobs/train_single.sh $current_atom $host_ip_address"
 done
 
 # Start master socket (automatically waits for all jobs to finish)
