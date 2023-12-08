@@ -67,6 +67,7 @@ class CNN:
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
+
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
                     filters=2**0 * scale,
@@ -128,6 +129,7 @@ class CNN:
                     pool_size=(3, 3),
                 ),
                 tf.keras.layers.BatchNormalization(),
+
                 ##### Output #####
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.Zeros()),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
@@ -144,7 +146,7 @@ class CNN:
             run_eagerly=True
         )
 
-        # self.model.summary()
+        self.model.summary()
 
         # Load weights if path is given
         if load_path is not None:

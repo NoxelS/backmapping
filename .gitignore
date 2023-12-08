@@ -187,5 +187,7 @@ mean_distances.*
 *.h5
 *.mp4
 
+.vscode/
+
 
 config.ini
