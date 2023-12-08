@@ -1,3 +1,6 @@
+import sys
+import time
+import os
 
 # Quick and dirty way to color the atoms by their element
 DEFAULT_ELEMENT_COLOR_MAP = {
@@ -23,3 +26,8 @@ DEFAULT_ELEMENT_COLOR_MAP = {
     'CO':   [0.0, 0.0, 0.0]
     # ...
 }
+
+
+def log(*args, **kwargs):
+    ts = time.strftime("[%H:%M:%S]: ", time.localtime())
+    print(ts, *args, **kwargs)

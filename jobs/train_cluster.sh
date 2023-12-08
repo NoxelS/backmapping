@@ -136,6 +136,9 @@ done
 # Start master socket (automatically waits for all jobs to finish)
 python src/master.py $length 2>&1 | tee -a ./jobs/logs/master-$SLURM_JOBID.log
 
+# Start post analysis
+sbatch --exclude=fang1,fang48,fang51,fang52,fang53,fang54 --job-name=post-analysis --gres=gpu:4 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$folder_name/post-analysis.log --error=./jobs/logs/$folder_name/post-analysis.err jobs/post_analysis.sh
+
 # Move the hosts log file to the folder
 mv ./jobs/logs/master-$SLURM_JOBID.log ./jobs/logs/$folder_name/host-$SLURM_JOBID.log
 mv ./jobs/logs/master-$SLURM_JOBID.err ./jobs/logs/$folder_name/host-$SLURM_JOBID.err
