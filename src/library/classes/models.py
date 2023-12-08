@@ -58,7 +58,7 @@ class CNN:
         self.ax = self.fig.add_subplot(111, projection='3d')
 
         # Scale the model, this currently only affects the number of filters
-        scale = 4          # Scaled the filter dimensions by this factor
+        scale = 2          # Scaled the filter dimensions by this factor
 
         # The activation function to use for the convolutional layers
         conv_activation = tf.keras.layers.LeakyReLU(alpha=0.01)
@@ -205,7 +205,7 @@ class CNN:
             tf.keras.callbacks.ReduceLROnPlateau(
                 monitor='val_loss',
                 factor=0.75,
-                patience=3,
+                patience=5,
                 verbose=0,
                 mode='max',
                 min_delta=0.00000005,

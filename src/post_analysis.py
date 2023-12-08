@@ -17,7 +17,9 @@ from matplotlib.lines import Line2D
 from library.analysis.data import get_analysis_data
 from library.analysis.plots import (plot_bond_length_distribution,
                                     plot_cluster_hist, plot_loss_atom_name,
-                                    plot_loss_nmd)
+                                    plot_loss_nmd,
+                                    plot_bond_angle_distribution,
+                                    plot_bond_dihedral_angle_distribution)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
                                         PADDING_Y,
                                         AbsolutePositionsNeigbourhoodGenerator,
