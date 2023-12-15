@@ -21,7 +21,7 @@ from library.classes.models import CNN
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
 from library.static.vector_mappings import DOPC_AT_MAPPING
-from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNeigbourhoodGenerator, print_matrix, get_scale_factor, ABSOLUTE_POSITION_SCALE_X
+from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator, print_matrix, get_scale_factor, ABSOLUTE_POSITION_SCALE
 
 ##### CONFIGURATION #####
 
@@ -73,7 +73,7 @@ with strategy.scope():
         try:
             # Generator for test samples
             print(f"Starting loading data and training cache for atom {atom_name}")
-            sample_gen = AbsolutePositionsNeigbourhoodGenerator(
+            sample_gen = NeighbourDataGenerator(
                 input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
                 output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
                 input_size=cg_size,
@@ -120,7 +120,7 @@ with strategy.scope():
             true_position = true_position[:, 0, :]
             
             # Get the backbone atom positions of the neighbor molecules (from the coarse grain input)
-            neighbor_positions = test_sample[0][:, PADDING_X + 12 : - PADDING_X, PADDING_Y: -PADDING_Y, 0] * ABSOLUTE_POSITION_SCALE_X
+            neighbor_positions = test_sample[0][:, PADDING_X + 12 : - PADDING_X, PADDING_Y: -PADDING_Y, 0] * ABSOLUTE_POSITION_SCALE
             
             
             for sample in range(SAMPLE_SIZE):

@@ -10,7 +10,7 @@ from library.config import Keys, config
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.static.topologies import DOPC_AT_NAMES
-from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNeigbourhoodGenerator
+from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator
 
 ##### CONFIGURATION #####
 
@@ -82,7 +82,7 @@ else:
 
 ##### TRAINING #####
 
-sample_gen = AbsolutePositionsNeigbourhoodGenerator(
+sample_gen = NeighbourDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=cg_size,
@@ -96,7 +96,7 @@ sample_gen = AbsolutePositionsNeigbourhoodGenerator(
     neighbourhood_size=NEIGHBORHOOD_SIZE
 )
 
-train_gen = AbsolutePositionsNeigbourhoodGenerator(
+train_gen = NeighbourDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=cg_size,
@@ -112,7 +112,7 @@ train_gen = AbsolutePositionsNeigbourhoodGenerator(
     data_usage=DATA_USAGE
 )
 
-validation_gen = AbsolutePositionsNeigbourhoodGenerator(
+validation_gen = NeighbourDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=cg_size,

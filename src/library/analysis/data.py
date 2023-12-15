@@ -8,7 +8,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 import tensorflow as tf
 
 from library.classes.generators import (PADDING_X, PADDING_Y,
-                                        AbsolutePositionsNeigbourhoodGenerator,
+                                        NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
 from library.classes.models import CNN
 from library.config import Keys, config
@@ -80,7 +80,7 @@ def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches =
                 try:
                     # Generator for test samples
                     print(f"Starting loading data and training cache for atom {atom_name}")
-                    sample_gen = AbsolutePositionsNeigbourhoodGenerator(
+                    sample_gen = NeighbourDataGenerator(
                         input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
                         output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
                         input_size=CG_SIZE,
@@ -114,9 +114,9 @@ def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches =
 
                         X = test_sample[0]
                         Y_true = test_sample[1]
-                        Y_pred = cnn.model.predict(X)
+                        Y_pred = cnn.model.predict(X) / get_scale_factor(atom_name)
                         loss   = cnn.model.evaluate(X, Y_true, verbose=0, return_dict=True)
-                        
+
                         # Add to list
                         predictions.append((atom_name, X, Y_true, Y_pred, loss))
 
@@ -127,7 +127,7 @@ def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches =
 
         # Save predictions
         pickle.dump(predictions, open(ANALYSIS_PREDICTION_CACHE_PATH, "wb"))
-        
+
         print(f"Saved prediction cache to {ANALYSIS_PREDICTION_CACHE_PATH}")
 
 

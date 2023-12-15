@@ -15,16 +15,16 @@ import tensorflow as tf
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_analysis_data
-from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
+from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
                                         PADDING_Y,
-                                        AbsolutePositionsNeigbourhoodGenerator,
+                                        NeighbourDataGenerator,
                                         get_mean_distance_and_std,
                                         get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
-from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
+from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log_progress
 from library.static.vector_mappings import DOPC_AT_MAPPING
 from master import PORT, encode_finished, encode_starting
 
@@ -61,6 +61,7 @@ plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}
 
 ### Plot functions ###
 
+@log_progress("plotting loss(atom_name)")
 def plot_loss_atom_name(predictions, loss = "loss"):
     losses = [prediction[4][loss] for prediction in predictions]
     atom_names = [prediction[0] for prediction in predictions]
@@ -85,6 +86,7 @@ def plot_loss_atom_name(predictions, loss = "loss"):
     
     return fig
 
+@log_progress("plotting loss(nmd)")
 def plot_loss_nmd(predictions):
     losses = [prediction[4]["loss"] for prediction in predictions]
     nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
@@ -101,6 +103,7 @@ def plot_loss_nmd(predictions):
     
     return fig
 
+@log_progress("plotting cluster hist")
 def plot_cluster_hist(data_col = 2):
     # Get mean distances to color the plot accordingly
     mean_distances = {}
@@ -217,6 +220,7 @@ def plot_cluster_hist(data_col = 2):
 
 
 
+@log_progress("plotting molecule")
 def plot_molecule(predictions, sample: int):
     """
         This function plots the molecule with the predicted coordinates. It also plots the real coordinates if they are available and the difference between the predicted and real coordinates.
@@ -224,28 +228,29 @@ def plot_molecule(predictions, sample: int):
     """
     pass
 
+@log_progress("plotting bond length histrogram")
 def plot_bond_length_distribution(predictions):
     """
         Finds all bond lengths in the predictions and true positions and plots them in a histogram.
     """
-    
+
     atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
-    
+
     bond_angles_pred = []
     bond_angles_true = []
-    
+
     for atom_name, X, y_true, y_pred, losses in predictions:
-    
+
         for bond in DOPC_AT_MAPPING:
             from_atom_name = bond[0]
             to_atom_name = bond[1]
-            
+
             from_atom_pos_pred = np.array([0,0,0])  if from_atom_name == "N" else y_pred[atom_names.index(from_atom_name)]
             to_atom_name_pred = np.array([0,0,0])   if to_atom_name == "N"   else y_pred[atom_names.index(to_atom_name)]
 
             from_atom_pos_true = np.array([0,0,0])  if from_atom_name == "N" else y_true[atom_names.index(from_atom_name)]
             to_atom_name_true = np.array([0,0,0])   if to_atom_name == "N"   else y_true[atom_names.index(to_atom_name)]
-        
+
             # Calculate bond length
             bond_length_pred = np.linalg.norm(from_atom_pos_pred - to_atom_name_pred)
             bond_length_true = np.linalg.norm(from_atom_pos_true - to_atom_name_true)
@@ -274,6 +279,7 @@ def plot_bond_length_distribution(predictions):
     
     return fig
 
+@log_progress("plotting bond angle histrogram")
 def plot_bond_angle_distribution(predictions):
     """
         Finds all bond angles in the predictions and true positions and plots them in a histogram.
@@ -343,21 +349,25 @@ def plot_bond_angle_distribution(predictions):
     
     return fig
 
+@log_progress("plotting bond dihedral angle histrogram")
 def plot_bond_dihedral_angle_distribution(predictions):
     """
     """
     pass
 
+@log_progress("plotting coordinates histrogram")
 def plot_coordinates_distribution(predictions, atom_name: str):
     """
     """
     pass
 
+@log_progress("plotting radial distribution")
 def plot_radial_distribution_function(predictions, atom_name: str):
     """
     """
     pass
 
+@log_progress("plotting N molecules")
 def plot_N_molecules(predictions, N: int):
     """
     """

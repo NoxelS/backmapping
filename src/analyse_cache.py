@@ -9,7 +9,7 @@ from library.config import Keys, config
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.static.topologies import DOPC_AT_NAMES
-from library.classes.generators import PADDING_X, PADDING_Y, AbsolutePositionsNeigbourhoodGenerator
+from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator
 
 ##### CONFIGURATION #####
 
@@ -43,7 +43,7 @@ if atom_name_to_fit not in atom_names_to_fit:
 
 ##### ANALYSING #####
 
-train_gen = AbsolutePositionsNeigbourhoodGenerator(
+train_gen = NeighbourDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=cg_size,

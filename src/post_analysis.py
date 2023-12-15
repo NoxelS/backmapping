@@ -4,14 +4,10 @@ import pickle
 import socket
 import sys
 import time
-
-# Disable tensorflow logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
-
 import ffmpeg
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_analysis_data
@@ -20,9 +16,9 @@ from library.analysis.plots import (plot_bond_length_distribution,
                                     plot_loss_nmd,
                                     plot_bond_angle_distribution,
                                     plot_bond_dihedral_angle_distribution)
-from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
+from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
                                         PADDING_Y,
-                                        AbsolutePositionsNeigbourhoodGenerator,
+                                        NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
@@ -35,7 +31,7 @@ from master import PORT, encode_finished, encode_starting
 ##### CONFIGURATION #####
 
 # Analysis config
-N_BATCHES = 15
+N_BATCHES = 1
 
 # Plot config
 THEME = "seaborn-v0_8-paper"
@@ -56,10 +52,7 @@ ATOM_NAMES_TO_FIT_WITH_MODEL = [name for name in ATOM_NAMES_TO_FIT if os.path.ex
 
 # Matplotlib config
 plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}' not available, using default theme. Select one of {plt.style.available}.")
-savefig_kwargs = {
-    "dpi": 300,
-    "bbox_inches": 'tight'
-}
+savefig_kwargs = {"dpi": 300, "bbox_inches": 'tight'}
 
 
 ##### ANALYSIS #####
@@ -68,45 +61,42 @@ savefig_kwargs = {
     The predictions are a tuple of type (atom_name, X, Y_true, Y_pred, loss(dict) ).
     Note that the analysis data consists of the validation data and is generated if and only if the cache is not available or outdated.
 """
+# TODO: change predictions data format
 predictions = get_analysis_data(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZE, batches=N_BATCHES)
 
 
 """
     The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
 """
-log("Creating loss atom name plots...")
 plot_loss_atom_name(predictions, 'loss').savefig("loss_atom_name.png", **savefig_kwargs)
 plot_loss_atom_name(predictions, 'accuracy').savefig("acc_atom_name.png", **savefig_kwargs)
 plot_loss_atom_name(predictions, 'mae').savefig("mae_atom_name.png", **savefig_kwargs)
-log("Successfully created loss atom name plots.")
+
 
 """
     The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
     mean distance of the atom a model fits.
 """
-log("Creating loss nmd plot...")
 plot_loss_nmd(predictions).savefig("loss_nmd.png", **savefig_kwargs)
-log("Successfully created loss nmd plot.")
+
 
 """
     Plot the training history for each atom. This gives insights about the training process,
     cache behavior, and the training performance.
 """
-log("Creating training history plots...")
 plot_cluster_hist(2).savefig("training_loss.png", **savefig_kwargs)
 plot_cluster_hist(3).savefig("training_lr.png", **savefig_kwargs)
 plot_cluster_hist(4).savefig("training_mae.png", **savefig_kwargs)
 plot_cluster_hist(5).savefig("training_val_acc.png", **savefig_kwargs)
 plot_cluster_hist(6).savefig("training_val_loss.png", **savefig_kwargs)
 plot_cluster_hist(7).savefig("training_val_mae.png", **savefig_kwargs)
-log("Successfully created training history plots.")
+
 
 """
     This plot shows the predicted and true bond lengths as a histogram that overlaps
 """
-log("Creating bond length distribution plot...")
 plot_bond_length_distribution(predictions).savefig("bond_length_distribution.png", **savefig_kwargs)
-log("Successfully created bond length distribution plot.")
+
 
 """
     Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
@@ -118,7 +108,7 @@ log("Successfully created bond length distribution plot.")
 """
     Plot bond angel distribution of predicted and true bonds as a histogram.
 """
-# TODO
+# plot_bond_angle_distribution(predictions).savefig("bond_length_distribution.png", **savefig_kwargs)
 
 
 """
@@ -160,8 +150,10 @@ log("Successfully created bond length distribution plot.")
 """
 # TODO
 
+
 """
     Make a complete analysis of the model performance and create a report with all the plots and
     statistics, also generate a csv file with all the data that may be useful for further analysis.
 """
 # TODO
+
