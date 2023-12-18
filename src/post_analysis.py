@@ -75,7 +75,6 @@ analysis_data = predictions_to_analysis_data(predictions)
     The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
 """
 plot_loss_atom_name(predictions, 'loss').savefig("loss_atom_name.png", **savefig_kwargs)
-plot_loss_atom_name(predictions, 'accuracy').savefig("acc_atom_name.png", **savefig_kwargs)
 plot_loss_atom_name(predictions, 'mae').savefig("mae_atom_name.png", **savefig_kwargs)
 
 
