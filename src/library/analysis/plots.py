@@ -65,6 +65,9 @@ def plot_loss_atom_name(predictions, loss = "loss"):
     losses = [prediction[4][loss] for prediction in predictions]
     atom_names = [prediction[0] for prediction in predictions]
     
+    # Scale losses according to the atom scale factor
+    losses = [loss * get_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
+    
     # Make NMD colors
     nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
     nmd = nmd / np.max(nmd)
@@ -88,6 +91,11 @@ def plot_loss_atom_name(predictions, loss = "loss"):
 @log_progress("plotting loss(nmd)")
 def plot_loss_nmd(predictions):
     losses = [prediction[4]["loss"] for prediction in predictions]
+    atom_names = [prediction[0] for prediction in predictions]
+
+    # Scale losses according to the atom scale factor
+    losses = [loss * get_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
+
     nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
     
     # Normalize
