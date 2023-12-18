@@ -2,17 +2,19 @@ import os
 import pickle
 import time
 
+import numpy as np
+
 # Disable tensorflow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 
 import tensorflow as tf
 
-from library.classes.generators import (PADDING_X, PADDING_Y,
-                                        NeighbourDataGenerator,
+from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
+                                        PADDING_Y, NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
 from library.classes.models import CNN
 from library.config import Keys, config
-from library.static.topologies import DOPC_AT_NAMES
+from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
 from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
@@ -40,7 +42,7 @@ CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING
 AT_SIZE = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 
 
-def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches = 15):
+def get_predictions(atom_names_to_fit_with_model, batch_size = 2048, batches = 1):
     """
     Generates predictions for a given set of atom names using a pre-trained CNN model.
     If the prediction cache is available and up-to-date, it will be loaded instead of re-generating the predictions.
@@ -108,13 +110,14 @@ def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches =
                         loss=tf.keras.losses.MeanAbsoluteError(),
                     )
                     
+                    # TODO: fix this with the batches so that we can use the whole dataset
                     for batch in range(batches):
                         # Load sample
                         test_sample = sample_gen.__getitem__(batch)  # This contains SAMPLE_N samples
 
                         X = test_sample[0]
                         Y_true = test_sample[1]
-                        Y_pred = cnn.model.predict(X) / get_scale_factor(atom_name)
+                        Y_pred = cnn.model.predict(X)
                         loss   = cnn.model.evaluate(X, Y_true, verbose=0, return_dict=True)
 
                         # Add to list
@@ -136,3 +139,63 @@ def get_analysis_data(atom_names_to_fit_with_model, batch_size = 2048, batches =
     print(f"Succesfully loaded prediction cache from {time.ctime(os.path.getmtime(ANALYSIS_PREDICTION_CACHE_PATH))}")
 
     return predictions
+
+
+def predictions_to_analysis_data(predictions):
+    """
+        The predictions are a tuple of type (atom_name, X, Y_true, Y_pred, loss(dict) ) where Y_true and Y_pred contain the positions of ONE atom.
+        We need to transform this into a list of molecules, where each molecule consists of a list of (X, Y_true, Y_pred) where Y and Y_true has the position of
+        every atom in the molecule. This is necessary for the analysis.
+
+    Args:
+        predictions (list): List of type (atom_name, X, Y_true, Y_pred, loss(dict) ).
+    """
+
+    # Get the total number of molecules
+    total_molecule = predictions[0][1].shape[0]
+
+    # Check if every prediction has the same number of atom predictions
+    for prediction in predictions:
+        if prediction[1].shape[0] != total_molecule:
+            raise ValueError("Not every prediction has the same number of atom predictions!")
+
+    # List to store the analysis data
+    analysis_data = []
+    
+    for i in range(total_molecule):
+        # Get the X positions of the molecule
+        X_poses = predictions[0][1][i, PADDING_X: -PADDING_X, PADDING_Y: -PADDING_Y, 0]    # X is the same for every atom in the molecule
+
+        # Scale up the X values to invert the scaling so that the absolute positions are again absolute in angstrom
+        X_poses *= ABSOLUTE_POSITION_SCALE
+
+        # Lists to store the positions of the atoms in the molecule
+        X = []
+        Y_pred = []
+        Y_true = []
+
+        # Add name of bead to X
+        for j, x in enumerate(X_poses):
+            X.append((DOPC_CG_NAMES[j % 12], x.numpy()))    # j % 12 because there are 12 beads in a molecule and we need to repeat the names for every molecule and neighbor
+
+        # Loop though every atom model prediction and add the one atom to the molecule
+        for prediction in predictions:
+            atom_name: str = prediction[0]
+            Y_true_atom = prediction[2][i, PADDING_X: -PADDING_X, PADDING_Y: -PADDING_Y, 0]
+            Y_pred_atom = prediction[3][i, PADDING_X: -PADDING_X, PADDING_Y: -PADDING_Y, 0]
+
+            # Invert scaling
+            Y_true_atom *= get_scale_factor(atom_name)
+            Y_pred_atom *= get_scale_factor(atom_name)
+
+            # Add to molecule
+            Y_true.append((atom_name, *Y_true_atom.numpy()))
+            Y_pred.append((atom_name, *Y_pred_atom))            # Y_pred is not a tensor, so we don't need to convert it to numpy
+        
+        analysis_data.append((np.array(X), np.array(Y_true), np.array(Y_pred)))
+    
+        # Print progress
+        if i % 100 == 0:
+            print(f"Processed molecule {i}/{total_molecule}")
+
+    return np.array(analysis_data)

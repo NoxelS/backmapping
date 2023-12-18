@@ -14,10 +14,9 @@ import numpy as np
 import tensorflow as tf
 from matplotlib.lines import Line2D
 
-from library.analysis.data import get_analysis_data
+from library.analysis.data import get_predictions
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
-                                        PADDING_Y,
-                                        NeighbourDataGenerator,
+                                        PADDING_Y, NeighbourDataGenerator,
                                         get_mean_distance_and_std,
                                         get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
@@ -229,50 +228,67 @@ def plot_molecule(predictions, sample: int):
     pass
 
 @log_progress("plotting bond length histrogram")
-def plot_bond_length_distribution(predictions):
+def plot_bond_length_distribution(analysis_data):
     """
         Finds all bond lengths in the predictions and true positions and plots them in a histogram.
     """
+    
+    bond_lengths_pred = []
+    bond_lengths_true = []
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
 
-    atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
+        return np.array([0,0,0])
+    
+    for X, Y_true, Y_pred in analysis_data:        
+        for bond in [DOPC_AT_MAPPING[12]]:
+            from_atom = bond[0]
+            to_atom = bond[1]
 
-    bond_angles_pred = []
-    bond_angles_true = []
+            from_atom_pos_pred = find_atom(Y_pred, from_atom)[1]
+            to_atom_pos_pred   = find_atom(Y_pred, to_atom)[1]
 
-    for atom_name, X, y_true, y_pred, losses in predictions:
-
-        for bond in DOPC_AT_MAPPING:
-            from_atom_name = bond[0]
-            to_atom_name = bond[1]
-
-            from_atom_pos_pred = np.array([0,0,0])  if from_atom_name == "N" else y_pred[atom_names.index(from_atom_name)]
-            to_atom_name_pred = np.array([0,0,0])   if to_atom_name == "N"   else y_pred[atom_names.index(to_atom_name)]
-
-            from_atom_pos_true = np.array([0,0,0])  if from_atom_name == "N" else y_true[atom_names.index(from_atom_name)]
-            to_atom_name_true = np.array([0,0,0])   if to_atom_name == "N"   else y_true[atom_names.index(to_atom_name)]
+            from_atom_pos_true = find_atom(Y_true, from_atom)[1]
+            to_atom_pos_true   = find_atom(Y_true, to_atom)[1]
 
             # Calculate bond length
-            bond_length_pred = np.linalg.norm(from_atom_pos_pred - to_atom_name_pred)
-            bond_length_true = np.linalg.norm(from_atom_pos_true - to_atom_name_true)
+            bond_length_pred = np.linalg.norm(to_atom_pos_pred - from_atom_pos_pred)
+            bond_length_true = np.linalg.norm(to_atom_pos_true - from_atom_pos_true)
             
-            # Add to list
-            bond_angles_pred.append(bond_length_pred)
-            bond_angles_true.append(bond_length_true)
-    
+            bond_lengths_pred.append(bond_length_pred)
+            bond_lengths_true.append(bond_length_true)
+
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
-    n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
-    n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
     
-    # Plot difference
-    plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
+    # Print min max and mean
+    print(f"Min bond length: {np.min(bond_lengths_pred)} Å")
+    print(f"Max bond length: {np.max(bond_lengths_pred)} Å")
+    print(f"Mean bond length: {np.mean(bond_lengths_pred)} Å")
     
+    # Do for true 
+    print(f"Min bond length: {np.min(bond_lengths_true)} Å")
+    print(f"Max bond length: {np.max(bond_lengths_true)} Å")
+    print(f"Mean bond length: {np.mean(bond_lengths_true)} Å")
+    
+    
+    
+    # Plot histograms
+    n_true, b_true, p_true = plt.hist(bond_lengths_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled")
+    n_pred, b_pred, p_pred = plt.hist(bond_lengths_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
+
     # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_angles_true), color="blue", alpha=0.5, linestyle="--")
-    plt.axvline(x=np.mean(bond_angles_pred), color="orange", alpha=0.5, linestyle="--")
-    
+    plt.axvline(x=np.mean(bond_lengths_true), color="blue", alpha=0.5, linestyle="--")
+    plt.axvline(x=np.mean(bond_lengths_pred), color="orange", alpha=0.5, linestyle="--")
+
     # Add labels
-    plt.title("Bond length distribution")
+    plt.title("Bond angle distribution")
     plt.ylabel("Frequency")
     plt.xlabel("Bond length (Å)")
     plt.legend()
@@ -333,7 +349,7 @@ def plot_bond_angle_distribution(predictions):
     fig = plt.figure(figsize=FIG_SIZE_RECT)
     n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
     n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
-    
+
     # Plot difference
     plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
     

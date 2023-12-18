@@ -50,6 +50,21 @@ DOPC_CG_BOND_MAP = {
     11: 12
 }
 
+DOPC_CG_NAMES = [
+    'NC3',
+    'PO4',
+    'GL1',
+    'GL2',
+    'C1A',
+    'D2A',
+    'C3A',
+    'C4A',
+    'C1B',
+    'D2B',
+    'C3B',
+    'C4B'
+]
+
 DOPC_AT_NAMES = [
     "N",
     "C12",

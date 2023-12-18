@@ -4,21 +4,21 @@ import pickle
 import socket
 import sys
 import time
+
 import ffmpeg
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from library.analysis.data import get_analysis_data
-from library.analysis.plots import (plot_bond_length_distribution,
+from library.analysis.data import get_predictions, predictions_to_analysis_data
+from library.analysis.plots import (plot_bond_angle_distribution,
+                                    plot_bond_dihedral_angle_distribution,
+                                    plot_bond_length_distribution,
                                     plot_cluster_hist, plot_loss_atom_name,
-                                    plot_loss_nmd,
-                                    plot_bond_angle_distribution,
-                                    plot_bond_dihedral_angle_distribution)
+                                    plot_loss_nmd)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
-                                        PADDING_Y,
-                                        NeighbourDataGenerator,
+                                        PADDING_Y, NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
@@ -61,8 +61,14 @@ savefig_kwargs = {"dpi": 300, "bbox_inches": 'tight'}
     The predictions are a tuple of type (atom_name, X, Y_true, Y_pred, loss(dict) ).
     Note that the analysis data consists of the validation data and is generated if and only if the cache is not available or outdated.
 """
-# TODO: change predictions data format
-predictions = get_analysis_data(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZE, batches=N_BATCHES)
+predictions = get_predictions(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZE, batches=N_BATCHES)
+
+"""
+    Change the predictions into a more convenient format for analysis.
+    The analysis data is a list of molecules, where each molecule consists of a list of (X, Y_true, Y_pred).
+    X, Y_true and Y_pred are lists of tuples (atom_name, position).
+"""
+analysis_data = predictions_to_analysis_data(predictions)
 
 
 """
@@ -95,7 +101,7 @@ plot_cluster_hist(7).savefig("training_val_mae.png", **savefig_kwargs)
 """
     This plot shows the predicted and true bond lengths as a histogram that overlaps
 """
-plot_bond_length_distribution(predictions).savefig("bond_length_distribution.png", **savefig_kwargs)
+plot_bond_length_distribution(analysis_data).savefig("bond_length_distribution.png", **savefig_kwargs)
 
 
 """
