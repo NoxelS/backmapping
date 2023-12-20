@@ -241,13 +241,69 @@ def plot_cluster_hist(data_col = 2):
 
 
 
-@log_progress("plotting molecule")
-def plot_molecule(predictions, sample: int):
+@log_progress("3d plotting molecule")
+def plot_molecule(analysis_data, sample: int):
     """
         This function plots the molecule with the predicted coordinates. It also plots the real coordinates if they are available and the difference between the predicted and real coordinates.
         Also plots neighbor atoms if available.
     """
-    pass
+
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for i_name, i_pos in array:
+            if i_name == atom_name:
+                return np.array(i_pos)
+
+        raise Exception(f"Atom {atom_name} not found in array {array}")
+    
+    X, Y_true, Y_pred = analysis_data[sample]
+
+    # Plot the molecule
+    fig = plt.figure(figsize=FIG_SIZE_SQUARE)
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the input
+    for i, (atom_name, atom_pos) in enumerate(X):
+        if i < 12:
+            # Make size of the beads bigger
+            ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color="black", alpha=0.1, s=100, linewidth=0.0)
+        else:
+            ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color="blue", alpha=0.15, s=100, linewidth=0.0)
+            
+    # Plot predicted atoms
+    for atom_name, atom_pos in Y_pred:
+        element = "".join([i for i in atom_name if i.isalpha()])
+        ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color=DEFAULT_ELEMENT_COLOR_MAP[element], alpha = 0.75)
+        # ax.text(atom_pos[0], atom_pos[1], atom_pos[2], atom_name, color=DEFAULT_ELEMENT_COLOR_MAP[element], fontsize=12)
+    
+    # Plot the true molecule
+    for atom_name, atom_pos in Y_true:
+        element = "".join([i for i in atom_name if i.isalpha()])
+        ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color=DEFAULT_ELEMENT_COLOR_MAP[element], alpha = 0.5)
+        # ax.text(atom_pos[0], atom_pos[1], atom_pos[2], atom_name, color=DEFAULT_ELEMENT_COLOR_MAP[element], fontsize=12)
+
+    for bond in DOPC_AT_MAPPING:
+        from_atom_pos_pred = find_atom(Y_pred, bond[0])
+        to_atom_pos_pred   = find_atom(Y_pred, bond[1])
+        
+        from_atom_pos_true = find_atom(Y_true, bond[0])
+        to_atom_pos_true   = find_atom(Y_true, bond[1])
+        
+        # Plot bond
+        ax.plot([from_atom_pos_pred[0], to_atom_pos_pred[0]], [from_atom_pos_pred[1], to_atom_pos_pred[1]], [from_atom_pos_pred[2], to_atom_pos_pred[2]], color="purple", alpha=0.75, linestyle="--", linewidth=.5)
+        ax.plot([from_atom_pos_true[0], to_atom_pos_true[0]], [from_atom_pos_true[1], to_atom_pos_true[1]], [from_atom_pos_true[2], to_atom_pos_true[2]], color="blue", alpha=0.5, linestyle="--", linewidth=.5)
+
+    # Add labels
+    ax.set_xlabel("X (Å)")
+    ax.set_ylabel("Y (Å)")
+    ax.set_zlabel("Z (Å)")
+    ax.set_title(f"Molecule {sample}")
+    ax.legend()
+    
+    return fig
+
 
 @log_progress("plotting total bond length histrogram")
 def plot_bond_length_distribution(analysis_data, bond):
@@ -517,7 +573,7 @@ def plot_N_molecules(predictions, N: int):
     """
     """
     pass
-    
+
 @log_progress("plotting total bond angle histrogram")
 def plot_bond_angle_distribution(analysis_data, bond1, bond2):
     """
@@ -617,7 +673,6 @@ def plot_bond_angle_distribution(analysis_data, bond1, bond2):
     plt.grid(axis="x", alpha=0.5)
     
     return fig
-
 
 @log_progress("plotting total bond angle histrogram")
 def plot_total_angle_distribution(analysis_data, bond_pairs):

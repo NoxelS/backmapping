@@ -155,6 +155,9 @@ def predictions_to_analysis_data(predictions):
 
     Args:
         predictions (list): List of type (atom_name, X, Y_true, Y_pred, loss(dict) ).
+        
+    Returns:
+        list: List of molecules, where each molecule consists of a list of (X, Y_true, Y_pred) where Y and Y_true has the position of every atom in the molecule.
     """
     
     # TODO: also check if the cache is outdated

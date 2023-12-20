@@ -17,6 +17,7 @@ from library.analysis.plots import (plot_bond_angle_distribution,
                                     plot_cluster_hist,
                                     plot_coordinates_distribution,
                                     plot_loss_atom_name, plot_loss_nmd,
+                                    plot_molecule,
                                     plot_total_angle_distribution,
                                     plot_total_bond_length_distribution)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
@@ -113,89 +114,89 @@ analysis_data = predictions_to_analysis_data(predictions)
 # plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
 
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
-"""
+# """
+#     This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
+# """
 # [plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
 
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram.
-"""
+# """
+#     This plot shows the predicted and true bond lengths as a histogram.
+# """
 # plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length.png"), **savefig_kwargs)
 
+# """
+#     This plot shows the predicted and true bond lengths as a histogram without the current misbehaving models
+# """
+# plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
+
+
 """
-    This plot shows the predicted and true bond lengths as a histogram without the current misbehaving models
+    Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
+    Also creates animation to visualize the 3D plot.
 """
-plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
+[plot_molecule(analysis_data, i).savefig(gen_path(f"molecules", f"mol_{i}.png"), **savefig_kwargs) for i in range(25)]
 
 
 # """
-#     Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
-#     Also creates animation to visualize the 3D plot.
+#     Plot bond angel distribution of predicted and true bonds as a histogram.
 # """
-# # TODO
-
-
-"""
-    Plot bond angel distribution of predicted and true bonds as a histogram.
-"""
 # [plot_bond_angle_distribution(analysis_data, bond1, bond2).savefig(gen_path(f"bonds", "angles", f"bond_angle_{bond1[0]}_{bond1[1]}_{bond2[0]}_{bond2[1]}.png"), **savefig_kwargs) for bond1, bond2 in DOPC_AT_BAB]
 
 
-"""
-    Plot total bond angel distribution of predicted and true bonds as a histogram.
-"""
+# """
+#     Plot total bond angel distribution of predicted and true bonds as a histogram.
+# """
 # plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
 
 
 
-"""
-    Plot bond dihedrial angle error of predicted and true bonds as a histogram.
-"""
-# TODO
+# """
+#     Plot bond dihedrial angle error of predicted and true bonds as a histogram.
+# """
+# # TODO
 
 
-"""
-    Plot a coordinate distribution of predicted and true atom positions for every model.
-    This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
-"""
+# """
+#     Plot a coordinate distribution of predicted and true atom positions for every model.
+#     This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
+# """
 # [plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
 # [plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
 # [plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
 
 
 
-"""
-    Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
-"""
-# TODO
+# """
+#     Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
+# """
+# # TODO
 
 
-"""
-    Plots a few neighbor predictions in one plot to visualize the performance of the model and also show
-    the neighborhood of the atom.
-"""
-# TODO
+# """
+#     Plots a few neighbor predictions in one plot to visualize the performance of the model and also show
+#     the neighborhood of the atom.
+# """
+# # TODO
 
 
-"""
-    Plot true and predicted radial distribution function g(r) for each model/atom
-"""
-# TODO
+# """
+#     Plot true and predicted radial distribution function g(r) for each model/atom
+# """
+# # TODO
 
 
-"""
-    Use the PDB file that was predicted from a fiven input and use gromacs to find out how long it takes
-    until the energy is minimized. This is probably the best predictor of how good the model
-    predicting power really ist.
-"""
-# TODO
+# """
+#     Use the PDB file that was predicted from a fiven input and use gromacs to find out how long it takes
+#     until the energy is minimized. This is probably the best predictor of how good the model
+#     predicting power really ist.
+# """
+# # TODO
 
 
-"""
-    Make a complete analysis of the model performance and create a report with all the plots and
-    statistics, also generate a csv file with all the data that may be useful for further analysis.
-"""
-# TODO
+# """
+#     Make a complete analysis of the model performance and create a report with all the plots and
+#     statistics, also generate a csv file with all the data that may be useful for further analysis.
+# """
+# # TODO
 
