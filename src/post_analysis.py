@@ -12,10 +12,12 @@ import tensorflow as tf
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_predictions, predictions_to_analysis_data
-from library.analysis.plots import (plot_bond_length_distribution,
+from library.analysis.plots import (plot_bond_angle_distribution,
+                                    plot_bond_length_distribution,
                                     plot_cluster_hist,
                                     plot_coordinates_distribution,
                                     plot_loss_atom_name, plot_loss_nmd,
+                                    plot_total_angle_distribution,
                                     plot_total_bond_length_distribution)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
                                         PADDING_Y, NeighbourDataGenerator,
@@ -25,7 +27,7 @@ from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log
-from library.static.vector_mappings import DOPC_AT_MAPPING
+from library.static.vector_mappings import DOPC_AT_BAB, DOPC_AT_MAPPING
 from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
@@ -85,55 +87,62 @@ predictions = get_predictions(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZ
 analysis_data = predictions_to_analysis_data(predictions)
 
 
-"""
-    The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
-"""
-plot_loss_atom_name(predictions, 'loss').savefig(gen_path("loss", "loss_atom_name.png"), **savefig_kwargs)
-plot_loss_atom_name(predictions, 'mae').savefig(gen_path("loss", "mae_atom_name.png"), **savefig_kwargs)
+# """
+#     The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
+# """
+# plot_loss_atom_name(predictions, 'loss').savefig(gen_path("loss", "loss_atom_name.png"), **savefig_kwargs)
+# plot_loss_atom_name(predictions, 'mae').savefig(gen_path("loss", "mae_atom_name.png"), **savefig_kwargs)
 
 
-"""
-    The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
-    mean distance of the atom a model fits.
-"""
-plot_loss_nmd(predictions).savefig(gen_path("loss", "loss_nmd.png"), **savefig_kwargs)
+# """
+#     The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
+#     mean distance of the atom a model fits.
+# """
+# plot_loss_nmd(predictions).savefig(gen_path("loss", "loss_nmd.png"), **savefig_kwargs)
 
 
-"""
-    Plot the training history for each atom. This gives insights about the training process,
-    cache behavior, and the training performance.
-"""
-plot_cluster_hist(2).savefig(gen_path("training", "training_loss.png"), **savefig_kwargs)
-plot_cluster_hist(3).savefig(gen_path("training", "training_lr.png"), **savefig_kwargs)
-plot_cluster_hist(4).savefig(gen_path("training", "training_mae.png"), **savefig_kwargs)
-plot_cluster_hist(5).savefig(gen_path("training", "training_val_acc.png"), **savefig_kwargs)
-plot_cluster_hist(6).savefig(gen_path("training", "training_val_loss.png"), **savefig_kwargs)
-plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
+# """
+#     Plot the training history for each atom. This gives insights about the training process,
+#     cache behavior, and the training performance.
+# """
+# plot_cluster_hist(2).savefig(gen_path("training", "training_loss.png"), **savefig_kwargs)
+# plot_cluster_hist(3).savefig(gen_path("training", "training_lr.png"), **savefig_kwargs)
+# plot_cluster_hist(4).savefig(gen_path("training", "training_mae.png"), **savefig_kwargs)
+# plot_cluster_hist(5).savefig(gen_path("training", "training_val_acc.png"), **savefig_kwargs)
+# plot_cluster_hist(6).savefig(gen_path("training", "training_val_loss.png"), **savefig_kwargs)
+# plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
 
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
-"""
-[plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", f"bond_length_distribution_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
+# """
+#     This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
+# """
+# [plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_distribution_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
 
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram that overlaps
-"""
-plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length_distribution.png"), **savefig_kwargs)
+# """
+#     This plot shows the predicted and true bond lengths as a histogram that overlaps
+# """
+# plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length_distribution.png"), **savefig_kwargs)
 
 
-"""
-    Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
-    Also creates animation to visualize the 3D plot.
-"""
-# TODO
+# """
+#     Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
+#     Also creates animation to visualize the 3D plot.
+# """
+# # TODO
 
 
 """
     Plot bond angel distribution of predicted and true bonds as a histogram.
 """
-# TODO
+# [plot_bond_angle_distribution(analysis_data, bond1, bond2).savefig(gen_path(f"bonds", "angles", f"bond_angle_{bond1[0]}_{bond1[1]}_{bond2[0]}_{bond2[1]}.png"), **savefig_kwargs) for bond1, bond2 in DOPC_AT_BAB]
+
+
+"""
+    Plot total bond angel distribution of predicted and true bonds as a histogram.
+"""
+plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
+
 
 
 """
@@ -146,9 +155,9 @@ plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "to
     Plot a coordinate distribution of predicted and true atom positions for every model.
     This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
 """
-[plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+# [plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+# [plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+# [plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
 
 
 

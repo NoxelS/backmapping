@@ -493,3 +493,191 @@ def plot_N_molecules(predictions, N: int):
     """
     """
     pass
+    
+@log_progress("plotting total bond angle histrogram")
+def plot_bond_angle_distribution(analysis_data, bond1, bond2):
+    """
+        Finds all bond angles in the predictions and true positions and plots them in a histogram.
+        
+        Args:
+            analysis_data (list): List of tuples of type (X, Y_true, Y_pred) where X is the input, Y_true is the true output and Y_pred is the predicted output.
+            bond1 (tuple): Tuple of type (from_atom, to_atom) where from_atom and to_atom are the names of the atoms that form the bond.
+            bond2 (tuple): Tuple of type (from_atom, to_atom) where from_atom and to_atom are the names of the atoms that form the bond.
+    """
+    
+    # Find the common atom
+    common_atom = set(bond1) & set(bond2)
+    
+    # Swap bonds so that the common atom is always the first one
+    if bond1[1] == common_atom:
+        bond1 = (bond1[1], bond1[0])
+        
+    if bond2[1] == common_atom:
+        bond2 = (bond2[1], bond2[0])
+
+    bond_angles_pred = []
+    bond_angles_true = []
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+    
+    for X, Y_true, Y_pred in analysis_data:
+        # Find bond vectors
+        bond1_vector_pred = find_atom(Y_pred, bond1[1]) - find_atom(Y_pred, bond1[0])
+        bond2_vector_pred = find_atom(Y_pred, bond2[1]) - find_atom(Y_pred, bond2[0])
+
+        bond1_vector_true = find_atom(Y_true, bond1[1]) - find_atom(Y_true, bond1[0])
+        bond2_vector_true = find_atom(Y_true, bond2[1]) - find_atom(Y_true, bond2[0])
+
+        # Calculate bond angle
+        bond_angle_true = np.arccos(np.dot(bond1_vector_true, bond2_vector_true) / (np.linalg.norm(bond1_vector_true) * np.linalg.norm(bond2_vector_true)))
+        bond_angle_pred = np.arccos(np.dot(bond1_vector_pred, bond2_vector_pred) / (np.linalg.norm(bond1_vector_pred) * np.linalg.norm(bond2_vector_pred)))
+
+        bond_angles_true.append(bond_angle_true / np.pi * 180)
+        bond_angles_pred.append(bond_angle_pred / np.pi * 180)
+
+    # Make both relative to the true mean
+    bond_angles_true_mean = np.mean(bond_angles_true)
+    bond_angles_pred = np.array(bond_angles_pred) - bond_angles_true_mean
+    bond_angles_true = np.array(bond_angles_true) - bond_angles_true_mean
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Create histogram points
+    bins = 75
+    
+    true_hist, true_bins = np.histogram(bond_angles_true, bins=bins, density=True)
+    pred_hist, _ = np.histogram(bond_angles_pred, bins=true_bins, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    true_hist = savgol_filter(true_hist, 8, 3)
+    pred_hist = savgol_filter(pred_hist, 8, 3)
+    
+    # Plot histograms as line graphs
+    plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(true_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+    
+    # Plot mean of true and pred
+    plt.axvline(x=np.mean(bond_angles_true), color="k", label="Mean True")
+    plt.axvline(x=np.mean(bond_angles_pred), color="purple", label="Mean Pred")
+    
+    # Adjust x-axis to only show the range of the true bond angles
+    plt.xlim(np.min(true_bins), np.max(true_bins))
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    # Change xticks labels so that they are relative to the true mean
+    plt.xticks(ticks=plt.xticks()[0], labels=[f"{i:.2f}" for i in plt.xticks()[0] + bond_angles_true_mean])
+
+    # Add labels
+    plt.title(f"Bond angle distribution {bond1[1]}-{bond1[0]}-{bond2[1]}")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond angle (°)")
+    plt.legend()
+    
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
+    return fig
+
+
+@log_progress("plotting total bond angle histrogram")
+def plot_total_angle_distribution(analysis_data, bond_pairs):
+    """
+        Finds all bond lengths in the predictions and true positions and plots them in a histogram.
+    """
+
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+
+    # List to store all bond angles
+    bond_angles_pred = []
+    bond_angles_true = []
+
+    for bond1, bond2 in bond_pairs:
+        # Find the common atom
+        common_atom = set(bond1) & set(bond2)
+
+        # Swap bonds so that the common atom is always the first one
+        if bond1[1] == common_atom:
+            bond1 = (bond1[1], bond1[0])
+
+        if bond2[1] == common_atom:
+            bond2 = (bond2[1], bond2[0])
+
+        for X, Y_true, Y_pred in analysis_data:
+            # Find bond vectors
+            bond1_vector_pred = find_atom(Y_pred, bond1[1]) - find_atom(Y_pred, bond1[0])
+            bond2_vector_pred = find_atom(Y_pred, bond2[1]) - find_atom(Y_pred, bond2[0])
+
+            bond1_vector_true = find_atom(Y_true, bond1[1]) - find_atom(Y_true, bond1[0])
+            bond2_vector_true = find_atom(Y_true, bond2[1]) - find_atom(Y_true, bond2[0])
+
+            # Calculate bond angle
+            bond_angle_true = np.arccos(np.dot(bond1_vector_true, bond2_vector_true) / (np.linalg.norm(bond1_vector_true) * np.linalg.norm(bond2_vector_true)))
+            bond_angle_pred = np.arccos(np.dot(bond1_vector_pred, bond2_vector_pred) / (np.linalg.norm(bond1_vector_pred) * np.linalg.norm(bond2_vector_pred)))
+
+            bond_angles_true.append(bond_angle_true / np.pi * 180)
+            bond_angles_pred.append(bond_angle_pred / np.pi * 180)
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Create histogram points
+    bins = 200
+    
+    true_hist, true_bins = np.histogram(bond_angles_true, bins=bins, density=True)
+    pred_hist, _ = np.histogram(bond_angles_pred, bins=true_bins, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    true_hist = savgol_filter(true_hist, 8, 3)
+    pred_hist = savgol_filter(pred_hist, 8, 3)
+    
+    # Plot histograms as line graphs
+    plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(true_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    # Add labels
+    plt.title(f"Total bond angle distribution")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond angle (°)")
+    plt.legend()
+
+    # Only show angles in true range
+    plt.xlim(np.min(true_bins), np.max(true_bins))
+
+    plt.xticks(np.linspace(np.min(true_bins), np.max(true_bins), 20))
+
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+
+    return fig
