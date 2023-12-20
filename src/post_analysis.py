@@ -154,7 +154,7 @@ plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bon
 
 
 """
-    Plot bond dihedrial angle error of predicted and true bonds as a histogram.
+    Plot bond dihedral angle error of predicted and true bonds as a histogram.
 """
 # TODO
 
