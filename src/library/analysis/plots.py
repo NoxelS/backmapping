@@ -267,62 +267,65 @@ def plot_bond_length_distribution(analysis_data, bond):
         if atom_name == "N":
             return np.array([0,0,0])
         
-        for atom in array:
-            if atom[0] == atom_name:
-                return atom[1]
+        for i_name, i_pos in array:
+            if i_name == atom_name:
+                return np.array(i_pos)
 
-        return np.array([0,0,0])
+        raise Exception(f"Atom {atom_name} not found in array {array}")
     
     for X, Y_true, Y_pred in analysis_data:
         from_atom = bond[0]
         to_atom = bond[1]
 
-        from_atom_pos_pred = find_atom(Y_pred, from_atom)[1]
-        to_atom_pos_pred   = find_atom(Y_pred, to_atom)[1]
+        from_atom_pos_pred = find_atom(Y_pred, from_atom)
+        to_atom_pos_pred   = find_atom(Y_pred, to_atom)
 
-        from_atom_pos_true = find_atom(Y_true, from_atom)[1]
-        to_atom_pos_true   = find_atom(Y_true, to_atom)[1]
+        from_atom_pos_true = find_atom(Y_true, from_atom)
+        to_atom_pos_true   = find_atom(Y_true, to_atom)
 
         # Calculate bond length
         bond_length_pred = np.linalg.norm(to_atom_pos_pred - from_atom_pos_pred)
         bond_length_true = np.linalg.norm(to_atom_pos_true - from_atom_pos_true)
-        
+
         bond_lengths_pred.append(bond_length_pred)
         bond_lengths_true.append(bond_length_true)
+
+    # Remove all bond lengths that are longer than 2 Å in the predicted data
+    bond_lengths_pred = [bond_length for bond_length in bond_lengths_pred if bond_length < 2]
 
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
     
     # Create histogram points
-    bins = 75
+    bins = 150
     
-    true_hist, true_bins = np.histogram(bond_lengths_true, bins=bins, density=True)
-    pred_hist, _ = np.histogram(bond_lengths_pred, bins=true_bins, density=True)
-    
+    pred_hist, pred_bins = np.histogram(bond_lengths_pred, bins=bins, density=True)
+    true_hist, true_bins = np.histogram(bond_lengths_true, bins=pred_bins, density=True)
+
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    true_hist = savgol_filter(true_hist, 8, 3)
-    pred_hist = savgol_filter(pred_hist, 8, 3)
+    true_hist = savgol_filter(true_hist, 5, 3, mode="wrap")
+    pred_hist = savgol_filter(pred_hist, 5, 3, mode="wrap")
+    
+    # Remove negative values
+    true_hist = np.clip(true_hist, 0, np.inf)
+    pred_hist = np.clip(pred_hist, 0, np.inf)
     
     # Plot histograms as line graphs
     plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
-    plt.plot(true_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="orange", linewidth=1.5)
+    plt.plot(pred_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
     
     # Fill between the two lines to show the difference
     plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
-    
-    # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_lengths_true), color="blue", alpha=0.5, linestyle="--", label="Mean True")
-    plt.axvline(x=np.mean(bond_lengths_pred), color="orange", alpha=0.5, linestyle="--", label="Mean Pred")
 
     # Add small text to the bottom that state we used savgol filter
     plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
 
-    # Only plot between 0 and true max
-    plt.xlim(0, np.max(bond_lengths_true))
+    # Only plot between predicted and true range
+    plt.xlim(np.min([*pred_bins, *true_bins]), np.max([*pred_bins, *true_bins]))
 
     # Add labels
-    plt.title(f"Bond length distribution {from_atom}->{to_atom}")
+    plt.title(f"Bond length distribution {from_atom}-{to_atom}")
     plt.ylabel("Frequency")
     plt.xlabel("Bond length (Å)")
     plt.legend()
@@ -335,7 +338,7 @@ def plot_bond_length_distribution(analysis_data, bond):
 
 
 @log_progress("plotting total bond length histrogram")
-def plot_total_bond_length_distribution(analysis_data):
+def plot_total_bond_length_distribution(analysis_data, skip_atoms=None):
     """
         Finds all bond lengths in the predictions and true positions and plots them in a histogram.
     """
@@ -353,16 +356,21 @@ def plot_total_bond_length_distribution(analysis_data):
 
         return np.array([0,0,0])
     
-    for X, Y_true, Y_pred in analysis_data:        
+    for X, Y_true, Y_pred in analysis_data:
         for bond in DOPC_AT_MAPPING:
+            if skip_atoms and (bond[0] in skip_atoms or bond[1] in skip_atoms):
+                continue
+
             from_atom = bond[0]
             to_atom = bond[1]
 
-            from_atom_pos_pred = find_atom(Y_pred, from_atom)[1]
-            to_atom_pos_pred   = find_atom(Y_pred, to_atom)[1]
+            from_atom_pos_pred = find_atom(Y_pred, from_atom)
+            to_atom_pos_pred   = find_atom(Y_pred, to_atom)
+            
 
-            from_atom_pos_true = find_atom(Y_true, from_atom)[1]
-            to_atom_pos_true   = find_atom(Y_true, to_atom)[1]
+            from_atom_pos_true = find_atom(Y_true, from_atom)
+            to_atom_pos_true   = find_atom(Y_true, to_atom)
+
 
             # Calculate bond length
             bond_length_pred = np.linalg.norm(to_atom_pos_pred - from_atom_pos_pred)
@@ -371,23 +379,35 @@ def plot_total_bond_length_distribution(analysis_data):
             bond_lengths_pred.append(bond_length_pred)
             bond_lengths_true.append(bond_length_true)
 
+    # Cut off any bond lengths that are longer than 2 Å in the predicted data
+    bond_lengths_pred = [bond_length for bond_length in bond_lengths_pred if bond_length < 2]
+
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
 
-    # Plot histograms
-    n_true, b_true, p_true = plt.hist(bond_lengths_true, bins=150, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="step", linewidth=2.)
-    n_pred, b_pred, p_pred = plt.hist(bond_lengths_pred, bins=6*150, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="step", linewidth=2.)
-
-    # Plot between 0 and 2 Å
-    plt.xlim(0, 2)
-
-    # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_lengths_true), color="blue", alpha=0.5, linestyle="--")
-    plt.axvline(x=np.mean(bond_lengths_pred), color="orange", alpha=0.5, linestyle="--")
+    # Make histogram points
+    bins = 500
     
-    # Add labels directly to the plot
-    plt.text(0.05, 0.95, f"Mean True: {np.mean(bond_lengths_true):.2f} Å", horizontalalignment='left', verticalalignment='top', transform=plt.gca().transAxes, fontsize=12, color="blue", alpha=0.75)
-    plt.text(0.05, 0.92, f"Mean Pred: {np.mean(bond_lengths_pred):.2f} Å", horizontalalignment='left', verticalalignment='top', transform=plt.gca().transAxes, fontsize=12, color="orange", alpha=0.75)
+    hist_pred, bins_pred = np.histogram(bond_lengths_pred, bins=bins, density=True)
+    hist_true, bins_true = np.histogram(bond_lengths_true, bins=bins_pred, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    hist_true = savgol_filter(hist_true, 8, 3)
+    hist_pred = savgol_filter(hist_pred, 8, 3)
+
+    # Plot histograms as line graphs
+    plt.plot(bins_pred[:-1], hist_true, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(bins_pred[:-1], hist_pred, label="Predicted", alpha=0.75, color="orange", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(bins_pred[:-1], hist_true, hist_pred, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+    
+    # Plot in range of true bond lengths
+    plt.xlim(0, 2)
+    
+    # More ticks
+    plt.xticks(np.linspace(0, 2, 20))
 
     # Add labels
     plt.title("Bond length distribution")
@@ -398,6 +418,10 @@ def plot_total_bond_length_distribution(analysis_data):
     # Add grid
     plt.grid(axis="y", alpha=0.5)
     plt.grid(axis="x", alpha=0.5)
+    
+    # Add disclaimer if atoms were skipped
+    if skip_atoms:
+        plt.text(0.02, 0.02, f"Skipped atoms: {skip_atoms}", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
 
     return fig
 

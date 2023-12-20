@@ -113,16 +113,21 @@ analysis_data = predictions_to_analysis_data(predictions)
 # plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
 
 
-# """
-#     This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
-# """
-# [plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_distribution_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
+"""
+    This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
+"""
+# [plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
 
 
-# """
-#     This plot shows the predicted and true bond lengths as a histogram that overlaps
-# """
-# plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length_distribution.png"), **savefig_kwargs)
+"""
+    This plot shows the predicted and true bond lengths as a histogram.
+"""
+# plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length.png"), **savefig_kwargs)
+
+"""
+    This plot shows the predicted and true bond lengths as a histogram without the current misbehaving models
+"""
+plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
 
 
 # """
@@ -141,7 +146,7 @@ analysis_data = predictions_to_analysis_data(predictions)
 """
     Plot total bond angel distribution of predicted and true bonds as a histogram.
 """
-plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
+# plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
 
 
 
