@@ -33,6 +33,7 @@ USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
 
 ANALYSIS_PATH = os.path.join(DATA_PREFIX, "analysis")
 ANALYSIS_PREDICTION_CACHE_PATH = os.path.join(ANALYSIS_PATH, "prediction_cache.pkl")
+ANALYSIS_DATA_CACHE_PATH = os.path.join(ANALYSIS_PATH, "analysis_data_cache.pkl")
 
 # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
 # performance when training on multiple GPUs.
@@ -72,6 +73,11 @@ def get_predictions(atom_names_to_fit_with_model, batch_size = 2048, batches = 1
 
     if update_predictions:
         print("Starting running predictions, this might take a while...")
+
+        # Delete old analysis data
+        # TODO: handle this in the analysis data script
+        if os.path.exists(ANALYSIS_DATA_CACHE_PATH):
+            os.remove(ANALYSIS_DATA_CACHE_PATH)
 
         # List to store the predictions
         predictions = []
@@ -150,6 +156,14 @@ def predictions_to_analysis_data(predictions):
     Args:
         predictions (list): List of type (atom_name, X, Y_true, Y_pred, loss(dict) ).
     """
+    
+    # TODO: also check if the cache is outdated
+    if os.path.exists(ANALYSIS_DATA_CACHE_PATH):
+        # Load analysis data
+        analysis_data = pickle.load(open(ANALYSIS_DATA_CACHE_PATH, "rb"))
+        print(f"Succesfully loaded analysis data cache from {time.ctime(os.path.getmtime(ANALYSIS_DATA_CACHE_PATH))}")
+        return np.array(analysis_data)
+    
 
     # Get the total number of molecules
     total_molecule = predictions[0][1].shape[0]
@@ -191,11 +205,14 @@ def predictions_to_analysis_data(predictions):
             # Add to molecule
             Y_true.append((atom_name, *Y_true_atom.numpy()))
             Y_pred.append((atom_name, *Y_pred_atom))            # Y_pred is not a tensor, so we don't need to convert it to numpy
-        
+
         analysis_data.append((np.array(X), np.array(Y_true), np.array(Y_pred)))
-    
+
         # Print progress
         if i % 100 == 0:
             print(f"Processed molecule {i}/{total_molecule}")
+
+    # Save analysis data
+    pickle.dump(analysis_data, open(ANALYSIS_DATA_CACHE_PATH, "wb"))
 
     return np.array(analysis_data)

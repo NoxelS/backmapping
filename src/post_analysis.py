@@ -12,11 +12,11 @@ import tensorflow as tf
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_predictions, predictions_to_analysis_data
-from library.analysis.plots import (plot_bond_angle_distribution,
-                                    plot_bond_dihedral_angle_distribution,
-                                    plot_bond_length_distribution,
-                                    plot_cluster_hist, plot_loss_atom_name,
-                                    plot_loss_nmd)
+from library.analysis.plots import (plot_bond_length_distribution,
+                                    plot_cluster_hist,
+                                    plot_coordinates_distribution,
+                                    plot_loss_atom_name, plot_loss_nmd,
+                                    plot_total_bond_length_distribution)
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
                                         PADDING_Y, NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
@@ -30,11 +30,8 @@ from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
 
-# Analysis config
-N_BATCHES = 1
-
 # Plot config
-THEME = "seaborn-v0_8-paper"
+THEMES = ["seaborn-v0_8-paper", "seaborn-paper"]    # Use the first theme that is available
 
 # Load config
 DATA_PREFIX = config(Keys.DATA_PATH)
@@ -46,13 +43,29 @@ MODEL_NAME_PREFIX = config(Keys.MODEL_NAME_PREFIX)
 DATA_USAGE = config(Keys.DATA_USAGE)
 USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
 
+# Analysis config
+N_BATCHES = 1
+ANALYSIS_DATA_PATH = os.path.join(DATA_PREFIX, "analysis")
+
 # Config of models
 ATOM_NAMES_TO_FIT = [name for name in DOPC_AT_NAMES if not name.startswith("H")]  # Those are the atom names that are used for the training, currently all 54 atoms (without hydrogen) will be used
 ATOM_NAMES_TO_FIT_WITH_MODEL = [name for name in ATOM_NAMES_TO_FIT if os.path.exists(os.path.join(DATA_PREFIX, "models", name, f"{MODEL_NAME_PREFIX}.h5"))]  # Check which of those atoms already have a model
 
 # Matplotlib config
-plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}' not available, using default theme. Select one of {plt.style.available}.")
+[plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}' not available, using default theme. Select one of {plt.style.available}.") for THEME in THEMES]
 savefig_kwargs = {"dpi": 300, "bbox_inches": 'tight'}
+
+#### UTILS ####
+
+def gen_path(*args):
+    """
+        Returns the path to the analysis data folder. Also creates the folder if it does not exist.
+    """
+    # Create folder if it does not exist
+    if len(args) > 1:
+        os.makedirs(os.path.join(ANALYSIS_DATA_PATH, *args[:-1]), exist_ok=True)
+
+    return os.path.join(ANALYSIS_DATA_PATH, *args)
 
 
 ##### ANALYSIS #####
@@ -62,6 +75,7 @@ savefig_kwargs = {"dpi": 300, "bbox_inches": 'tight'}
     Note that the analysis data consists of the validation data and is generated if and only if the cache is not available or outdated.
 """
 predictions = get_predictions(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZE, batches=N_BATCHES)
+
 
 """
     Change the predictions into a more convenient format for analysis.
@@ -74,33 +88,39 @@ analysis_data = predictions_to_analysis_data(predictions)
 """
     The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
 """
-plot_loss_atom_name(predictions, 'loss').savefig("loss_atom_name.png", **savefig_kwargs)
-plot_loss_atom_name(predictions, 'mae').savefig("mae_atom_name.png", **savefig_kwargs)
+plot_loss_atom_name(predictions, 'loss').savefig(gen_path("loss", "loss_atom_name.png"), **savefig_kwargs)
+plot_loss_atom_name(predictions, 'mae').savefig(gen_path("loss", "mae_atom_name.png"), **savefig_kwargs)
 
 
 """
     The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
     mean distance of the atom a model fits.
 """
-plot_loss_nmd(predictions).savefig("loss_nmd.png", **savefig_kwargs)
+plot_loss_nmd(predictions).savefig(gen_path("loss", "loss_nmd.png"), **savefig_kwargs)
 
 
 """
     Plot the training history for each atom. This gives insights about the training process,
     cache behavior, and the training performance.
 """
-plot_cluster_hist(2).savefig("training_loss.png", **savefig_kwargs)
-plot_cluster_hist(3).savefig("training_lr.png", **savefig_kwargs)
-plot_cluster_hist(4).savefig("training_mae.png", **savefig_kwargs)
-plot_cluster_hist(5).savefig("training_val_acc.png", **savefig_kwargs)
-plot_cluster_hist(6).savefig("training_val_loss.png", **savefig_kwargs)
-plot_cluster_hist(7).savefig("training_val_mae.png", **savefig_kwargs)
+plot_cluster_hist(2).savefig(gen_path("training", "training_loss.png"), **savefig_kwargs)
+plot_cluster_hist(3).savefig(gen_path("training", "training_lr.png"), **savefig_kwargs)
+plot_cluster_hist(4).savefig(gen_path("training", "training_mae.png"), **savefig_kwargs)
+plot_cluster_hist(5).savefig(gen_path("training", "training_val_acc.png"), **savefig_kwargs)
+plot_cluster_hist(6).savefig(gen_path("training", "training_val_loss.png"), **savefig_kwargs)
+plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
+
+
+"""
+    This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
+"""
+[plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", f"bond_length_distribution_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
 
 
 """
     This plot shows the predicted and true bond lengths as a histogram that overlaps
 """
-plot_bond_length_distribution(analysis_data).savefig("bond_length_distribution.png", **savefig_kwargs)
+plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length_distribution.png"), **savefig_kwargs)
 
 
 """
@@ -113,7 +133,7 @@ plot_bond_length_distribution(analysis_data).savefig("bond_length_distribution.p
 """
     Plot bond angel distribution of predicted and true bonds as a histogram.
 """
-# plot_bond_angle_distribution(predictions).savefig("bond_length_distribution.png", **savefig_kwargs)
+# TODO
 
 
 """
@@ -126,7 +146,10 @@ plot_bond_length_distribution(analysis_data).savefig("bond_length_distribution.p
     Plot a coordinate distribution of predicted and true atom positions for every model.
     This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
 """
-# TODO
+[plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+[plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+[plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+
 
 
 """
