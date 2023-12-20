@@ -186,8 +186,8 @@ mean_distances.*
 *.pkl
 *.h5
 *.mp4
+*.pdb
 
 .vscode/
-
 
 config.ini

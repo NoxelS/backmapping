@@ -14,6 +14,7 @@ import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from Bio.PDB import PDBIO, Atom, Chain, Model, Residue, Structure
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_predictions
@@ -760,3 +761,51 @@ def plot_total_angle_distribution(analysis_data, bond_pairs):
     plt.grid(axis="x", alpha=0.5)
 
     return fig
+
+
+@log_progress("transforming molecule into pdb file")
+def molecule_to_ptb(analysis_data, sample_index, save_path_true, save_path_pred, save_path_CG):
+    """
+    This function transforms the molecule into a pdb file.
+    """
+    # TODO: remove this:
+    # Sort by loss
+    analysis_data = sorted(analysis_data, key=(lambda x: np.mean(np.linalg.norm(np.array(x[1][:, 1]) - np.array(x[2][:, 1])))))
+
+    X, Y_true, Y_pred = analysis_data[sample_index]
+
+    for i, array in enumerate([Y_true, Y_pred, X]):
+        # Create a new structure
+        structure = Structure.Structure("DOPC")
+        
+        # Create a new model
+        model = Model.Model(0)
+        structure.add(model)
+        
+        # Create a new chain
+        chain = Chain.Chain("A")
+        model.add(chain)
+        
+        # Create a new residue
+        residue = Residue.Residue((' ', 1, ' '), "R", ' ')
+        chain.add(residue)
+
+        # Add the N origin atom (only in at-positions)
+        if i == 0 or i == 1:
+            atom = Atom.Atom("N", np.array([0,0,0]), 1.0, 1.0, " ", "N", 0, "N")
+            residue.add(atom)
+
+        # Add all atoms
+        for j, (atom_name, atom_pos) in enumerate(array):
+            element = "".join([j for j in atom_name if j.isalpha()])
+            if i == 2 and j >= 12:
+                # TODO: also show neighbor atoms, currenlty we hide them
+                continue
+
+            atom = Atom.Atom(atom_name, atom_pos, 1.0, 1.0, " ", element, 0, atom_name)
+            residue.add(atom)
+        
+        # Save the structure
+        io = PDBIO()
+        io.set_structure(structure)
+        io.save([save_path_true, save_path_pred, save_path_CG][i])

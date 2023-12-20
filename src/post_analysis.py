@@ -12,7 +12,8 @@ import tensorflow as tf
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_predictions, predictions_to_analysis_data
-from library.analysis.plots import (plot_bond_angle_distribution,
+from library.analysis.plots import (molecule_to_ptb,
+                                    plot_bond_angle_distribution,
                                     plot_bond_length_distribution,
                                     plot_cluster_hist,
                                     plot_coordinates_distribution,
@@ -131,11 +132,11 @@ analysis_data = predictions_to_analysis_data(predictions)
 # plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
 
 
-"""
-    Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
-    Also creates animation to visualize the 3D plot.
-"""
-[plot_molecule(analysis_data, i).savefig(gen_path(f"molecules", f"mol_{i}.png"), **savefig_kwargs) for i in range(25)]
+# """
+#     Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
+#     Also creates animation to visualize the 3D plot.
+# """
+# [plot_molecule(analysis_data, i).savefig(gen_path(f"molecules", f"mol_{i}.png"), **savefig_kwargs) for i in range(25)]
 
 
 # """
@@ -167,10 +168,10 @@ analysis_data = predictions_to_analysis_data(predictions)
 
 
 
-# """
-#     Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
-# """
-# # TODO
+"""
+    Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
+"""
+[molecule_to_ptb(analysis_data, 0, gen_path("PDB", f"mol_{i}_true.pdb"),gen_path("PDB", f"mol_{i}_pred.pdb"),gen_path("PDB", f"mol_{i}_CG.pdb")) for i in range(25)]
 
 
 # """
