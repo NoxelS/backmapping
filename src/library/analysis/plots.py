@@ -564,10 +564,81 @@ def plot_coordinates_distribution(analysis_data, atom_name: str, coordinate: str
     return fig
 
 @log_progress("plotting radial distribution")
-def plot_radial_distribution_function(predictions, atom_name: str):
+def plot_radial_distribution_function(analysis_data, atom_name: str):
     """
+        Plots the radial distribution function for a given atom.
     """
-    pass
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+    
+    
+    distances_true = []
+    distances_pred = []
+    
+    for X, Y_true, Y_pred in analysis_data:
+        target_atom_pos_true = find_atom(Y_true, atom_name)
+        target_atom_pos_pred = find_atom(Y_pred, atom_name)
+        
+        # Remove the atom we want to plot
+        Y_true = np.array([i[1] for i in Y_true if i[0] != atom_name])
+        Y_pred = np.array([i[1] for i in Y_pred if i[0] != atom_name])
+        
+        # Calculate distances
+        [distances_true.append(np.linalg.norm(i - target_atom_pos_true)) for i in Y_true]
+        [distances_pred.append(np.linalg.norm(i - target_atom_pos_pred)) for i in Y_pred]
+        
+    # Create the histogram points
+    bins = 500
+
+    hist_pred, bins_pred = np.histogram(distances_pred, bins=bins, density=True)
+    hist_true, _ = np.histogram(distances_true, bins=bins_pred, density=True)
+
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    hist_true = savgol_filter(hist_true, 8, 3)
+    hist_pred = savgol_filter(hist_pred, 8, 3)
+    
+    # Clip negative values (can happen when using savgol filter)
+    hist_true = np.clip(hist_true, 0, np.inf)
+    hist_pred = np.clip(hist_pred, 0, np.inf)
+    
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Plot histograms as line graphs
+    plt.plot(bins_pred[:-1], hist_true, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(bins_pred[:-1], hist_pred, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+
+    # Fill between the two lines to show the difference
+    plt.fill_between(bins_pred[:-1], hist_true, hist_pred, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+    
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
+    # Only show the maximum range of the two bins
+    plt.xlim(0, np.max([bins_pred]))
+    
+    # Add labels
+    plt.title(f"Radial distribution function $g(r)$ for {atom_name}")
+    plt.ylabel("g(r)")
+    plt.xlabel("Distance (Å)")
+    plt.legend()
+    
+    return fig
+        
+    
 
 @log_progress("plotting N molecules")
 def plot_N_molecules(predictions, N: int):
