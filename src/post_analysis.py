@@ -163,9 +163,9 @@ plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bon
     Plot a coordinate distribution of predicted and true atom positions for every model.
     This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
 """
-[plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("positions", "coordinates" f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("positions", "coordinates" f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("positions", "coordinates" f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+[plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+[plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+[plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
 
 
 
