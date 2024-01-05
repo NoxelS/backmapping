@@ -128,7 +128,7 @@ MODEL_TYPE.create(
         This is the first CNN model. It is a simple CNN with 8 convolutional layers and 1 dense layer.
         In essence it works just like the encoder part of an autoencoder.
         It is thereotically possible to scale the number of layers up and down.
-        This model has 5'600'000 parameters and also a dropout layer.
+        This model has 1,419,815 parameters and also a dropout layer.
     """,
     lambda input_size, output_size, display_name: tf.keras.Sequential(
         [
@@ -137,56 +137,56 @@ MODEL_TYPE.create(
 
             ##### Encoder #####
             tf.keras.layers.Conv2D(
-                filters=2**0 * 16,
+                filters=2**0 * 8,
                 kernel_size=(2, 2),
                 strides=(1, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**1  * 16,
+                filters=2**1  * 8,
                 kernel_size=(2, 2),
                 strides=(1, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**2  * 16,
+                filters=2**2  * 8,
                 kernel_size=(2, 1),
                 strides=(1, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**3  * 16,
+                filters=2**3  * 8,
                 kernel_size=(2, 1),
                 strides=(1, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**4  * 16,
+                filters=2**4  * 8,
                 kernel_size=(2, 1),
                 strides=(2, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**5 * 16,
+                filters=2**5 * 8,
                 kernel_size=(2, 1),
                 strides=(2, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**6 * 16,
+                filters=2**6 * 8,
                 kernel_size=(2, 1),
                 strides=(2, 1),
                 padding='valid',
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
             tf.keras.layers.Conv2D(
-                filters=2**7 * 16,
+                filters=2**7 * 8,
                 kernel_size=(2, 1),
                 strides=(2, 1),
                 padding='valid',
