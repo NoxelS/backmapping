@@ -361,8 +361,11 @@ def plot_bond_length_distribution(analysis_data, bond):
 
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    true_hist = savgol_filter(true_hist, 5, 3, mode="wrap")
-    pred_hist = savgol_filter(pred_hist, 5, 3, mode="wrap")
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3, mode="wrap")
+        pred_hist = savgol_filter(pred_hist, 8, 3, mode="wrap")
+    except Exception as e:
+        print(e) 
     
     # Remove negative values
     true_hist = np.clip(true_hist, 0, np.inf)
@@ -450,8 +453,11 @@ def plot_total_bond_length_distribution(analysis_data, skip_atoms=None):
     
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    hist_true = savgol_filter(hist_true, 8, 3)
-    hist_pred = savgol_filter(hist_pred, 8, 3)
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
 
     # Plot histograms as line graphs
     plt.plot(bins_pred[:-1], hist_true, label="True", alpha=0.75, color="blue", linewidth=1.5)
@@ -531,8 +537,11 @@ def plot_coordinates_distribution(analysis_data, atom_name: str, coordinate: str
     
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    c_true_hist = savgol_filter(c_true_hist, 8, 3)
-    c_pred_hist = savgol_filter(c_pred_hist, 8, 3)
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
 
     color_true = ["red", "green", "blue"][c]
     color_pred = ["violet", "lime", "cyan"][c]
@@ -603,8 +612,11 @@ def plot_radial_distribution_function(analysis_data, atom_name: str):
 
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    hist_true = savgol_filter(hist_true, 8, 3)
-    hist_pred = savgol_filter(hist_pred, 8, 3)
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
     
     # Clip negative values (can happen when using savgol filter)
     hist_true = np.clip(hist_true, 0, np.inf)
@@ -711,8 +723,11 @@ def plot_bond_angle_distribution(analysis_data, bond1, bond2):
     
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    true_hist = savgol_filter(true_hist, 8, 3)
-    pred_hist = savgol_filter(pred_hist, 8, 3)
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
     
     # Plot histograms as line graphs
     plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
@@ -803,8 +818,11 @@ def plot_total_angle_distribution(analysis_data, bond_pairs):
     
     # Smooth the histogram with a savgol filter
     # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
-    true_hist = savgol_filter(true_hist, 8, 3)
-    pred_hist = savgol_filter(pred_hist, 8, 3)
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
     
     # Plot histograms as line graphs
     plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
