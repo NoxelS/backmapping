@@ -8,7 +8,7 @@ import tensorflow as tf
 from master import PORT, encode_finished, encode_starting
 from library.config import Keys, config
 from library.classes.losses import BackmappingAbsolutePositionLoss
-from library.classes.models import CNN
+from library.classes.models import CNN, MODEL_TYPES
 from library.static.topologies import DOPC_AT_NAMES
 from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator
 
@@ -134,7 +134,7 @@ with strategy.scope():
         cg_size,
         at_size,
         data_prefix=DATA_PREFIX,
-        display_name=atom_name_to_fit,
+        display_name=f"{MODEL_NAME_PREFIX}_{atom_name_to_fit}",
         keep_checkpoints=True,
         load_path=os.path.join(DATA_PREFIX, "models", atom_name_to_fit, f"{MODEL_NAME_PREFIX}.h5"),
         # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model 
@@ -143,7 +143,8 @@ with strategy.scope():
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,
         host_ip_address=host_ip_address if use_socket else None,
-        port=PORT if use_socket else None
+        port=PORT if use_socket else None,
+        model_type=MODEL_TYPES.CNN_V1_1
     )
 
     cnn.fit(

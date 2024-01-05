@@ -5,8 +5,209 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import enum
 
 from library.classes.generators import PADDING_X, PADDING_Y
+
+
+# Enum to store the model types
+class MODEL_TYPES(enum.Enum):
+    CNN_V1_0 = 0
+    CNN_V1_1 = 1
+
+REGISTERED_MODELS = []
+
+class MODEL_TYPE:
+    def __init__(self, model_factory, name, description):
+        """
+            This is the base class for all model types. It contains the basic structure of the model type.
+            Args:
+                model_factory (function): The function to create the model (input_size, output_size) -> tf.keras.Model
+                name (str): The name of the model type
+                description (str): The description of the model type
+        """
+        self.model_factory = model_factory
+        self.model_name = name
+        self.model_description = description
+
+    # Factory method
+    @staticmethod
+    def create(name, description, model_factory):
+        REGISTERED_MODELS.append(MODEL_TYPE(model_factory, name, description))
+        return MODEL_TYPE(model_factory, name, description)
+
+
+### MODELS ###
+MODEL_TYPE.create(
+    "CNN_v1_0",
+    """
+        This is the first CNN model. It is a simple CNN with 8 convolutional layers and 1 dense layer.
+        In essence it works just like the encoder part of an autoencoder.
+        It is thereotically possible to scale the number of layers up and down.
+        This model has 360'000 parameters.
+    """,
+    lambda input_size, output_size, display_name: tf.keras.Sequential(
+        [
+            ##### Input layer #####
+            tf.keras.layers.Input(input_size, sparse=False),
+
+            ##### Encoder #####
+            tf.keras.layers.Conv2D(
+                filters=2**0 * 4,
+                kernel_size=(2, 2),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**1  * 4,
+                kernel_size=(2, 2),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**2  * 4,
+                kernel_size=(2, 1),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**3  * 4,
+                kernel_size=(2, 1),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**4  * 4,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**5 * 4,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**6 * 4,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**7 * 4,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.MaxPool2D(
+                pool_size=(3, 3),
+            ),
+            tf.keras.layers.BatchNormalization(),
+
+            ##### Output #####
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.Zeros()),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
+            tf.keras.layers.Reshape(output_size)
+        ],
+        name = f"{display_name}_CNN_v1_0"
+    )
+)
+
+MODEL_TYPE.create(
+    "CNN_v1_1",
+    """
+        This is the first CNN model. It is a simple CNN with 8 convolutional layers and 1 dense layer.
+        In essence it works just like the encoder part of an autoencoder.
+        It is thereotically possible to scale the number of layers up and down.
+        This model has 5'600'000 parameters and also a dropout layer.
+    """,
+    lambda input_size, output_size, display_name: tf.keras.Sequential(
+        [
+            ##### Input layer #####
+            tf.keras.layers.Input(input_size, sparse=False),
+
+            ##### Encoder #####
+            tf.keras.layers.Conv2D(
+                filters=2**0 * 16,
+                kernel_size=(2, 2),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**1  * 16,
+                kernel_size=(2, 2),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**2  * 16,
+                kernel_size=(2, 1),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**3  * 16,
+                kernel_size=(2, 1),
+                strides=(1, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**4  * 16,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**5 * 16,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**6 * 16,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.Conv2D(
+                filters=2**7 * 16,
+                kernel_size=(2, 1),
+                strides=(2, 1),
+                padding='valid',
+                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            ),
+            tf.keras.layers.MaxPool2D(
+                pool_size=(3, 3),
+            ),
+            tf.keras.layers.BatchNormalization(),
+
+            ##### Output #####
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dropout(0.1),
+            tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.Zeros()),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
+            tf.keras.layers.Reshape(output_size)
+        ],
+        name = f"{display_name}_CNN_v1_1"
+    )
+)
+
+
 
 
 class CNN:
@@ -22,7 +223,8 @@ class CNN:
         test_sample: tuple = None,
         socket = None,
         host_ip_address = None,
-        port = None
+        port = None,
+        model_type: MODEL_TYPES = MODEL_TYPES.CNN_V1_0,
     ):
         """
         This is the base class for all CNNs. It contains the basic structure of the CNN and the fit function.
@@ -57,84 +259,8 @@ class CNN:
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(111, projection='3d')
 
-        # Scale the model, this currently only affects the number of filters
-        scale = 2          # Scaled the filter dimensions by this factor
-
-        # The activation function to use for the convolutional layers
-        conv_activation = tf.keras.layers.LeakyReLU(alpha=0.01)
-
-        self.model = tf.keras.Sequential(
-            [
-                ##### Input layer #####
-                tf.keras.layers.Input(input_size, sparse=False),
-
-                ##### Encoder #####
-                tf.keras.layers.Conv2D(
-                    filters=2**0 * scale,
-                    kernel_size=(2, 2),
-                    strides=(1, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**1 * scale,
-                    kernel_size=(2, 2),
-                    strides=(1, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**2 * scale,
-                    kernel_size=(2, 1),
-                    strides=(1, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**3 * scale,
-                    kernel_size=(2, 1),
-                    strides=(1, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**4 * scale,
-                    kernel_size=(2, 1),
-                    strides=(2, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**5 * scale,
-                    kernel_size=(2, 1),
-                    strides=(2, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**6 * scale,
-                    kernel_size=(2, 1),
-                    strides=(2, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.Conv2D(
-                    filters=2**7 * scale,
-                    kernel_size=(2, 1),
-                    strides=(2, 1),
-                    padding='valid',
-                    activation=conv_activation,
-                ),
-                tf.keras.layers.MaxPool2D(
-                    pool_size=(3, 3),
-                ),
-                tf.keras.layers.BatchNormalization(),
-
-                ##### Output #####
-                tf.keras.layers.Flatten(),
-                tf.keras.layers.Dense(np.prod(output_size), activation='tanh', kernel_initializer=tf.keras.initializers.Zeros()),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
-                tf.keras.layers.Reshape(output_size)
-            ], name=self.display_name)
+        # Create the model based on the specified model type and input/output size/display_name
+        self.model = REGISTERED_MODELS[model_type.value].model_factory(input_size, output_size, display_name)
 
         # Compile the model
         self.model.compile(
@@ -146,6 +272,9 @@ class CNN:
             run_eagerly=True
         )
 
+        # Print the model summary
+        print(REGISTERED_MODELS[model_type.value].model_name)
+        print(REGISTERED_MODELS[model_type.value].model_description)
         self.model.summary()
 
         # Load weights if path is given
@@ -154,7 +283,7 @@ class CNN:
                 # Load the model as whole
                 self.model = tf.keras.models.load_model(load_path, custom_objects={
                     "BackmappingAbsolutePositionLoss": self.loss,
-                    "LeakyReLU": conv_activation,
+                    "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
                 })
                 print("Loaded model from " + load_path)
             except Exception as e:
@@ -287,7 +416,7 @@ class CNN:
             last_epoch = 0
             with open(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv"), "r") as f:
                 last_epoch = len(f.readlines()) - 2     # -2 because header and last empty line
-            self.current_epoch = np.max([last_epoch, 0])
+            self.current_epoch = np.max([last_epoch + 1, 0])    # We assume that the last epoch was finished
             print(f"Starting from epoch {self.current_epoch}")
 
         # Here we use generators to generate batches of data for the training.
