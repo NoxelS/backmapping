@@ -1,0 +1,10 @@
+Degrees of freedom:
+    - Aktuelles netz "as is" speichern und so lassen für die Bachelorarbeit und komplett analysieren
+    - Alogorithmus schreiben, der anhand eines Peak-Weiten-Trheshold der Verteilung von manchen variablen herausfindet,  
+      welche Variablen als konstant angesehen werden. So können wir die Dimension des Variablenraum deutlich minimieren!
+
+
+Update:
+    - Erst mal eine Statistik machen um heraus zu finden was genau konsant bleibt, dann sollte man aufgrund der menschlichen
+      Intuition festlegen, wie groß der Cutoff Radius sein wird für die Standardabweichung (sowohl relativ als auch absolut)
+    - In Zukunft könnten wir sogar diesen Cutoff als Trainignsparameter ansehen und ihn wärend dem Lernen variieren.

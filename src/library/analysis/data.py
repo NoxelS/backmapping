@@ -7,8 +7,6 @@ import numpy as np
 # Disable tensorflow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 
-import tensorflow as tf
-
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
                                         PADDING_Y, NeighbourDataGenerator,
                                         get_scale_factor, print_matrix)
@@ -34,10 +32,6 @@ USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
 ANALYSIS_PATH = os.path.join(DATA_PREFIX, "analysis")
 ANALYSIS_PREDICTION_CACHE_PATH = os.path.join(ANALYSIS_PATH, "prediction_cache.pkl")
 ANALYSIS_DATA_CACHE_PATH = os.path.join(ANALYSIS_PATH, "analysis_data_cache.pkl")
-
-# The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
-# performance when training on multiple GPUs.
-STRATEGY = tf.distribute.experimental.CentralStorageStrategy()
 
 CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
 AT_SIZE = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
@@ -71,6 +65,8 @@ def get_predictions(atom_names_to_fit_with_model, batch_size = 2048, batches = 1
             update_predictions = True
             os.remove(ANALYSIS_PREDICTION_CACHE_PATH)
 
+    update_predictions = False
+
     if update_predictions:
         print("Starting running predictions, this might take a while...")
 
@@ -81,6 +77,11 @@ def get_predictions(atom_names_to_fit_with_model, batch_size = 2048, batches = 1
 
         # List to store the predictions
         predictions = []
+        
+        import tensorflow as tf
+        # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
+        # performance when training on multiple GPUs.
+        STRATEGY = tf.distribute.experimental.CentralStorageStrategy()
 
         with STRATEGY.scope():
 

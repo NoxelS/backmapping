@@ -7,13 +7,9 @@ import time
 
 from scipy.signal import savgol_filter
 
-# Disable tensorflow logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
-
 import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
 from Bio.PDB import PDBIO, Atom, Chain, Model, Residue, Structure
 from matplotlib.lines import Line2D
 

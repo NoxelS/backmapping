@@ -12,6 +12,7 @@ import tensorflow as tf
 from matplotlib.lines import Line2D
 
 from library.analysis.data import get_predictions, predictions_to_analysis_data
+from library.analysis.utils import bond_length_distribution, bond_angle_distribution
 from library.analysis.plots import (molecule_to_ptb,
                                     plot_bond_angle_distribution,
                                     plot_bond_length_distribution,
@@ -32,7 +33,6 @@ from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log
 from library.static.vector_mappings import DOPC_AT_BAB, DOPC_AT_MAPPING
 from master import PORT, encode_finished, encode_starting
-
 ##### CONFIGURATION #####
 
 # Plot config
@@ -90,116 +90,182 @@ predictions = get_predictions(ATOM_NAMES_TO_FIT_WITH_MODEL, batch_size=BATCH_SIZ
 analysis_data = predictions_to_analysis_data(predictions)
 
 
-"""
-    The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
-"""
-plot_loss_atom_name(predictions, 'loss').savefig(gen_path("loss", "loss_atom_name.png"), **savefig_kwargs)
-plot_loss_atom_name(predictions, 'mae').savefig(gen_path("loss", "mae_atom_name.png"), **savefig_kwargs)
+THRESHOLD = 0.006
+
+bond_stds = [bond_length_distribution(analysis_data, bond) for bond in DOPC_AT_MAPPING]
+print(len(DOPC_AT_MAPPING))
+# Plot bond_std as scatter plot
+fig, ax = plt.subplots()
+ax.set_xlabel("Bond index")
+ax.set_ylabel("Standard deviation [Å]")
+ax.set_title("Bond length standard deviation")
+ax.grid(True)
+
+# Print how many below threshold and how many above threshold
+below_threshold = np.count_nonzero(np.array(bond_stds) < THRESHOLD)
+above_threshold = np.count_nonzero(np.array(bond_stds) >= THRESHOLD)
+print(f"Below threshold: {below_threshold}")
+print(f"Above threshold: {above_threshold}")
+print(f"Percantage: {below_threshold / (below_threshold + above_threshold) * 100} %")
 
 
-"""
-    The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
-    mean distance of the atom a model fits.
-"""
-plot_loss_nmd(predictions).savefig(gen_path("loss", "loss_nmd.png"), **savefig_kwargs)
+# Plot line at y = THRESHOLD
+ax.axhline(THRESHOLD, color="red", linestyle="--", label="Threshold")
+
+# Write percentage of bonds below threshold on the threshold line
+ax.text(0, 1.05 * THRESHOLD, f"{(below_threshold / (below_threshold + above_threshold) * 100):02f} % bonds below threshold", color="black", fontsize=8)
+
+for i, bond in enumerate(DOPC_AT_MAPPING):
+    ax.scatter(i, bond_stds[i])
+
+ax.legend()
+fig.savefig(gen_path("bonds", "lengths", "bond_std.png"), **savefig_kwargs)
 
 
-"""
-    Plot the training history for each atom. This gives insights about the training process,
-    cache behavior, and the training performance.
-"""
-plot_cluster_hist(2).savefig(gen_path("training", "training_loss.png"), **savefig_kwargs)
-plot_cluster_hist(3).savefig(gen_path("training", "training_lr.png"), **savefig_kwargs)
-plot_cluster_hist(4).savefig(gen_path("training", "training_mae.png"), **savefig_kwargs)
-plot_cluster_hist(5).savefig(gen_path("training", "training_val_acc.png"), **savefig_kwargs)
-plot_cluster_hist(6).savefig(gen_path("training", "training_val_loss.png"), **savefig_kwargs)
-plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
+bond_stds = [bond_angle_distribution(analysis_data, bond1, bond2) for bond1, bond2 in DOPC_AT_BAB]
+print(len(DOPC_AT_MAPPING))
+# Plot bond_std as scatter plot
+fig, ax = plt.subplots()
+ax.set_xlabel("Bond index")
+ax.set_ylabel("Standard deviation [°]")
+ax.set_title("Bond angle standard deviation")
+ax.grid(True)
+
+# Print how many below threshold and how many above threshold
+below_threshold = np.count_nonzero(np.array(bond_stds) < THRESHOLD)
+above_threshold = np.count_nonzero(np.array(bond_stds) >= THRESHOLD)
+print(f"Below threshold: {below_threshold}")
+print(f"Above threshold: {above_threshold}")
+print(f"Percantage: {below_threshold / (below_threshold + above_threshold) * 100} %")
 
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
-"""
-[plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
+# Plot line at y = THRESHOLD
+ax.axhline(THRESHOLD, color="red", linestyle="--", label="Threshold")
 
+# Write percentage of bonds below threshold on the threshold line
+ax.text(0, 1.05 * THRESHOLD, f"{(below_threshold / (below_threshold + above_threshold) * 100):02f} % bonds below threshold", color="black", fontsize=8)
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram.
-"""
-plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length.png"), **savefig_kwargs)
+for i, bond in enumerate(DOPC_AT_MAPPING):
+    ax.scatter(i, bond_stds[i])
 
-"""
-    This plot shows the predicted and true bond lengths as a histogram without the current misbehaving models
-"""
-plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
-
-
-"""
-    Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
-    Also creates animation to visualize the 3D plot.
-"""
-[plot_molecule(analysis_data, i).savefig(gen_path(f"molecules", f"mol_{i}.png"), **savefig_kwargs) for i in range(25)]
-
-
-"""
-    Plot bond angel distribution of predicted and true bonds as a histogram.
-"""
-[plot_bond_angle_distribution(analysis_data, bond1, bond2).savefig(gen_path(f"bonds", "angles", f"bond_angle_{bond1[0]}_{bond1[1]}_{bond2[0]}_{bond2[1]}.png"), **savefig_kwargs) for bond1, bond2 in DOPC_AT_BAB]
-
-
-"""
-    Plot total bond angel distribution of predicted and true bonds as a histogram.
-"""
-plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
-
-
-
-"""
-    Plot bond dihedral angle error of predicted and true bonds as a histogram.
-"""
-# TODO
-
-
-"""
-    Plot a coordinate distribution of predicted and true atom positions for every model.
-    This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
-"""
-[plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
-[plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+ax.legend()
+fig.savefig(gen_path("bonds", "lengths", "angle_bond_std.png"), **savefig_kwargs)
 
 
 
-"""
-    Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
-"""
-[molecule_to_ptb(analysis_data, 0, gen_path("PDB", f"mol_{i}_true.pdb"),gen_path("PDB", f"mol_{i}_pred.pdb"),gen_path("PDB", f"mol_{i}_CG.pdb")) for i in range(25)]
-
-
-"""
-    Plots a few neighbor predictions in one plot to visualize the performance of the model and also show
-    the neighborhood of the atom.
-"""
-# TODO
-
-
-"""
-    Plot true and predicted radial distribution function g(r) for each model/atom
-"""
-[plot_radial_distribution_function(analysis_data, atom_name).savefig(gen_path("positions", "radial_distribution", f"g_{atom_name}.png"), **savefig_kwargs) for atom_name in ATOM_NAMES_TO_FIT]
 
 
 
-"""
-    Use the PDB file that was predicted from a fiven input and use gromacs to find out how long it takes
-    until the energy is minimized. This is probably the best predictor of how good the model
-    predicting power really ist.
-"""
-# TODO
+# """
+#     The loss(atom_name) bar-chart plots give insights about the performance of the model for each atom.
+# """
+# plot_loss_atom_name(predictions, 'loss').savefig(gen_path("loss", "loss_atom_name.png"), **savefig_kwargs)
+# plot_loss_atom_name(predictions, 'mae').savefig(gen_path("loss", "mae_atom_name.png"), **savefig_kwargs)
 
 
-"""
-    Make a complete analysis of the model performance and create a report with all the plots and
-    statistics, also generate a csv file with all the data that may be useful for further analysis.
-"""
-# TODO
+# """
+#     The loss(nmd) chart gives insights about the performance of the model with respect to the normalized
+#     mean distance of the atom a model fits.
+# """
+# plot_loss_nmd(predictions).savefig(gen_path("loss", "loss_nmd.png"), **savefig_kwargs)
+
+
+# """
+#     Plot the training history for each atom. This gives insights about the training process,
+#     cache behavior, and the training performance.
+# """
+# plot_cluster_hist(2).savefig(gen_path("training", "training_loss.png"), **savefig_kwargs)
+# plot_cluster_hist(3).savefig(gen_path("training", "training_lr.png"), **savefig_kwargs)
+# plot_cluster_hist(4).savefig(gen_path("training", "training_mae.png"), **savefig_kwargs)
+# plot_cluster_hist(5).savefig(gen_path("training", "training_val_acc.png"), **savefig_kwargs)
+# plot_cluster_hist(6).savefig(gen_path("training", "training_val_loss.png"), **savefig_kwargs)
+# plot_cluster_hist(7).savefig(gen_path("training", "training_val_mae.png"), **savefig_kwargs)
+
+
+# """
+#     This plot shows the predicted and true bond lengths as a histogram that overlaps for every bond in DOPC.
+# """
+# [plot_bond_length_distribution(analysis_data, bond).savefig(gen_path("bonds", "lengths", f"bond_length_{bond[0]}_{bond[1]}.png"), **savefig_kwargs) for bond in DOPC_AT_MAPPING]
+
+
+# """
+#     This plot shows the predicted and true bond lengths as a histogram.
+# """
+# plot_total_bond_length_distribution(analysis_data).savefig(gen_path("bonds", "total_bond_length.png"), **savefig_kwargs)
+
+# """
+#     This plot shows the predicted and true bond lengths as a histogram without the current misbehaving models
+# """
+# plot_total_bond_length_distribution(analysis_data, skip_atoms=["C12", "C13", "C14"]).savefig(gen_path("bonds", "total_bond_length_ignoring_bad_models.png"), **savefig_kwargs)
+
+
+# """
+#     Plot a few molecules as a 3D plot. This is useful to get a feeling for the data and the model performance.
+#     Also creates animation to visualize the 3D plot.
+# """
+# [plot_molecule(analysis_data, i).savefig(gen_path(f"molecules", f"mol_{i}.png"), **savefig_kwargs) for i in range(25)]
+
+
+# """
+#     Plot bond angel distribution of predicted and true bonds as a histogram.
+# """
+# [plot_bond_angle_distribution(analysis_data, bond1, bond2).savefig(gen_path(f"bonds", "angles", f"bond_angle_{bond1[0]}_{bond1[1]}_{bond2[0]}_{bond2[1]}.png"), **savefig_kwargs) for bond1, bond2 in DOPC_AT_BAB]
+
+
+# """
+#     Plot total bond angel distribution of predicted and true bonds as a histogram.
+# """
+# plot_total_angle_distribution(analysis_data, DOPC_AT_BAB).savefig(gen_path(f"bonds", f"total_bond_angles.png"), **savefig_kwargs)
+
+
+
+# """
+#     Plot bond dihedral angle error of predicted and true bonds as a histogram.
+# """
+# # TODO
+
+
+# """
+#     Plot a coordinate distribution of predicted and true atom positions for every model.
+#     This is a chart with x,y,z coordinates on the x-axis and the frequency of atoms on the y-axis.
+# """
+# [plot_coordinates_distribution(analysis_data, atom, 'x').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_x.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+# [plot_coordinates_distribution(analysis_data, atom, 'y').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_y.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+# [plot_coordinates_distribution(analysis_data, atom, 'z').savefig(gen_path("positions", "coordinates", f"coordinates_{atom}_z.png"), **savefig_kwargs) for atom in ATOM_NAMES_TO_FIT]
+
+
+
+# """
+#     Transform a few predictions back into a PDB file to visualize and analyze the results with conventional tools.
+# """
+# [molecule_to_ptb(analysis_data, 0, gen_path("PDB", f"mol_{i}_true.pdb"),gen_path("PDB", f"mol_{i}_pred.pdb"),gen_path("PDB", f"mol_{i}_CG.pdb")) for i in range(25)]
+
+
+# """
+#     Plots a few neighbor predictions in one plot to visualize the performance of the model and also show
+#     the neighborhood of the atom.
+# """
+# # TODO
+
+
+# """
+#     Plot true and predicted radial distribution function g(r) for each model/atom
+# """
+# [plot_radial_distribution_function(analysis_data, atom_name).savefig(gen_path("positions", "radial_distribution", f"g_{atom_name}.png"), **savefig_kwargs) for atom_name in ATOM_NAMES_TO_FIT]
+
+
+
+# """
+#     Use the PDB file that was predicted from a fiven input and use gromacs to find out how long it takes
+#     until the energy is minimized. This is probably the best predictor of how good the model
+#     predicting power really ist.
+# """
+# # TODO
+
+
+# """
+#     Make a complete analysis of the model performance and create a report with all the plots and
+#     statistics, also generate a csv file with all the data that may be useful for further analysis.
+# """
+# # TODO
 
