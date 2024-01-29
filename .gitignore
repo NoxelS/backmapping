@@ -182,7 +182,7 @@ box_sizes_*
 neighborhoods.*
 mean_distances.*
 *.zip
-*.png
+data/**/*.png
 *.pkl
 *.h5
 *.mp4
