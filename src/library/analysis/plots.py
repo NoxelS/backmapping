@@ -5,26 +5,24 @@ import socket
 import sys
 import time
 
-# Disable tensorflow logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+from scipy.signal import savgol_filter
 
 import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
+from Bio.PDB import PDBIO, Atom, Chain, Model, Residue, Structure
 from matplotlib.lines import Line2D
 
-from library.analysis.data import get_analysis_data
-from library.classes.generators import (ABSOLUTE_POSITION_SCALE_X, PADDING_X,
-                                        PADDING_Y,
-                                        AbsolutePositionsNeigbourhoodGenerator,
+from library.analysis.data import get_predictions
+from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
+                                        PADDING_Y, NeighbourDataGenerator,
                                         get_mean_distance_and_std,
                                         get_scale_factor, print_matrix)
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
-from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP
+from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log_progress
 from library.static.vector_mappings import DOPC_AT_MAPPING
 from master import PORT, encode_finished, encode_starting
 
@@ -61,9 +59,13 @@ plt.style.use(THEME) if THEME in plt.style.available else print(f"Theme '{THEME}
 
 ### Plot functions ###
 
+@log_progress("plotting loss(atom_name)")
 def plot_loss_atom_name(predictions, loss = "loss"):
     losses = [prediction[4][loss] for prediction in predictions]
     atom_names = [prediction[0] for prediction in predictions]
+    
+    # Scale losses according to the atom scale factor
+    losses = [loss * get_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
     
     # Make NMD colors
     nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
@@ -83,10 +85,20 @@ def plot_loss_atom_name(predictions, loss = "loss"):
     plt.ylim(bottom=0)
     plt.xticks(rotation=90)
     
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
     return fig
 
+@log_progress("plotting loss(nmd)")
 def plot_loss_nmd(predictions):
     losses = [prediction[4]["loss"] for prediction in predictions]
+    atom_names = [prediction[0] for prediction in predictions]
+
+    # Scale losses according to the atom scale factor
+    losses = [loss * get_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
+
     nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
     
     # Normalize
@@ -99,8 +111,13 @@ def plot_loss_nmd(predictions):
     plt.ylabel("Loss")
     plt.xlabel("Normalized mean distance of model")
     
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
     return fig
 
+@log_progress("plotting cluster hist")
 def plot_cluster_hist(data_col = 2):
     # Get mean distances to color the plot accordingly
     mean_distances = {}
@@ -185,6 +202,10 @@ def plot_cluster_hist(data_col = 2):
     ax.set_ylabel(data_name)
     ax.set_title("Training History")
 
+    # Add grid
+    ax.grid(axis="y", alpha=0.5)
+    ax.grid(axis="x", alpha=0.5)
+
     # Make log scale
     ax.set_yscale("log")
 
@@ -217,148 +238,659 @@ def plot_cluster_hist(data_col = 2):
 
 
 
-def plot_molecule(predictions, sample: int):
+@log_progress("3d plotting molecule")
+def plot_molecule(analysis_data, sample: int):
     """
         This function plots the molecule with the predicted coordinates. It also plots the real coordinates if they are available and the difference between the predicted and real coordinates.
         Also plots neighbor atoms if available.
     """
-    pass
 
-def plot_bond_length_distribution(predictions):
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for i_name, i_pos in array:
+            if i_name == atom_name:
+                return np.array(i_pos)
+
+        raise Exception(f"Atom {atom_name} not found in array {array}")
+    
+    X, Y_true, Y_pred = analysis_data[sample]
+
+    # Plot the molecule
+    fig = plt.figure(figsize=FIG_SIZE_SQUARE)
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the input
+    for i, (atom_name, atom_pos) in enumerate(X):
+        if i < 12:
+            # Make size of the beads bigger
+            ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color="black", alpha=0.1, s=100, linewidth=0.0)
+        else:
+            ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color="blue", alpha=0.15, s=100, linewidth=0.0)
+            
+    # Plot predicted atoms
+    for atom_name, atom_pos in Y_pred:
+        element = "".join([i for i in atom_name if i.isalpha()])
+        ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color=DEFAULT_ELEMENT_COLOR_MAP[element], alpha = 0.75)
+        # ax.text(atom_pos[0], atom_pos[1], atom_pos[2], atom_name, color=DEFAULT_ELEMENT_COLOR_MAP[element], fontsize=12)
+    
+    # Plot the true molecule
+    for atom_name, atom_pos in Y_true:
+        element = "".join([i for i in atom_name if i.isalpha()])
+        ax.scatter(atom_pos[0], atom_pos[1], atom_pos[2], color=DEFAULT_ELEMENT_COLOR_MAP[element], alpha = 0.5)
+        # ax.text(atom_pos[0], atom_pos[1], atom_pos[2], atom_name, color=DEFAULT_ELEMENT_COLOR_MAP[element], fontsize=12)
+
+    for bond in DOPC_AT_MAPPING:
+        from_atom_pos_pred = find_atom(Y_pred, bond[0])
+        to_atom_pos_pred   = find_atom(Y_pred, bond[1])
+        
+        from_atom_pos_true = find_atom(Y_true, bond[0])
+        to_atom_pos_true   = find_atom(Y_true, bond[1])
+        
+        # Plot bond
+        ax.plot([from_atom_pos_pred[0], to_atom_pos_pred[0]], [from_atom_pos_pred[1], to_atom_pos_pred[1]], [from_atom_pos_pred[2], to_atom_pos_pred[2]], color="purple", alpha=0.75, linestyle="--", linewidth=.5)
+        ax.plot([from_atom_pos_true[0], to_atom_pos_true[0]], [from_atom_pos_true[1], to_atom_pos_true[1]], [from_atom_pos_true[2], to_atom_pos_true[2]], color="blue", alpha=0.5, linestyle="--", linewidth=.5)
+
+    # Add labels
+    ax.set_xlabel("X (Å)")
+    ax.set_ylabel("Y (Å)")
+    ax.set_zlabel("Z (Å)")
+    ax.set_title(f"Molecule {sample}")
+    ax.legend()
+    
+    return fig
+
+
+@log_progress("plotting total bond length histrogram")
+def plot_bond_length_distribution(analysis_data, bond):
+    """
+        Finds all bond lengths in the predictions and true positions and plots them in a histogram.
+        
+        Args:
+            analysis_data (list): List of tuples of type (X, Y_true, Y_pred) where X is the input, Y_true is the true output and Y_pred is the predicted output.
+            bond (tuple): Tuple of type (from_atom, to_atom) where from_atom and to_atom are the names of the atoms that form the bond.
+    """
+    from_atom, to_atom = bond
+    
+    bond_lengths_pred = []
+    bond_lengths_true = []
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for i_name, i_pos in array:
+            if i_name == atom_name:
+                return np.array(i_pos)
+
+        raise Exception(f"Atom {atom_name} not found in array {array}")
+    
+    for X, Y_true, Y_pred in analysis_data:
+        from_atom = bond[0]
+        to_atom = bond[1]
+
+        from_atom_pos_pred = find_atom(Y_pred, from_atom)
+        to_atom_pos_pred   = find_atom(Y_pred, to_atom)
+
+        from_atom_pos_true = find_atom(Y_true, from_atom)
+        to_atom_pos_true   = find_atom(Y_true, to_atom)
+
+        # Calculate bond length
+        bond_length_pred = np.linalg.norm(to_atom_pos_pred - from_atom_pos_pred)
+        bond_length_true = np.linalg.norm(to_atom_pos_true - from_atom_pos_true)
+
+        bond_lengths_pred.append(bond_length_pred)
+        bond_lengths_true.append(bond_length_true)
+
+    # Remove all bond lengths that are longer than 2 Å in the predicted data
+    bond_lengths_pred = [bond_length for bond_length in bond_lengths_pred if bond_length < 2]
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Create histogram points
+    bins = 150
+    
+    pred_hist, pred_bins = np.histogram(bond_lengths_pred, bins=bins, density=True)
+    true_hist, true_bins = np.histogram(bond_lengths_true, bins=pred_bins, density=True)
+
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3, mode="wrap")
+        pred_hist = savgol_filter(pred_hist, 8, 3, mode="wrap")
+    except Exception as e:
+        print(e) 
+    
+    # Remove negative values
+    true_hist = np.clip(true_hist, 0, np.inf)
+    pred_hist = np.clip(pred_hist, 0, np.inf)
+    
+    # Plot histograms as line graphs
+    plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(pred_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    # Only plot between predicted and true range
+    plt.xlim(np.min([*pred_bins, *true_bins]), np.max([*pred_bins, *true_bins]))
+
+    # Add labels
+    plt.title(f"Bond length distribution {from_atom}-{to_atom}")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond length (Å)")
+    plt.legend()
+    
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
+    return fig
+
+
+@log_progress("plotting total bond length histrogram")
+def plot_total_bond_length_distribution(analysis_data, skip_atoms=None):
     """
         Finds all bond lengths in the predictions and true positions and plots them in a histogram.
     """
     
-    atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
+    bond_lengths_pred = []
+    bond_lengths_true = []
     
-    bond_angles_pred = []
-    bond_angles_true = []
-    
-    for atom_name, X, y_true, y_pred, losses in predictions:
-    
-        for bond in DOPC_AT_MAPPING:
-            from_atom_name = bond[0]
-            to_atom_name = bond[1]
-            
-            from_atom_pos_pred = np.array([0,0,0])  if from_atom_name == "N" else y_pred[atom_names.index(from_atom_name)]
-            to_atom_name_pred = np.array([0,0,0])   if to_atom_name == "N"   else y_pred[atom_names.index(to_atom_name)]
-
-            from_atom_pos_true = np.array([0,0,0])  if from_atom_name == "N" else y_true[atom_names.index(from_atom_name)]
-            to_atom_name_true = np.array([0,0,0])   if to_atom_name == "N"   else y_true[atom_names.index(to_atom_name)]
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
         
-            # Calculate bond length
-            bond_length_pred = np.linalg.norm(from_atom_pos_pred - to_atom_name_pred)
-            bond_length_true = np.linalg.norm(from_atom_pos_true - to_atom_name_true)
-            
-            # Add to list
-            bond_angles_pred.append(bond_length_pred)
-            bond_angles_true.append(bond_length_true)
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
     
+    for X, Y_true, Y_pred in analysis_data:
+        for bond in DOPC_AT_MAPPING:
+            if skip_atoms and (bond[0] in skip_atoms or bond[1] in skip_atoms):
+                continue
+
+            from_atom = bond[0]
+            to_atom = bond[1]
+
+            from_atom_pos_pred = find_atom(Y_pred, from_atom)
+            to_atom_pos_pred   = find_atom(Y_pred, to_atom)
+            
+
+            from_atom_pos_true = find_atom(Y_true, from_atom)
+            to_atom_pos_true   = find_atom(Y_true, to_atom)
+
+
+            # Calculate bond length
+            bond_length_pred = np.linalg.norm(to_atom_pos_pred - from_atom_pos_pred)
+            bond_length_true = np.linalg.norm(to_atom_pos_true - from_atom_pos_true)
+            
+            bond_lengths_pred.append(bond_length_pred)
+            bond_lengths_true.append(bond_length_true)
+
+    # Cut off any bond lengths that are longer than 2 Å in the predicted data
+    bond_lengths_pred = [bond_length for bond_length in bond_lengths_pred if bond_length < 2]
+
     # Create a figure
     fig = plt.figure(figsize=FIG_SIZE_RECT)
-    n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
-    n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
+
+    # Make histogram points
+    bins = 500
     
-    # Plot difference
-    plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
+    hist_pred, bins_pred = np.histogram(bond_lengths_pred, bins=bins, density=True)
+    hist_true, bins_true = np.histogram(bond_lengths_true, bins=bins_pred, density=True)
     
-    # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_angles_true), color="blue", alpha=0.5, linestyle="--")
-    plt.axvline(x=np.mean(bond_angles_pred), color="orange", alpha=0.5, linestyle="--")
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
+
+    # Plot histograms as line graphs
+    plt.plot(bins_pred[:-1], hist_true, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(bins_pred[:-1], hist_pred, label="Predicted", alpha=0.75, color="orange", linewidth=1.5)
     
+    # Fill between the two lines to show the difference
+    plt.fill_between(bins_pred[:-1], hist_true, hist_pred, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+    
+    # Plot in range of true bond lengths
+    plt.xlim(0, 2)
+    
+    # More ticks
+    plt.xticks(np.linspace(0, 2, 20))
+
     # Add labels
     plt.title("Bond length distribution")
     plt.ylabel("Frequency")
     plt.xlabel("Bond length (Å)")
     plt.legend()
+
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
     
+    # Add disclaimer if atoms were skipped
+    if skip_atoms:
+        plt.text(0.02, 0.02, f"Skipped atoms: {skip_atoms}", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
     return fig
 
-def plot_bond_angle_distribution(predictions):
-    """
-        Finds all bond angles in the predictions and true positions and plots them in a histogram.
-    """
-    
-    atom_names = [name for name in DOPC_AT_NAMES if not name.startswith("H") and not name.startswith("N")]
-    
-    bond_angles_pred = []
-    bond_angles_true = []
-    
-    for atom_name, X, y_true, y_pred, losses in predictions:
-        
-        for bond1 in DOPC_AT_MAPPING:
-            for bond2 in DOPC_AT_MAPPING:
-                if bond1 == bond2:
-                    continue
-                
-                if bond1[0] == bond2[0] or bond1[0] == bond2[1] or bond1[1] == bond2[0] or bond1[1] == bond2[1]:
-                    from_atom_name1 = bond1[0]
-                    to_atom_name1 = bond1[1]
-
-                    from_atom_pos_pred1 = np.array([0,0,0])  if from_atom_name1 == "N" else y_pred[atom_names.index(from_atom_name1)]
-                    to_atom_name_pred1 = np.array([0,0,0])   if to_atom_name1 == "N"   else y_pred[atom_names.index(to_atom_name1)]
-
-                    from_atom_pos_true1 = np.array([0,0,0])  if from_atom_name1 == "N" else y_true[atom_names.index(from_atom_name1)]
-                    to_atom_name_true1 = np.array([0,0,0])   if to_atom_name1 == "N"   else y_true[atom_names.index(to_atom_name1)]
-
-                    from_atom_name2 = bond2[0]
-                    to_atom_name2 = bond2[1]
-
-                    from_atom_pos_pred2 = np.array([0,0,0])  if from_atom_name2 == "N" else y_pred[atom_names.index(from_atom_name2)]
-                    to_atom_name_pred2 = np.array([0,0,0])   if to_atom_name2 == "N"   else y_pred[atom_names.index(to_atom_name2)]
-
-                    from_atom_pos_true2 = np.array([0,0,0])  if from_atom_name2 == "N" else y_true[atom_names.index(from_atom_name2)]
-                    to_atom_name_true2 = np.array([0,0,0])   if to_atom_name2 == "N"   else y_true[atom_names.index(to_atom_name2)]
-
-                    v0_pred = to_atom_name_pred1 - from_atom_pos_pred1
-                    v1_pred = to_atom_name_pred2 - from_atom_pos_pred2
-                    
-                    v0_true = to_atom_name_true1 - from_atom_pos_true1
-                    v1_true = to_atom_name_true2 - from_atom_pos_true2
-
-                    # Calculate angle between the two bonds
-                    theta_pred = np.math.atan2(np.linalg.det([v0_pred,v1_pred]),np.dot(v0_pred,v1_pred))
-                    theta_true = np.math.atan2(np.linalg.det([v0_pred,v1_pred]),np.dot(v0_pred,v1_pred))
-
-                    bond_angles_pred.append(theta_pred)
-                    bond_angles_true.append(theta_true)
-
-    # Create a figure
-    fig = plt.figure(figsize=FIG_SIZE_RECT)
-    n_true, b_true, p_true = plt.hist(bond_angles_true, bins=100, label="True", alpha=0.75, color="blue", bottom=0, density=True, histtype="stepfilled", facecolor='none', edgecolor='k', linewidth=2)
-    n_pred, b_pred, p_pred = plt.hist(bond_angles_pred, bins=100, label="Predicted", alpha=0.75, color="orange", bottom=0, density=True, histtype="stepfilled")
-    
-    # Plot difference
-    plt.plot(b_true[:-1], np.abs(n_true - n_pred), label="Difference", color="black", alpha=0.25, linewidth=2, linestyle="--")
-    
-    # Plot mean of true and pred
-    plt.axvline(x=np.mean(bond_angles_true), color="blue", alpha=0.5, linestyle="--")
-    plt.axvline(x=np.mean(bond_angles_pred), color="orange", alpha=0.5, linestyle="--")
-    
-    # Add labels
-    plt.title("Bond angle distribution")
-    plt.ylabel("Frequency")
-    plt.xlabel("Bond length (Å)")
-    plt.legend()
-    
-    return fig
-
+@log_progress("plotting bond dihedral angle histrogram")
 def plot_bond_dihedral_angle_distribution(predictions):
     """
     """
     pass
 
-def plot_coordinates_distribution(predictions, atom_name: str):
+@log_progress("plotting coordinates histrogram")
+def plot_coordinates_distribution(analysis_data, atom_name: str, coordinate: str):
     """
+        Plots the distribution of the coordinates for a given atom. x,y,z are plotted as histograms in the same plot.
     """
-    pass
+    c = ["x", "y", "z"].index(coordinate.lower())   # Get index of coordinate
+    
+    c_pred = []
+    c_true = []
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
 
-def plot_radial_distribution_function(predictions, atom_name: str):
-    """
-    """
-    pass
+        return np.array([0,0,0])
+    
+    for X, Y_true, Y_pred in analysis_data:
+        true = find_atom(Y_true, atom_name)
+        pred = find_atom(Y_pred, atom_name)
+        c_pred.append(pred[c])
+        c_true.append(true[c])
 
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Make relative to the mean
+    c_true_mean = np.mean(c_true)
+    
+    c_pred = np.array(c_pred) - c_true_mean
+    c_true = np.array(c_true) - c_true_mean
+    
+    # Calculate hisotgram points to plot it as line graph
+    bins = 150
+    
+    c_true_hist, c_true_bins = np.histogram(c_true, bins=bins, density=True)
+    c_pred_hist, _ = np.histogram(c_pred, bins=c_true_bins, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
+
+    color_true = ["red", "green", "blue"][c]
+    color_pred = ["violet", "lime", "cyan"][c]
+
+    # Plot histograms
+    plt.plot(c_true_bins[:-1], c_true_hist, label="True", alpha=0.75, color=color_true, linewidth=1.5)
+    plt.plot(c_true_bins[:-1], c_pred_hist, label="Predicted", alpha=0.75, color=color_pred, linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(c_true_bins[:-1], c_true_hist, c_pred_hist, facecolor=color_true, interpolate=True, alpha=0.1, hatch=r"//", edgecolor=color_true, linewidth=0.0)
+
+    # Make axis in the middle
+    plt.axvline(x=0, color="k")
+
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+
+    # Add labels
+    plt.title(f"{coordinate.upper()}-Coordinate distribution for {atom_name}")
+    plt.ylabel("Frequency")
+    plt.xlabel("Coordinate (Å)")
+    plt.legend()
+    
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    
+    return fig
+
+@log_progress("plotting radial distribution")
+def plot_radial_distribution_function(analysis_data, atom_name: str):
+    """
+        Plots the radial distribution function for a given atom.
+    """
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+    
+    
+    distances_true = []
+    distances_pred = []
+    
+    for X, Y_true, Y_pred in analysis_data:
+        target_atom_pos_true = find_atom(Y_true, atom_name)
+        target_atom_pos_pred = find_atom(Y_pred, atom_name)
+        
+        # Remove the atom we want to plot
+        Y_true = np.array([i[1] for i in Y_true if i[0] != atom_name])
+        Y_pred = np.array([i[1] for i in Y_pred if i[0] != atom_name])
+        
+        # Calculate distances
+        [distances_true.append(np.linalg.norm(i - target_atom_pos_true)) for i in Y_true]
+        [distances_pred.append(np.linalg.norm(i - target_atom_pos_pred)) for i in Y_pred]
+        
+    # Create the histogram points
+    bins = 500
+
+    hist_pred, bins_pred = np.histogram(distances_pred, bins=bins, density=True)
+    hist_true, _ = np.histogram(distances_true, bins=bins_pred, density=True)
+
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
+    
+    # Clip negative values (can happen when using savgol filter)
+    hist_true = np.clip(hist_true, 0, np.inf)
+    hist_pred = np.clip(hist_pred, 0, np.inf)
+    
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Plot histograms as line graphs
+    plt.plot(bins_pred[:-1], hist_true, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(bins_pred[:-1], hist_pred, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+
+    # Fill between the two lines to show the difference
+    plt.fill_between(bins_pred[:-1], hist_true, hist_pred, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+    
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
+    # Only show the maximum range of the two bins
+    plt.xlim(0, np.max([bins_pred]))
+    
+    # Add labels
+    plt.title(f"Radial distribution function $g(r)$ for {atom_name}")
+    plt.ylabel("g(r)")
+    plt.xlabel("Distance (Å)")
+    plt.legend()
+    
+    return fig
+        
+    
+
+@log_progress("plotting N molecules")
 def plot_N_molecules(predictions, N: int):
     """
     """
     pass
+
+@log_progress("plotting total bond angle histrogram")
+def plot_bond_angle_distribution(analysis_data, bond1, bond2):
+    """
+        Finds all bond angles in the predictions and true positions and plots them in a histogram.
+        
+        Args:
+            analysis_data (list): List of tuples of type (X, Y_true, Y_pred) where X is the input, Y_true is the true output and Y_pred is the predicted output.
+            bond1 (tuple): Tuple of type (from_atom, to_atom) where from_atom and to_atom are the names of the atoms that form the bond.
+            bond2 (tuple): Tuple of type (from_atom, to_atom) where from_atom and to_atom are the names of the atoms that form the bond.
+    """
+    
+    # Find the common atom
+    common_atom = set(bond1) & set(bond2)
+    
+    # Swap bonds so that the common atom is always the first one
+    if bond1[1] == common_atom:
+        bond1 = (bond1[1], bond1[0])
+        
+    if bond2[1] == common_atom:
+        bond2 = (bond2[1], bond2[0])
+
+    bond_angles_pred = []
+    bond_angles_true = []
+    
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+    
+    for X, Y_true, Y_pred in analysis_data:
+        # Find bond vectors
+        bond1_vector_pred = find_atom(Y_pred, bond1[1]) - find_atom(Y_pred, bond1[0])
+        bond2_vector_pred = find_atom(Y_pred, bond2[1]) - find_atom(Y_pred, bond2[0])
+
+        bond1_vector_true = find_atom(Y_true, bond1[1]) - find_atom(Y_true, bond1[0])
+        bond2_vector_true = find_atom(Y_true, bond2[1]) - find_atom(Y_true, bond2[0])
+
+        # Calculate bond angle
+        bond_angle_true = np.arccos(np.dot(bond1_vector_true, bond2_vector_true) / (np.linalg.norm(bond1_vector_true) * np.linalg.norm(bond2_vector_true)))
+        bond_angle_pred = np.arccos(np.dot(bond1_vector_pred, bond2_vector_pred) / (np.linalg.norm(bond1_vector_pred) * np.linalg.norm(bond2_vector_pred)))
+
+        bond_angles_true.append(bond_angle_true / np.pi * 180)
+        bond_angles_pred.append(bond_angle_pred / np.pi * 180)
+
+    # Make both relative to the true mean
+    bond_angles_true_mean = np.mean(bond_angles_true)
+    bond_angles_pred = np.array(bond_angles_pred) - bond_angles_true_mean
+    bond_angles_true = np.array(bond_angles_true) - bond_angles_true_mean
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Create histogram points
+    bins = 75
+    
+    true_hist, true_bins = np.histogram(bond_angles_true, bins=bins, density=True)
+    pred_hist, _ = np.histogram(bond_angles_pred, bins=true_bins, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
+    
+    # Plot histograms as line graphs
+    plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(true_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+    
+    # Plot mean of true and pred
+    plt.axvline(x=np.mean(bond_angles_true), color="k", label="Mean True")
+    plt.axvline(x=np.mean(bond_angles_pred), color="purple", label="Mean Pred")
+    
+    # Adjust x-axis to only show the range of the true bond angles
+    plt.xlim(np.min(true_bins), np.max(true_bins))
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    # Change xticks labels so that they are relative to the true mean
+    plt.xticks(ticks=plt.xticks()[0], labels=[f"{i:.2f}" for i in plt.xticks()[0] + bond_angles_true_mean])
+
+    # Add labels
+    plt.title(f"Bond angle distribution {bond1[1]}-{bond1[0]}-{bond2[1]}")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond angle (°)")
+    plt.legend()
+    
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+    
+    return fig
+
+@log_progress("plotting total bond angle histrogram")
+def plot_total_angle_distribution(analysis_data, bond_pairs):
+    """
+        Finds all bond lengths in the predictions and true positions and plots them in a histogram.
+    """
+
+    def find_atom(array, atom_name):
+        if atom_name == "N":
+            return np.array([0,0,0])
+        
+        for atom in array:
+            if atom[0] == atom_name:
+                return atom[1]
+
+        return np.array([0,0,0])
+
+    # List to store all bond angles
+    bond_angles_pred = []
+    bond_angles_true = []
+
+    for bond1, bond2 in bond_pairs:
+        # Find the common atom
+        common_atom = set(bond1) & set(bond2)
+
+        # Swap bonds so that the common atom is always the first one
+        if bond1[1] == common_atom:
+            bond1 = (bond1[1], bond1[0])
+
+        if bond2[1] == common_atom:
+            bond2 = (bond2[1], bond2[0])
+
+        for X, Y_true, Y_pred in analysis_data:
+            # Find bond vectors
+            bond1_vector_pred = find_atom(Y_pred, bond1[1]) - find_atom(Y_pred, bond1[0])
+            bond2_vector_pred = find_atom(Y_pred, bond2[1]) - find_atom(Y_pred, bond2[0])
+
+            bond1_vector_true = find_atom(Y_true, bond1[1]) - find_atom(Y_true, bond1[0])
+            bond2_vector_true = find_atom(Y_true, bond2[1]) - find_atom(Y_true, bond2[0])
+
+            # Calculate bond angle
+            bond_angle_true = np.arccos(np.dot(bond1_vector_true, bond2_vector_true) / (np.linalg.norm(bond1_vector_true) * np.linalg.norm(bond2_vector_true)))
+            bond_angle_pred = np.arccos(np.dot(bond1_vector_pred, bond2_vector_pred) / (np.linalg.norm(bond1_vector_pred) * np.linalg.norm(bond2_vector_pred)))
+
+            bond_angles_true.append(bond_angle_true / np.pi * 180)
+            bond_angles_pred.append(bond_angle_pred / np.pi * 180)
+
+    # Create a figure
+    fig = plt.figure(figsize=FIG_SIZE_RECT)
+    
+    # Create histogram points
+    bins = 200
+    
+    true_hist, true_bins = np.histogram(bond_angles_true, bins=bins, density=True)
+    pred_hist, _ = np.histogram(bond_angles_pred, bins=true_bins, density=True)
+    
+    # Smooth the histogram with a savgol filter
+    # Further information: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html
+    try:
+        true_hist = savgol_filter(true_hist, 8, 3)
+        pred_hist = savgol_filter(pred_hist, 8, 3)
+    except Exception as e:
+        print(e) 
+    
+    # Plot histograms as line graphs
+    plt.plot(true_bins[:-1], true_hist, label="True", alpha=0.75, color="blue", linewidth=1.5)
+    plt.plot(true_bins[:-1], pred_hist, label="Predicted", alpha=0.75, color="purple", linewidth=1.5)
+    
+    # Fill between the two lines to show the difference
+    plt.fill_between(true_bins[:-1], true_hist, pred_hist, facecolor="blue", interpolate=True, alpha=0.1, hatch=r"//", edgecolor="blue", linewidth=0.0)
+
+    # Add small text to the bottom that state we used savgol filter
+    plt.text(0.02, 0.02, "Smoothed with SavGol filter", horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes, fontsize=10, color="black", alpha=0.5)
+
+    # Add labels
+    plt.title(f"Total bond angle distribution")
+    plt.ylabel("Frequency")
+    plt.xlabel("Bond angle (°)")
+    plt.legend()
+
+    # Only show angles in true range
+    plt.xlim(np.min(true_bins), np.max(true_bins))
+
+    plt.xticks(np.linspace(np.min(true_bins), np.max(true_bins), 20))
+
+    # Add grid
+    plt.grid(axis="y", alpha=0.5)
+    plt.grid(axis="x", alpha=0.5)
+
+    return fig
+
+
+@log_progress("transforming molecule into pdb file")
+def molecule_to_ptb(analysis_data, sample_index, save_path_true, save_path_pred, save_path_CG):
+    """
+    This function transforms the molecule into a pdb file.
+    """
+    # TODO: remove this:
+    # Sort by loss
+    analysis_data = sorted(analysis_data, key=(lambda x: np.mean(np.linalg.norm(np.array(x[1][:, 1]) - np.array(x[2][:, 1])))))
+
+    X, Y_true, Y_pred = analysis_data[sample_index]
+
+    for i, array in enumerate([Y_true, Y_pred, X]):
+        # Create a new structure
+        structure = Structure.Structure("DOPC")
+        
+        # Create a new model
+        model = Model.Model(0)
+        structure.add(model)
+        
+        # Create a new chain
+        chain = Chain.Chain("A")
+        model.add(chain)
+        
+        # Create a new residue
+        residue = Residue.Residue((' ', 1, ' '), "R", ' ')
+        chain.add(residue)
+
+        # Add the N origin atom (only in at-positions)
+        if i == 0 or i == 1:
+            atom = Atom.Atom("N", np.array([0,0,0]), 1.0, 1.0, " ", "N", 0, "N")
+            residue.add(atom)
+
+        # Add all atoms
+        for j, (atom_name, atom_pos) in enumerate(array):
+            element = "".join([j for j in atom_name if j.isalpha()])
+            if i == 2 and j >= 12:
+                # TODO: also show neighbor atoms, currenlty we hide them
+                continue
+
+            atom = Atom.Atom(atom_name, atom_pos, 1.0, 1.0, " ", element, 0, atom_name)
+            residue.add(atom)
+        
+        # Save the structure
+        io = PDBIO()
+        io.set_structure(structure)
+        io.save([save_path_true, save_path_pred, save_path_CG][i])

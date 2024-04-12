@@ -1,5 +1,7 @@
 ![example workflow](https://github.com/noxels/backmapping/actions/workflows/tests.yml/badge.svg)
 
+![Backmapping](.github/assets/results.png)
+
 # Backmapping
 
 Welcome to the Backmapping project repository! This project focuses on utilizing Convolutional Neural Network (CNN) architecture powered by TensorFlow and Python to perform backmapping on DOPC lipids.

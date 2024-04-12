@@ -4,12 +4,10 @@ import os
 import pickle
 import random
 import sys
-from sys import getsizeof
 
 import numpy as np
 import tensorflow as tf
 from Bio.PDB.PDBParser import PDBParser
-from scipy.ndimage import gaussian_filter
 
 from library.config import Keys, config
 from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
@@ -29,7 +27,7 @@ def fix_pbc(vector, box_size, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
 
     Args:
         vector (vector): The vector that should be fixed.
-        box_size (vector, optional): The box size of the simulation. Defaults to AVERAGE_SIMULATION_BOX_SIZE.
+        box_size (vector, optional): The box size of the simulation.
         cutoff (list, optional): Cutoff radius to apply the PBC fix to. Defaults to [PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF].
 
     Returns:
@@ -285,7 +283,7 @@ def get_scale_factor(atom_name):
     return mean + 2 * std
 
 
-class BackmappingBaseGenerator(tf.keras.utils.Sequence):
+class BaseDataGenerator(tf.keras.utils.Sequence):
     """
         This is the base class for the backmapping data generator.
         It is used to generate batches of data for the CNN. The children classes specify the structure of the data.
@@ -437,372 +435,7 @@ class BackmappingBaseGenerator(tf.keras.utils.Sequence):
         return get_size(self.cache)
         # return getsizeof(self.cache)
 
-class RelativeVectorsTrainingDataGenerator(BackmappingBaseGenerator):
-    """
-        A data generator class that generates batches of data for the CNN.
-        The input and output is the relative vectors between the atoms and the beads.
-    """
-
-    def __init__(
-        self,
-        input_dir_path,
-        output_dir_path,
-        input_size=(11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        output_size=(53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),
-        shuffle=False,
-        batch_size=1,
-        validate_split=0.1,
-        validation_mode=False,
-        augmentation=False,
-    ):
-        """
-        Args:
-            input_dir_path (str): The path to the directory where the input data (X) is located
-            output_dir_path (str): The path to the directory where the output data (Y) is located
-            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
-            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
-            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
-            batch_size (int, optional): The size of each batch. Defaults to 1.
-            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
-            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
-            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
-        """
-        # Call super constructor
-        super().__init__(
-            input_dir_path,
-            output_dir_path,
-            input_size,
-            output_size,
-            shuffle,
-            batch_size,
-            validate_split,
-            validation_mode,
-            augmentation,
-            cache_name="RVT_" + ("validation" if validation_mode else "training") + "_" + str(batch_size) + "_cache"
-        )
-
-    def __getitem__(self, idx):
-        # Initialize Batch
-        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
-        Y = np.zeros((self.batch_size, *self.output_size), dtype=np.float32)
-
-        # Loop over the batch
-        for i in range(self.batch_size):
-            # Get the index of the residue
-            residue_idx = idx * self.batch_size + i
-
-            # Check if end index is reached
-            if self.validation_mode and residue_idx > self.end_index:
-                raise Exception(f"You are trying to access a residue that does not exist ({residue_idx})!")
-
-            # Get the path to the files
-            cg_path = f"{self.input_dir_path}/{residue_idx}.pdb"
-            at_path = f"{self.output_dir_path}/{residue_idx}.pdb"
-
-            # Load the files
-            cg_structure = self.parser.get_structure(residue_idx, cg_path)
-            at_structure = self.parser.get_structure(residue_idx, at_path)
-
-            # Get the residues
-            cg_residue = list(cg_structure.get_residues())[0]
-            at_residue = list(at_structure.get_residues())[0]
-
-            # Get the atoms
-            cg_atoms = list(cg_residue.get_atoms())
-            at_atoms = list(at_residue.get_atoms())
-
-            # Make name -> atom dict
-            cg_atoms_dict = {atom.get_name(): atom for atom in cg_atoms}
-            at_atoms_dict = {atom.get_name(): atom for atom in at_atoms}
-
-            # Get bounding box sizes
-            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
-            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
-
-            # Check if the box sizes are not nan
-            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
-                raise Exception(f"Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!")
-
-            # Make the relative vectors out of a vector mapping
-            X = add_relative_vectors(cg_atoms_dict, DOPC_CG_MAPPING, X, i, cg_box_size)
-            Y = add_relative_vectors(at_atoms_dict, DOPC_AT_MAPPING, Y, i, at_box_size)
-
-        # Convert to tensor
-        X = tf.convert_to_tensor(X, dtype=tf.float32)
-        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
-
-        # Check if values that are not in [-1, 1] exist
-        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
-            raise Exception(f"Found values outside of [-1, 1], see print before. Value was {Y}")
-
-        # Return tensor as deep copy
-        return tf.identity(X), tf.identity(Y)
-
-
-class AbsolutePositionsGenerator(BackmappingBaseGenerator):
-    """
-        A data generator class that generates batches of data for the CNN.
-        The input and output is the aboslute positions of the atoms and beads.
-    """
-
-    def __init__(
-        self,
-        input_dir_path,
-        output_dir_path,
-        input_size=(12 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more bead position than relativ vectors
-        output_size=(54 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1),  # We have one more atom position than relativ vectors
-        shuffle=False,
-        batch_size=1,
-        validate_split=0.1,
-        validation_mode=False,
-        augmentation=False,
-        only_fit_one_atom=False,
-        atom_name=None,
-    ):
-        """
-        Args:
-            input_dir_path (str): The path to the directory where the input data (X) is located
-            output_dir_path (str): The path to the directory where the output data (Y) is located
-            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
-            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1).
-            shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
-            batch_size (int, optional): The size of each batch. Defaults to 1.
-            validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
-            validation_mode (bool, optional): If the generator should be in validation mode. Defaults to False.
-            augmentation (bool, optional): If the generator should augment the data. Defaults to False.
-            only_fit_one_atom (bool, optional): If only one atom should be fitted. Defaults to False.
-            atom_name (str, optional): The name of the atom that should be fitted. Defaults to None.
-        """
-        # Call super constructor
-        super().__init__(
-            input_dir_path,
-            output_dir_path,
-            input_size,
-            output_size,
-            shuffle,
-            batch_size,
-            validate_split,
-            validation_mode,
-            augmentation,
-            cache_name="AP_" + ("validation" if validation_mode else "training") + "_" + str(batch_size) + "_cache"
-        )
-
-        self.only_fit_one_atom = only_fit_one_atom
-        self.atom_name = atom_name
-
-    def __getitem__(self, idx):
-        return self.__getitem_one_atom__(idx) if self.only_fit_one_atom else self.__getitem_all_atoms__(idx)
-
-    def __getitem_one_atom__(self, idx):
-        # Initialize Batch
-        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
-        Y = np.zeros((self.batch_size, 1 + 2 * PADDING_X, 3 + 2 * PADDING_Y, 1), dtype=np.float32)
-
-        # Loop over the batch
-        for i in range(self.batch_size):
-            # Get the index of the residue
-            residue_idx = idx * self.batch_size + i
-
-            # Check if end index is reached
-            if self.validation_mode and residue_idx > self.end_index:
-                raise Exception(f"You are trying to access a residue that does not exist ({residue_idx})!")
-
-            # Get the path to the files
-            cg_path = f"{self.input_dir_path}/{residue_idx}.pdb"
-            at_path = f"{self.output_dir_path}/{residue_idx}.pdb"
-
-            # Load the files
-            cg_structure = self.parser.get_structure(residue_idx, cg_path)
-            at_structure = self.parser.get_structure(residue_idx, at_path)
-
-            # Get the residues
-            cg_residue = list(cg_structure.get_residues())[0]
-            at_residue = list(at_structure.get_residues())[0]
-
-            # Get the atoms
-            cg_atoms = list(cg_residue.get_atoms())
-            at_atoms = list(at_residue.get_atoms())
-
-            # Filter out the atom that should be fitted
-            if not self.atom_name:
-                raise Exception("You need to specify an atom name!")
-            at_atoms_to_fit = [atom for atom in at_atoms if atom.get_name() == self.atom_name]
-
-            if at_atoms_to_fit.__len__() != 1:
-                raise Exception(f"Found {at_atoms.__len__()} atoms with the name {self.atom_name} in residue {residue_idx}!")
-
-            # Get bounding box sizes
-            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
-            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
-
-            # Check if the box sizes are not nan
-            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
-                raise Exception(f"Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!")
-
-            # Make the absolute positions out of a vector mapping
-            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
-            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0])
-
-        # Augment the data
-        if self.augmentation:
-            # Randomly rotate each dataset
-            for i in range(self.batch_size):
-                vectors_X = X[i, :, :, 0]
-                vectors_Y = Y[i, :, :, 0]
-
-                # Randomly rotate the dataset
-                angle_x = random.uniform(-np.pi, np.pi)
-                angle_y = random.uniform(-np.pi, np.pi)
-                angle_z = random.uniform(-np.pi, np.pi)
-
-                # Loop over beads
-                for j in range(vectors_X.shape[0]):
-                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-                    # Write back
-                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
-
-                # Loop over atoms
-                for j in range(vectors_Y.shape[0]):
-                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-                    # Write back
-                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
-
-                # Write the rotated vectors back to the matrix
-                X[i, :, :, 0] = vectors_X
-                Y[i, :, :, 0] = vectors_Y
-
-        # Convert to tensor
-        X = tf.convert_to_tensor(X, dtype=tf.float32)
-        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
-
-        # Check if values that are not in [-1, 1] exist
-        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
-            if not is_output_matrix_healthy(Y):
-                print_matrix(Y[0:1, :, :, :])
-            if not is_output_matrix_healthy(X):
-                # Find batch that is not healthy
-                for i in range(X.shape[0]):
-                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
-                        print(i)
-                        print_matrix(X[i:i+1, :, :, :])
-                        break
-            raise Exception(f"Found values outside of [-1, 1], see print before. Value was {Y}")
-
-        # Return tensor as deep copy
-        return tf.identity(X), tf.identity(Y)
-
-    def __getitem_all_atoms__(self, idx):
-        # Initialize Batch
-        X = np.zeros((self.batch_size, *self.input_size), dtype=np.float32)
-        Y = np.zeros((self.batch_size, ), dtype=np.float32)
-
-        # Loop over the batch
-        for i in range(self.batch_size):
-            # Get the index of the residue
-            residue_idx = idx * self.batch_size + i
-
-            # Check if end index is reached
-            if self.validation_mode and residue_idx > self.end_index:
-                raise Exception(f"You are trying to access a residue that does not exist ({residue_idx})!")
-
-            # Get the path to the files
-            cg_path = f"{self.input_dir_path}/{residue_idx}.pdb"
-            at_path = f"{self.output_dir_path}/{residue_idx}.pdb"
-
-            # Load the files
-            cg_structure = self.parser.get_structure(residue_idx, cg_path)
-            at_structure = self.parser.get_structure(residue_idx, at_path)
-
-            # Get the residues
-            cg_residue = list(cg_structure.get_residues())[0]
-            at_residue = list(at_structure.get_residues())[0]
-
-            # Get the atoms
-            cg_atoms = list(cg_residue.get_atoms())
-            at_atoms = list(at_residue.get_atoms())
-
-            # Get bounding box sizes
-            cg_box_size = get_bounding_box(residue_idx, CG_BOUNDING_BOX_RELATION_PATH)
-            at_box_size = get_bounding_box(residue_idx, AT_BOUNDING_BOX_RELATION_PATH)
-
-            # Check if the box sizes are not nan
-            if np.isnan(cg_box_size).any() or np.isnan(at_box_size).any():
-                raise Exception(f"Found nan in box sizes ({cg_box_size}, {at_box_size}) in residue {residue_idx}!")
-
-            # Make the absolute positions out of a vector mapping
-            X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
-            Y = add_absolute_positions(at_atoms, Y, i, at_box_size)
-
-        # Augment the data
-        if self.augmentation:
-            # Randomly rotate each dataset
-            for i in range(self.batch_size):
-                vectors_X = X[i, :, :, 0]
-                vectors_Y = Y[i, :, :, 0]
-
-                # Randomly rotate the dataset
-                angle_x = random.uniform(-np.pi, np.pi)
-                angle_y = random.uniform(-np.pi, np.pi)
-                angle_z = random.uniform(-np.pi, np.pi)
-
-                # Loop over beads
-                for j in range(vectors_X.shape[0]):
-                    vec = vectors_X[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-                    # Write back
-                    vectors_X[j, PADDING_Y:-PADDING_Y] = vec
-
-                # Loop over atoms
-                for j in range(vectors_Y.shape[0]):
-                    vec = vectors_Y[j, PADDING_Y:-PADDING_Y]
-                    # Rotate
-                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
-
-                    # Write back
-                    vectors_Y[j, PADDING_Y:-PADDING_Y] = vec
-
-                # Write the rotated vectors back to the matrix
-                X[i, :, :, 0] = vectors_X
-                Y[i, :, :, 0] = vectors_Y
-
-        # Convert to tensor
-        X = tf.convert_to_tensor(X, dtype=tf.float32)
-        Y = tf.convert_to_tensor(Y, dtype=tf.float32)
-
-        # Check if values that are not in [-1, 1] exist
-        if not is_output_matrix_healthy(Y) or not is_output_matrix_healthy(X):
-            if not is_output_matrix_healthy(Y):
-                print_matrix(Y[0:1, :, :, :])
-            if not is_output_matrix_healthy(X):
-                # Find batch that is not healthy
-                for i in range(X.shape[0]):
-                    if not is_output_matrix_healthy(X[i:i+1, :, :, :]):
-                        print(i)
-                        print_matrix(X[i:i+1, :, :, :])
-                        break
-            raise Exception(f"Found values outside of [-1, 1], see print before. Value was {Y}")
-
-        # Return tensor as deep copy
-        return tf.identity(X), tf.identity(Y)
-
-
-class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
+class NeighbourDataGenerator(BaseDataGenerator):
     """
         A data generator class that generates batches of data for the CNN.
         The input and output is the aboslute positions of the atoms and beads and 
@@ -861,6 +494,8 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
         self.neighbourhood_size = neighbourhood_size
 
     def __getitem__(self, idx):
+        # TODO: make this part of the base generator
+        
         X, Y = None, None
         
         # Check if the item is cached
@@ -932,7 +567,7 @@ class AbsolutePositionsNeigbourhoodGenerator(BackmappingBaseGenerator):
 
             # Make the absolute positions out of a vector mapping
             X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
-            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0], position_scale=get_scale_factor(at_atoms_to_fit[0].get_name()))
+            Y = add_absolute_positions(at_atoms, Y, i, at_box_size, target_atom=at_atoms_to_fit[0], position_scale=get_scale_factor(self.atom_name))
 
             # Add the neighbourhood
             for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):

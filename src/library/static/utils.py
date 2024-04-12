@@ -29,5 +29,22 @@ DEFAULT_ELEMENT_COLOR_MAP = {
 
 
 def log(*args, **kwargs):
-    ts = time.strftime("[%H:%M:%S]: ", time.localtime())
+    ts = time.strftime("[%H:%M:%S]:", time.localtime())
     print(ts, *args, **kwargs)
+
+
+def log_progress(func_name):
+    """
+        Logs the progress of a function by printing the time it took to execute it.
+    """
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            
+            t0 = time.time()
+            log(f"Starting {func_name}...")
+            result = function(*args, **kwargs)
+            log(f"Finished {func_name} after {time.time() - t0:.2f}s")
+            
+            return result
+        return wrapper
+    return decorator

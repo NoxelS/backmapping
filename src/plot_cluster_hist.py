@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from library.config import Keys, config
-from library.classes.generators import ABSOLUTE_POSITION_SCALE_Y, get_scale_factor
+from library.classes.generators import get_scale_factor
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
 HIGHLIGHT_ATOM = "" # If a highlight atom is set, it will be highlighted in the plot

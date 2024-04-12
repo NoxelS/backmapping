@@ -77,3 +77,10 @@ DOPC_CG_MAPPING = [
     ("D2B",   "C3B"),
     ("C3B",   "C4B"),
 ]
+
+
+"""
+    This is a bond angle bonds list of (bond, bond) tuples to find the angle between two bonds that share a common atom.
+"""
+DOPC_AT_BAB = [((a, b), (c, d)) for (a, b) in DOPC_AT_MAPPING for (c, d) in DOPC_AT_MAPPING if (b == c and a != d) or (a == d and b != c) or (a == c and b != d) or (b == d and a != c)]
+
