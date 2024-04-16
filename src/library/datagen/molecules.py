@@ -66,7 +66,7 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
 
     # For finding neighbours
     neighbours_counts = []
-    neighbourhoods = []     # This is a list of lists, where each list contains the neighbours of one residue. The index of the list is the residue index
+    neighbourhoods = []  # This is a list of lists, where each list contains the neighbours of one residue. The index of the list is the residue index
 
     coordinates_at = []  # Only used to calculate mean distance to N for debugging
 
@@ -305,8 +305,6 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
         for atom_name, mean in mean_distances_mean.items():
             file.write(f"{atom_name},{mean},{mean_distances_std[atom_name]}\n")
 
-    ####### PLOT HISTOGRAM #######
-
 
     # Make histogram of neighbours counts and plot it
     plt.hist(neighbours_counts, bins=100)
@@ -327,6 +325,7 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
     # Add legend
     plt.legend(["Target neighbour count", "Mean", "Std"])
 
+    # Show plot
     plt.title(f"Histogram of neighbours counts (cuoff {NEIGHBOUR_CUTOFF_RADIUS} A)")
     plt.xlabel("Neighbours count")
     plt.ylabel("Frequency")

@@ -15,4 +15,4 @@ def unzip_raw_files():
         subprocess.call(["unzip", RAW_DATA_PATH, "-d", DATA_PREFIX])
         subprocess.call(["mv", f"{DATA_PREFIX}/DOPC_CG_2_AA_NEW/", f"{DATA_PREFIX}/raw/"])
         
-        # TODO: Do other stuff that is required for the raw data...
+        # TODO: Do other stuff that is required for the raw data
