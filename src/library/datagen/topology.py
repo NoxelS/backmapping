@@ -37,6 +37,10 @@ def generate_extended_topology() -> ExtendedTopologyInfo:
     with open(os.path.join(TOPOLOGY_PLOT_PATH, "extended_topology.pkl"), "wb") as fp:
         pickle.dump(extended_topology_info, fp)
 
+    # Save the extended topology information as json
+    with open(os.path.join(TOPOLOGY_PLOT_PATH, "extended_topology.json"), "w") as fp:
+        fp.write(extended_topology_info.json())
+
     return extended_topology_info
 
 
