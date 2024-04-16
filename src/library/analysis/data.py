@@ -7,7 +7,7 @@ import numpy as np
 # Disable tensorflow logging
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
-from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING_X, PADDING_Y, NeighbourDataGenerator, get_scale_factor, print_matrix
+from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING_X, PADDING_Y, FICDataGenerator, get_scale_factor, print_matrix
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
@@ -87,7 +87,7 @@ def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
                 try:
                     # Generator for test samples
                     print(f"Starting loading data and training cache for atom {atom_name}")
-                    sample_gen = NeighbourDataGenerator(
+                    sample_gen = FICDataGenerator(
                         input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
                         output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
                         input_size=CG_SIZE,

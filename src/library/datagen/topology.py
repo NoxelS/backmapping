@@ -140,7 +140,7 @@ def load_extended_topology_info() -> ExtendedTopologyInfo:
         return pickle.load(fp)
 
 
-def get_ic_from_index(index: int, extended_topology: ExtendedTopologyInfo = None):
+def get_ic_from_index(index: int, extended_topology: ExtendedTopologyInfo = None) -> dict:
     if extended_topology is None:
         extended_topology = load_extended_topology_info()
 
@@ -156,6 +156,40 @@ def get_ic_from_index(index: int, extended_topology: ExtendedTopologyInfo = None
         return extended_topology.dihedrals[index]
 
     raise ValueError("IC index out of bounds")
+
+
+def get_ic_type_from_index(index: int, extended_topology: ExtendedTopologyInfo = None) -> str:
+    if extended_topology is None:
+        extended_topology = load_extended_topology_info()
+
+    if index < len(extended_topology.bonds):
+        return "bond"
+
+    index -= len(extended_topology.bonds)
+    if index < len(extended_topology.angles):
+        return "angle"
+
+    index -= len(extended_topology.angles)
+    if index < len(extended_topology.dihedrals):
+        return "dihedral"
+
+    raise ValueError("IC index out of bounds")
+
+
+def get_ic_type(ic: dict, extended_topology: ExtendedTopologyInfo = None) -> str:
+    if extended_topology is None:
+        extended_topology = load_extended_topology_info()
+
+    if ic in extended_topology.bonds:
+        return "bond"
+
+    if ic in extended_topology.angles:
+        return "angle"
+
+    if ic in extended_topology.dihedrals:
+        return "dihedral"
+
+    raise ValueError("IC not found in extended topology")
 
 
 def ic_to_hlabel(ic: dict, extended_topology: ExtendedTopologyInfo = None) -> str:

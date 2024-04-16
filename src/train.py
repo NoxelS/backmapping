@@ -10,7 +10,7 @@ print_progress_bar(0, MAX_STEPS, prefix="Setting up the training environment", s
 
 import tensorflow as tf
 
-from library.classes.generators import NeighbourDataGenerator
+from library.classes.generators import FICDataGenerator
 from library.classes.models import CNN, MODEL_TYPES
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_IC_max_index, ic_to_hlabel
@@ -59,7 +59,7 @@ CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * PADDING, 3 + 2 * PADDING, 1)  # Nee
     -----------
     
 """
-OUTPUT_SIZE = (1 + 2 * PADDING, 2 * PADDING, 1)
+OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
 
 print_progress_bar(2, MAX_STEPS, prefix="Setting up the training environment", suffix="Checking arguments...")
 
@@ -121,7 +121,7 @@ if use_socket:
 ##### TRAINING #####
 
 print_progress_bar(4, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading sample generator...")
-sample_gen = NeighbourDataGenerator(
+sample_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=CG_SIZE,
@@ -130,13 +130,12 @@ sample_gen = NeighbourDataGenerator(
     batch_size=1,
     validate_split=VALIDATION_SPLIT,
     validation_mode=False,
-    only_fit_one_atom=True,
-    atom_name=target_ic_index,
+    ic_index=target_ic_index,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
 )
 
 print_progress_bar(5, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading training generator...")
-train_gen = NeighbourDataGenerator(
+train_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=CG_SIZE,
@@ -146,14 +145,13 @@ train_gen = NeighbourDataGenerator(
     validate_split=VALIDATION_SPLIT,
     validation_mode=False,
     augmentation=True,
-    only_fit_one_atom=True,
-    atom_name=target_ic_index,
+    ic_index=target_ic_index,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
     data_usage=DATA_USAGE,
 )
 
 print_progress_bar(6, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading validation generator...")
-validation_gen = NeighbourDataGenerator(
+validation_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
     input_size=CG_SIZE,
@@ -163,8 +161,7 @@ validation_gen = NeighbourDataGenerator(
     validate_split=VALIDATION_SPLIT,
     validation_mode=True,
     augmentation=False,
-    only_fit_one_atom=True,
-    atom_name=target_ic_index,
+    ic_index=target_ic_index,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
     data_usage=DATA_USAGE,
 )
@@ -179,13 +176,17 @@ print(f"Starting to load and train the model for internal coordinate {target_ic_
 
 with strategy.scope():
 
+    # for i in range(10):
+    #     X, Y = sample_gen.__gen_item__(i)
+    # print(Y[0, PADDING:-PADDING, PADDING:-PADDING, 0])
+
     cnn = CNN(
         CG_SIZE,
         OUTPUT_SIZE,
         data_prefix=DATA_PREFIX,
         display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
         keep_checkpoints=True,
-        load_path=os.path.join(DATA_PREFIX, "models", target_ic_index, f"{MODEL_NAME_PREFIX}.h5"),
+        load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
         # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
         # in the current tensorflow version. This hopefully will change in the future.
         loss=tf.keras.losses.MeanAbsoluteError(),
