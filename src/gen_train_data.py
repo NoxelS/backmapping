@@ -29,3 +29,6 @@ generate_extended_topology()
     <DATA_PREFIX>/training folder.
 """
 generate_molecule_data(config(Keys.MAX_TRAINING_DATA))
+
+
+# TODO: generate the intput and output structure, also make a table where this structure is explained

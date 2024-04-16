@@ -5,13 +5,12 @@ import socket
 import sys
 import time
 
-from scipy.signal import savgol_filter
-
 import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
 from Bio.PDB import PDBIO, Atom, Chain, Model, Residue, Structure
 from matplotlib.lines import Line2D
+from scipy.signal import savgol_filter
 
 from library.analysis.data import get_predictions
 from library.classes.generators import (ABSOLUTE_POSITION_SCALE, PADDING_X,
@@ -24,7 +23,6 @@ from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log_progress
 from library.static.vector_mappings import DOPC_AT_MAPPING
-from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
 

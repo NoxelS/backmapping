@@ -1,16 +1,16 @@
 import os
+import socket
 import sys
 import time
-import socket
 
 import tensorflow as tf
 
-from master import PORT, encode_finished, encode_starting
-from library.config import Keys, config
+from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN, MODEL_TYPES
+from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
-from library.classes.generators import PADDING_X, PADDING_Y, NeighbourDataGenerator
+from master import PORT, encode_finished, encode_starting
 
 ##### CONFIGURATION #####
 
@@ -23,6 +23,7 @@ MODEL_NAME_PREFIX = config(Keys.MODEL_NAME_PREFIX)
 DATA_USAGE = config(Keys.DATA_USAGE)
 USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
 
+# TODO: The output size is dynamic and is generated with the memdof script
 cg_size = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
 at_size = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
 print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
@@ -31,7 +32,7 @@ print(f"Starting training with cg_size={cg_size} and at_size={at_size}")
 # performance when training on multiple GPUs.
 strategy = tf.distribute.experimental.CentralStorageStrategy()
 
-
+# TODO: we do not fit atom names anymore but rather the free internal coordinates
 # Those are the atom names that are used for the training, currently all 54 atoms (without hydrogen) will be used
 atom_names_to_fit = [name for name in DOPC_AT_NAMES if not name.startswith("H")]
 
@@ -63,7 +64,7 @@ if use_socket:
         # Sleep for 30 seconds to give the parent process time to start the server
         print("Sleeping for 30 seconds to give the parent process time to start the server...")
         time.sleep(30)
-        
+
         # Try again
         try:
             print("Retrying to connect to parent...")
@@ -93,7 +94,7 @@ sample_gen = NeighbourDataGenerator(
     validation_mode=False,
     only_fit_one_atom=True,
     atom_name=atom_name_to_fit,
-    neighbourhood_size=NEIGHBORHOOD_SIZE
+    neighbourhood_size=NEIGHBORHOOD_SIZE,
 )
 
 train_gen = NeighbourDataGenerator(
@@ -109,7 +110,7 @@ train_gen = NeighbourDataGenerator(
     only_fit_one_atom=True,
     atom_name=atom_name_to_fit,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
-    data_usage=DATA_USAGE
+    data_usage=DATA_USAGE,
 )
 
 validation_gen = NeighbourDataGenerator(
@@ -125,7 +126,7 @@ validation_gen = NeighbourDataGenerator(
     only_fit_one_atom=True,
     atom_name=atom_name_to_fit,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
-    data_usage=DATA_USAGE
+    data_usage=DATA_USAGE,
 )
 
 with strategy.scope():
@@ -137,23 +138,17 @@ with strategy.scope():
         display_name=f"{MODEL_NAME_PREFIX}_{atom_name_to_fit}",
         keep_checkpoints=True,
         load_path=os.path.join(DATA_PREFIX, "models", atom_name_to_fit, f"{MODEL_NAME_PREFIX}.h5"),
-        # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model 
+        # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
         # in the current tensorflow version. This hopefully will change in the future.
         loss=tf.keras.losses.MeanAbsoluteError(),
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,
         host_ip_address=host_ip_address if use_socket else None,
         port=PORT if use_socket else None,
-        model_type=MODEL_TYPES.CNN_V1_1
+        model_type=MODEL_TYPES.CNN_V1_1,
     )
 
-    cnn.fit(
-        train_gen,
-        batch_size=BATCH_SIZE,
-        epochs=EPOCHS,
-        validation_gen=validation_gen,
-        use_tensorboard=USE_TENSORBOARD
-    )
+    cnn.fit(train_gen, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_gen=validation_gen, use_tensorboard=USE_TENSORBOARD)
 
     try:
         cnn.save()
