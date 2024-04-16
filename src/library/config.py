@@ -27,6 +27,7 @@ class Keys(Enum):
     DATA_USAGE = 305
     USE_TENSORBOARD = 306
     MAX_TRAINING_DATA = 307
+    PADDING = 308
 
 
 def _removeInlineComments(cfgparser):
