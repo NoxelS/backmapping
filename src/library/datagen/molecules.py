@@ -16,16 +16,17 @@ training_dir_path = os.path.join(DATA_PREFIX, "training")
 output_box_table_path = DATA_PREFIX  # <- This is the path where the box sizes are saved
 
 TRAINING_DATA_MODE = True
-TARGET_NEIGHBOUR_COUNT = 4        # The target number of neighbours for each residue, only used for logging
-NEIGHBOUR_CUTOFF_RADIUS = 10.0     # The radius in which the neighbours are considered (in Angstrom)
+TARGET_NEIGHBOUR_COUNT = 4  # The target number of neighbours for each residue, only used for logging
+NEIGHBOUR_CUTOFF_RADIUS = 10.0  # The radius in which the neighbours are considered (in Angstrom)
 
-def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
+
+def generate_molecule_data(max_samples=15 * (10 + 1) * 1024):
     """
-    This function generates training data for the backmapping algorithm. It reads in coarse-grained (CG) and atomistic (AT) 
-    structures from input_dir_path and generates training data by creating an AT structure for each 
-    residue in the CG structure. The AT structure is created by copying the AT structure of the corresponding residue in the 
-    AT structure. The AT structure is then saved to output_dir_path. If TRAINING_DATA_MODE is True, the AT structures are 
-    saved to training_dir_path instead. The function also calculates the mean distance to the N atom for each residue and 
+    This function generates training data for the backmapping algorithm. It reads in coarse-grained (CG) and atomistic (AT)
+    structures from input_dir_path and generates training data by creating an AT structure for each
+    residue in the CG structure. The AT structure is created by copying the AT structure of the corresponding residue in the
+    AT structure. The AT structure is then saved to output_dir_path. If TRAINING_DATA_MODE is True, the AT structures are
+    saved to training_dir_path instead. The function also calculates the mean distance to the N atom for each residue and
     the number of neighbours within a certain radius for each residue. The results are saved to csv files in output_box_table_path.
     """
 
@@ -34,17 +35,14 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
     idx_cg = 0
     current_time = time.time()
 
-
     def elapsed_time():
         elapsed_time = time.time() - current_time
         hours, rem = divmod(elapsed_time, 3600)
         minutes, seconds = divmod(rem, 60)
         return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
 
-
     # Get all CG and AT datasets
-    cg_datasets, at_datasets = get_cg_at_datasets(
-        input_dir_path, CG_PATTERN='cg.pdb', AT_PATTERN='at.pdb')
+    cg_datasets, at_datasets = get_cg_at_datasets(input_dir_path, CG_PATTERN="cg.pdb", AT_PATTERN="at.pdb")
 
     # Create output dir if it does not exist
     if not os.path.exists(output_dir_path) and not TRAINING_DATA_MODE:
@@ -110,7 +108,7 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
 
         coordinates_cg = []  # Only used to calculate COM
 
-        cg_com_list = []    # Used to store all COMs of one membrane. Each entry is a tuple of (COM, idx)
+        cg_com_list = []  # Used to store all COMs of one membrane. Each entry is a tuple of (COM, idx)
 
         # Loop over the lines of the CG files
         for j, cg_line in enumerate(cg_lines):
@@ -191,7 +189,9 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
                         os.makedirs(f"{output_dir_path}/{i}_{last_residue_idx_at}")
 
                 # Add TER line to the stack
-                line_stack_at.append(f"TER     {(139 + 138*last_residue_idx_at) % 100000}      DOPC    {last_residue_idx_at + 1}\n")  # <- I don't know why this is needed, but biopython does it too
+                line_stack_at.append(
+                    f"TER     {(139 + 138*last_residue_idx_at) % 100000}      DOPC    {last_residue_idx_at + 1}\n"
+                )  # <- I don't know why this is needed, but biopython does it too
                 line_stack_at.append("END   ")
 
                 # Save also to training data
@@ -211,10 +211,8 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
 
                 # Print progress
                 if idx_at % 100 == 0:
-                    timestamp = datetime.fromtimestamp(
-                        time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                    print(
-                        f"[{timestamp}] Generated {idx_at} training samples ({elapsed_time()})")
+                    timestamp = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H:%M:%S")
+                    print(f"[{timestamp}] Generated {idx_at} training samples ({elapsed_time()})")
 
                 idx_at += 1
 
@@ -241,7 +239,6 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
         if idx_cg > max_samples and idx_at > max_samples:
             break
 
-
     # Save box size dataset relations as csv
     path = os.path.join(output_box_table_path, "box_sizes_cg.csv")
     with open(path, "a") as file:
@@ -267,7 +264,6 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
 
     # Print
     print(f"Neighbour count: {neighbours_counts_mean} +- {neighbours_counts_std}, max: {neighbours_counts_max}, min: {neighbours_counts_min}")
-
 
     # Calculate the mean distance to the N atom for each residue
     mean_distances = {}  # Entry is (atom_name, mean_distance)
@@ -297,7 +293,6 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
         mean_distances_mean[atom_name] = np.mean(distances)
         mean_distances_std[atom_name] = np.std(distances)
 
-
     # Write the mean distances to a csv file
     path = os.path.join(output_box_table_path, "mean_distances.csv")
     with open(path, "a") as file:
@@ -305,17 +300,16 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
         for atom_name, mean in mean_distances_mean.items():
             file.write(f"{atom_name},{mean},{mean_distances_std[atom_name]}\n")
 
-
     # Make histogram of neighbours counts and plot it
     plt.hist(neighbours_counts, bins=100)
 
     # Plot a line for the target neighbour count
-    plt.axvline(x=TARGET_NEIGHBOUR_COUNT, color='r', linestyle='dashed', linewidth=1)
+    plt.axvline(x=TARGET_NEIGHBOUR_COUNT, color="r", linestyle="dashed", linewidth=1)
 
     # Plot mean and std
-    plt.axvline(x=neighbours_counts_mean, color='g', linestyle='dashed', linewidth=1)
-    plt.axvline(x=neighbours_counts_mean + neighbours_counts_std, color='g', linestyle='dashed', linewidth=1)
-    plt.axvline(x=neighbours_counts_mean - neighbours_counts_std, color='g', linestyle='dashed', linewidth=1)
+    plt.axvline(x=neighbours_counts_mean, color="g", linestyle="dashed", linewidth=1)
+    plt.axvline(x=neighbours_counts_mean + neighbours_counts_std, color="g", linestyle="dashed", linewidth=1)
+    plt.axvline(x=neighbours_counts_mean - neighbours_counts_std, color="g", linestyle="dashed", linewidth=1)
 
     # Add percentage of residues that have less than TARGET_NEIGHBOUR_COUNT neighbours
     plt.text(0.1, 0.65, f"{np.sum(neighbours_counts <= TARGET_NEIGHBOUR_COUNT) / len(neighbours_counts) * 100:.2f}%", transform=plt.gca().transAxes)
@@ -329,7 +323,7 @@ def generate_molecule_data(max_samples = 15 * (10 + 1) * 1024):
     plt.title(f"Histogram of neighbours counts (cuoff {NEIGHBOUR_CUTOFF_RADIUS} A)")
     plt.xlabel("Neighbours count")
     plt.ylabel("Frequency")
-    plt.show()
+    plt.savefig(os.path.join(output_box_table_path, "neighbours_counts.png"))
 
 
 if __name__ == "__main__":
