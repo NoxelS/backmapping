@@ -176,6 +176,7 @@ data/tensorboard/
 data/hist/
 data/backup/
 data/ic_dof_analysis/
+data/network_structure/
 data/training.zip
 logs/*
 jobs/logs*

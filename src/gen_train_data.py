@@ -2,7 +2,7 @@ from library.config import Keys, config
 from library.datagen.membranes import generate_membrane_data
 from library.datagen.misc import unzip_raw_files
 from library.datagen.molecules import generate_molecule_data
-from library.datagen.topology import generate_extended_topology
+from library.datagen.topology import generate_extended_topology, generate_output_structure
 
 """
     First, we unzip the raw data and move it to a dedicated folder
@@ -25,10 +25,14 @@ generate_extended_topology()
 
 
 """
+    Use the generated extended topology to generate the output structure of the network. This will create a folder with
+    the structure, a few plots to visualize the internal coordinates and a csv file with the internal coordinates with labels.
+"""
+generate_output_structure()
+
+
+"""
     Now we use the membranes to generate the molecule data. This will create a folder with all the molecules in the
     <DATA_PREFIX>/training folder.
 """
 generate_molecule_data(config(Keys.MAX_TRAINING_DATA))
-
-
-# TODO: generate the intput and output structure, also make a table where this structure is explained
