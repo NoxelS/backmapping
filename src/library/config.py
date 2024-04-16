@@ -26,6 +26,7 @@ class Keys(Enum):
     MODEL_NAME_PREFIX = 304
     DATA_USAGE = 305
     USE_TENSORBOARD = 306
+    MAX_TRAINING_DATA = 307
 
 
 def _removeInlineComments(cfgparser):
@@ -67,6 +68,17 @@ def config(key: Keys):
         value = False
 
     return value
+
+
+def print_config():
+    config_ = _get_config()
+    for section in config_.sections():
+        print(f"[{section}]")
+        for name, value in config_[section].items():
+            key = Keys[name.upper()]
+            datatype = type(config(key)).__name__
+            print(f"{name} = {value} <{datatype}>")
+        print()
 
 
 if __name__ == "__main__":

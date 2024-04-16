@@ -1,10 +1,8 @@
+from library.config import Keys, config
 from library.datagen.membranes import generate_membrane_data
 from library.datagen.misc import unzip_raw_files
 from library.datagen.molecules import generate_molecule_data
 from library.datagen.topology import generate_extended_topology
-
-# We use a 10:1 ratio for training and validation data so the batch sizes are optimal
-MAX_TRAINING_DATA = 1 * (10 + 1) * 1024
 
 """
     First, we unzip the raw data and move it to a dedicated folder
@@ -30,4 +28,4 @@ generate_extended_topology()
     Now we use the membranes to generate the molecule data. This will create a folder with all the molecules in the
     <DATA_PREFIX>/training folder.
 """
-generate_molecule_data(MAX_TRAINING_DATA)
+generate_molecule_data(config(Keys.MAX_TRAINING_DATA))
