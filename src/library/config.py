@@ -41,7 +41,7 @@ def _get_config() -> configparser.ConfigParser:
     return config_
 
 
-def config(key: Keys) -> float | int | bool | str | None:
+def config(key: Keys):
     value = ""
     try:
         value = _get_config()[CONFIG_SECTIONS[key.value // 100]][key.name.lower()].strip()
