@@ -169,12 +169,12 @@ validation_gen = NeighbourDataGenerator(
     data_usage=DATA_USAGE,
 )
 
-print_progress_bar(7, MAX_STEPS, prefix="Setting up the training environment", suffix="Finished...")
 
 # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
 # performance when training on multiple GPUs.
 strategy = tf.distribute.experimental.CentralStorageStrategy()
 
+print_progress_bar(7, MAX_STEPS, prefix="Setting up the training environment", suffix="Finished...                                           ")
 print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
 
 with strategy.scope():
