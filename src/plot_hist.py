@@ -12,7 +12,9 @@ if len(args) != 1:
     raise ArgumentError("Please provide the index of the plot that should be created as an argument")
 
 plot_names = [
+    "",
     "training_loss.png",
+    "training_mse.png",
     "training_lr.png",
     "training_mae.png",
     "training_val_acc.png",
@@ -20,4 +22,4 @@ plot_names = [
     "training_val_mae.png",
 ]
 
-plot_cluster_hist(args[0]).savefig(os.path.join(os.path.join(config(Keys.DATA_PATH), "hist"), plot_names[args[0]]), {"dpi": 300, "bbox_inches": "tight"})
+plot_cluster_hist(args[0]).savefig(os.path.join(os.path.join(config(Keys.DATA_PATH), "hist"), plot_names[int(args[0])]), **{"dpi": 300, "bbox_inches": "tight"})

@@ -122,21 +122,21 @@ def plot_loss_nmd(predictions):
 @log_progress("plotting cluster hist")
 def plot_cluster_hist(data_col=2):
     # Get mean distances to color the plot accordingly
-    mean_distances = {}
+    # mean_distances = {}
 
-    # Read csv
-    with open(os.path.join(config(Keys.DATA_PATH), "mean_distances.csv"), "r") as f:
-        # Skip header
-        f.readline()
+    # # Read csv
+    # with open(os.path.join(config(Keys.DATA_PATH), "mean_distances.csv"), "r") as f:
+    #     # Skip header
+    #     f.readline()
 
-        for line in f.readlines():
-            # Split line
-            line = line.split(",")
-            # Get mean distance
-            mean_distances[line[0]] = float(line[1])
+    #     for line in f.readlines():
+    #         # Split line
+    #         line = line.split(",")
+    #         # Get mean distance
+    #         mean_distances[line[0]] = float(line[1])
 
-    # Normalize mean distances
-    mean_distances = {k: v / max(mean_distances.values()) for k, v in mean_distances.items()}
+    # # Normalize mean distances
+    # mean_distances = {k: v / max(mean_distances.values()) for k, v in mean_distances.items()}
 
     fig = plt.figure(figsize=FIG_SIZE_SQUARE)
     ax = fig.add_subplot(111)
@@ -146,8 +146,8 @@ def plot_cluster_hist(data_col=2):
     hist_files = os.listdir(PATH_TO_HIST)
 
     # Sort by average distance
-    hist_files.sort(key=lambda x: mean_distances[x.split("_")[2].split(".")[0]])
-    hist_files.reverse()
+    # hist_files.sort(key=lambda x: mean_distances[x.split("_")[2].split(".")[0]])
+    # hist_files.reverse()
 
     # Data to find the average graph
     avg_data = []
@@ -156,7 +156,7 @@ def plot_cluster_hist(data_col=2):
     for i, hist in enumerate(hist_files):
         # file is named: training_history_C1.csv
         atom_name = hist.split("_")[2].split(".")[0]
-        mean_distance = mean_distances[atom_name]
+        # mean_distance = mean_distances[atom_name]
 
         try:
             # Load csv
@@ -172,17 +172,19 @@ def plot_cluster_hist(data_col=2):
         hist[:, 0] = np.arange(hist.shape[0])
 
         # Get scaling factor
-        scale_factor = get_scale_factor(atom_name)
+        scale_factor = 3600  # get_scale_factor(atom_name)
 
-        if np.min(hist[:, data_col] * scale_factor) < min_loss:
-            min_loss = np.min(hist[:, data_col] * scale_factor)
+        if np.min(hist[:, int(data_col)] * scale_factor) < min_loss:
+            min_loss = np.min(hist[:, int(data_col)] * scale_factor)
 
         # Plot
-        color = plt.cm.cool(mean_distance)
-        ax.plot(hist[:, 0] + 1, hist[:, data_col] * scale_factor, label=atom_name, color=color, alpha=(1 - 0.5 * mean_distance))
+        # color = plt.cm.cool(mean_distance)
+        print(atom_name)
+        print(hist[:, int(data_col)])
+        ax.plot(hist[:, 0] + 1, hist[:, int(data_col)] * scale_factor, label=str(atom_name))
 
         # Add to average data
-        avg_data.append(hist[:, data_col] * scale_factor)
+        avg_data.append(hist[:, int(data_col)] * scale_factor)
 
     # Plot average avg_data = list for every atom with the history of the loss
     max_epoch = np.max([len(i) for i in avg_data])
@@ -197,7 +199,7 @@ def plot_cluster_hist(data_col=2):
     ax.plot(np.arange(len(avg_data)) + 1, avg_data, label="Average", color="black", alpha=0.5)
 
     # Get name of data
-    data_name = ["", "Accuracy", "MSE Loss (Å)", "Learning Rate", "Mean Average Error", "Val. Accuracy", "Val. MSE Loss (Å)", "Val. Mean Average Error"][data_col]
+    data_name = ["", "Accuracy", "MSE Loss (Å)", "Learning Rate", "Mean Average Error", "Val. Accuracy", "Val. MSE Loss (Å)", "Val. Mean Average Error"][int(data_col)]
 
     # Add labels
     ax.set_xlabel("Epoch")
