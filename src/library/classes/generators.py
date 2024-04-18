@@ -614,8 +614,6 @@ class FICDataGenerator(BaseDataGenerator):
                 atom_j = list(at_structure.get_atoms())[int(ic["j"])]
                 atom_k = list(at_structure.get_atoms())[int(ic["k"])]
 
-                # print(atom_i.name, atom_j.name, atom_k.name)
-
                 # Get the absolute positions of the atoms
                 pos_i = atom_i.get_vector()
                 pos_j = atom_j.get_vector()
@@ -651,9 +649,48 @@ class FICDataGenerator(BaseDataGenerator):
                 Y[i, PADDING_X, PADDING_Y, 0] = angle / (360 * BOX_SCALE_FACTOR)
 
             elif ic_type == "dihedral":
-                i, j, k, l = ic["i"], ic["j"], ic["k"], ic["l"]
+                atom_i = list(at_structure.get_atoms())[int(ic["i"])]
+                atom_j = list(at_structure.get_atoms())[int(ic["j"])]
+                atom_k = list(at_structure.get_atoms())[int(ic["k"])]
+                atom_l = list(at_structure.get_atoms())[int(ic["l"])]
 
-                # TODO: calculate the dihedral between i, j, k and l
+                vec1 = atom_i.get_vector() - atom_j.get_vector()
+                vec2 = atom_k.get_vector() - atom_j.get_vector()
+                vec3 = atom_l.get_vector() - atom_k.get_vector()
+
+                # Make sure the vectors are numpy arrays
+                vec1 = np.array([vec1[0], vec1[1], vec1[2]])
+                vec2 = np.array([vec2[0], vec2[1], vec2[2]])
+                vec3 = np.array([vec3[0], vec3[1], vec3[2]])
+
+                # Fix the PBC
+                if np.linalg.norm(vec1) > PBC_CUTOFF:
+                    vec1 = fix_pbc(vec1, at_box_size)
+
+                if np.linalg.norm(vec2) > PBC_CUTOFF:
+                    vec2 = fix_pbc(vec2, at_box_size)
+
+                if np.linalg.norm(vec3) > PBC_CUTOFF:
+                    vec3 = fix_pbc(vec3, at_box_size)
+
+                # Consitency check
+                if np.linalg.norm(vec1) > PBC_CUTOFF or np.linalg.norm(vec2) > PBC_CUTOFF or np.linalg.norm(vec3) > PBC_CUTOFF:
+                    raise Exception(f"Found a vector that is too large ({vec1}, {vec2}, {vec3})!")
+
+                # Calculate the dihedral
+                dihedral = np.arccos(
+                    np.dot(
+                        np.cross(vec1, vec2) / np.linalg.norm(np.cross(vec1, vec2)),
+                        np.cross(vec2, vec3) / np.linalg.norm(np.cross(vec2, vec3)),
+                    )
+                    / (np.linalg.norm(np.cross(vec1, vec2)) * np.linalg.norm(np.cross(vec2, vec3)))
+                )
+
+                # To degrees
+                dihedral = np.degrees(dihedral)
+
+                # Write the internal coordinate to the output matrix
+                Y[i, PADDING_X, PADDING_Y, 0] = dihedral / (360 * BOX_SCALE_FACTOR)
 
             else:
                 raise Exception(f"Internal coordinate type {ic_type} not supported!")
