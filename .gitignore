@@ -179,6 +179,8 @@ data/ic_dof_analysis/
 data/network_structure/
 data/training.zip
 logs/*
+smaug-data
+smaug-data/*
 jobs/logs*
 box_sizes_*
 neighborhoods.*
