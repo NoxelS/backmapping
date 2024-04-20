@@ -176,10 +176,6 @@ print(f"Starting to load and train the model for internal coordinate {target_ic_
 
 with strategy.scope():
 
-    # for i in range(10):
-    #     X, Y = sample_gen.__gen_item__(i)
-    # print(Y[0, PADDING:-PADDING, PADDING:-PADDING, 0])
-
     cnn = CNN(
         CG_SIZE,
         OUTPUT_SIZE,
