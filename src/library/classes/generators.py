@@ -13,9 +13,11 @@ from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.static.vector_mappings import DOPC_AT_MAPPING, DOPC_CG_MAPPING
 
+# TODO: use config here!
 PADDING_X = 1  # Padding on left and right
 PADDING_Y = 1  # Padding on top and bottom
 
+# TODO: Read cutoffs and scales from config
 PBC_CUTOFF = 10.0  # If a bond is longer than this, it is considered to be on the other side of the simulation box
 BOX_SCALE_FACTOR = 10.0  # The scale factor to downscale the bond vectors with
 CG_BOUNDING_BOX_RELATION_PATH = os.path.join(config(Keys.DATA_PATH), "box_sizes_cg.csv")  # Path to the csv file that contains the bounding box sizes for the cg residues
@@ -76,6 +78,7 @@ def is_output_matrix_healthy(output, range=[-1, 1]):
     return healthy
 
 
+# TODO: remove
 def add_relative_vectors(atom_pos_dict, atom_mapping, output_matrix, batch_index, box):
     """
     This functions calculates the relative vectors between the atoms in the atom mapping and writes them to the output matrix.
@@ -121,6 +124,7 @@ def add_relative_vectors(atom_pos_dict, atom_mapping, output_matrix, batch_index
     return output_matrix
 
 
+# TODO: rename
 def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=None, preset_position_origin=None, position_scale=ABSOLUTE_POSITION_SCALE):
     """
     This functions calculates the absolute positions of the atoms in the atom mapping and writes them to the output matrix.
@@ -210,7 +214,7 @@ def get_neighbour_residues(dataset_idx: int, path_to_csv: str):
     # Return the bounding box as a numpy array
     return np.array([int(x) for x in line.split(",")])
 
-
+# TODO: move to utils
 def print_matrix(matrix):
     """
     This function prints a matrix in ascii art.
@@ -291,6 +295,7 @@ def get_mean_distance_and_std(ic_index: str) -> tuple:
     return mean_distances[ic_index], std[ic_index]
 
 
+# TODO: chaneg this so we get a scale factor for each type of internal coordinate
 def get_scale_factor(ic_index):
     mean, std = get_mean_distance_and_std(ic_index)
     return mean + 2 * std
@@ -332,6 +337,9 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
             augmentation (bool, optional): If the generator should augment the data. Defaults to False.
             data_usage (float, optional): The percentage of data that should be used. Defaults to 100%
         """
+
+        # TODO: make this more foolproof and add more checks
+
         self.input_dir_path = input_dir_path
         self.output_dir_path = output_dir_path
         self.input_size = input_size
@@ -389,6 +397,7 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         self.on_epoch_end()
 
     def on_epoch_end(self):
+        # TODO: save cache to file here instead of in getitem
         pass
 
     def __len__(self):
@@ -541,6 +550,14 @@ class FICDataGenerator(BaseDataGenerator):
 
         # Loop over the batch
         for i in range(self.batch_size):
+            """
+                TOOD:
+                    - Generate neighbors in different method
+                    - Generate the input in different method
+                    - Generate the output in different method
+                    - Split each type of degree of freedom, also move the calculations to utils (cartesian -> internal)
+            """
+            
             # Get the index of the residue
             residue_idx = idx * self.batch_size + i
 
