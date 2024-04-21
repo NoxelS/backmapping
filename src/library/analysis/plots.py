@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 from scipy.signal import savgol_filter
 
 from library.analysis.data import get_predictions
-from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING, PADDING, FICDataGenerator, get_mean_distance_and_std, get_output_scale_factor, print_matrix
+from library.classes.generators import INPUT_SCALE, PADDING, PADDING, FICDataGenerator, get_mean_distance_and_std, get_output_scale_factor, print_matrix
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config

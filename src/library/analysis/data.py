@@ -7,7 +7,7 @@ import numpy as np
 # Disable tensorflow logging
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
-from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING, PADDING, FICDataGenerator, get_output_scale_factor, print_matrix
+from library.classes.generators import INPUT_SCALE, PADDING, PADDING, FICDataGenerator, get_output_scale_factor, print_matrix
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
@@ -181,7 +181,7 @@ def predictions_to_analysis_data(predictions):
         X_poses = predictions[0][1][i, PADDING:-PADDING, PADDING:-PADDING, 0]  # X is the same for every atom in the molecule
 
         # Scale up the X values to invert the scaling so that the absolute positions are again absolute in angstrom
-        X_poses *= ABSOLUTE_POSITION_SCALE
+        X_poses *= INPUT_SCALE
 
         # Lists to store the positions of the atoms in the molecule
         X = []
