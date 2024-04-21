@@ -64,3 +64,28 @@ def print_progress_bar(iteration, total, prefix="", suffix="", decimals=1, lengt
     # Print New Line on Complete
     if iteration == total:
         print()
+
+
+def print_matrix(matrix):
+    """
+    This function prints a matrix in ascii art.
+
+    Args:
+        matrix (list): List with shape (batch_size, i, j, 1)
+    """
+    # Prints an output/input matrix in ascii art
+    for i in range(matrix.shape[0]):
+        print(" ", end="")
+        for k in range(matrix.shape[1]):
+            print(f"{k:6d}", end="  ")
+        print()
+        print(matrix.shape[1] * 8 * "-")
+        # Batch
+        for j in range(matrix.shape[2]):
+            # Y
+            for k in range(matrix.shape[1]):
+                # X
+                minus_sign_padding = " " if matrix[i, k, j, 0] >= 0 else ""
+                print(f"{minus_sign_padding}{matrix[i, k, j, 0]:.4f}", end=" ")
+            print()
+        print(matrix.shape[1] * 8 * "-")
