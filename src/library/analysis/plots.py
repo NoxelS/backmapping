@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 from scipy.signal import savgol_filter
 
 from library.analysis.data import get_predictions
-from library.classes.generators import INPUT_SCALE, PADDING, PADDING, FICDataGenerator, get_mean_distance_and_std, get_output_scale_factor, print_matrix
+from library.classes.generators import get_output_scale_factor
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config
@@ -68,7 +68,7 @@ def plot_loss_atom_name(predictions, loss="loss"):
     losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
 
     # Make NMD colors
-    nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
+    nmd = 1 # TODO: fix
     nmd = nmd / np.max(nmd)
     colors = [plt.cm.cool(mean_distance) for mean_distance in nmd]
 
@@ -100,7 +100,7 @@ def plot_loss_nmd(predictions):
     # Scale losses according to the atom scale factor
     losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
 
-    nmd = np.array([get_mean_distance_and_std(prediction[0])[0] for prediction in predictions])
+    nmd = 1 # TODO: fix
 
     # Normalize
     nmd = nmd / np.max(nmd)
