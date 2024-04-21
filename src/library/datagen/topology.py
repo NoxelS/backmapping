@@ -189,7 +189,7 @@ def get_ic_type(ic: dict, extended_topology: ExtendedTopologyInfo = None) -> str
     if ic in extended_topology.dihedrals:
         return "dihedral"
 
-    raise ValueError("IC not found in extended topology")
+    raise ValueError(f"IC {ic} not found in extended topology")
 
 
 def ic_to_hlabel(ic: dict, extended_topology: ExtendedTopologyInfo = None) -> str:

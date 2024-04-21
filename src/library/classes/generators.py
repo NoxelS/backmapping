@@ -198,7 +198,8 @@ def get_output_scale_factor(ic_index: int):
     """
     Returns an IC type specific scale factor for the output IC.
     """
-    ic_type = get_ic_type(ic_index)
+    ic = get_ic_from_index(ic_index)
+    ic_type = get_ic_type(ic)
     
     # Define the static scale factors
     BOND_SCALE = 1 / 10
