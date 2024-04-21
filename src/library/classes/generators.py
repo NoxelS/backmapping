@@ -128,7 +128,7 @@ def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=N
         # Write the relative vectors to the output matrix
         for k in range(3):
             output_matrix[batch_index, j + PADDING, PADDING + k, 0] = (
-                position[k] / position_scale
+                position[k] * position_scale
             )  # <- Position scale factor depends on if the atom is a bead or an atom (beads contain possible neighbors and cover a much larger area!)
 
     return output_matrix
