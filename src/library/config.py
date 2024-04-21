@@ -2,8 +2,10 @@ import configparser
 import os
 from enum import Enum
 
+from src.library.classes.generators import PBC_CUTOFF
+
 CONFIG_FILE_PATH = "config.ini"
-CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "training"]]  # Every section can hold up to 100 keys
+CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "training", "network"]]  # Every section can hold up to 100 keys
 
 
 class Keys(Enum):
@@ -27,7 +29,12 @@ class Keys(Enum):
     DATA_USAGE = 305
     USE_TENSORBOARD = 306
     MAX_TRAINING_DATA = 307
-    PADDING = 308
+    
+    # Network config
+    PADDING = 400
+    INPUT_SCALE = 401
+    OUTPUT_SCALE = 402
+    PBC_CUTOFF = 403
 
 
 def _removeInlineComments(cfgparser):
@@ -92,6 +99,8 @@ if __name__ == "__main__":
 
     # Prompt user if config file already exists
     if os.path.exists(CONFIG_FILE_PATH):
+        # Print config
+        print_config()
         print(f"Config file already exists at {CONFIG_FILE_PATH}. Do you want to overwrite it? (y/n)")
         if input().lower() != "y":
             exit()
