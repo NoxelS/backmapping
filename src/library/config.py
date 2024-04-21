@@ -2,7 +2,6 @@ import configparser
 import os
 from enum import Enum
 
-from src.library.classes.generators import PBC_CUTOFF
 
 CONFIG_FILE_PATH = "config.ini"
 CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "training", "network"]]  # Every section can hold up to 100 keys
