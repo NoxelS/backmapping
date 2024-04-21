@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 import enum
 
-from library.classes.generators import PADDING_X, PADDING_Y
+from library.classes.generators import PADDING, PADDING
 
 
 # Enum to store the model types
@@ -447,8 +447,8 @@ class CNN:
         true = self.test_sample[1][0, :, :, 0]
 
         # Remove padding
-        pred = pred[PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y]
-        true = true[PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y]
+        pred = pred[PADDING:-PADDING, PADDING:-PADDING]
+        true = true[PADDING:-PADDING, PADDING:-PADDING]
 
         # Make 3D scatter
         pred_positions = []

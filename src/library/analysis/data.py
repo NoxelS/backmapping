@@ -7,7 +7,7 @@ import numpy as np
 # Disable tensorflow logging
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
-from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING_X, PADDING_Y, FICDataGenerator, get_output_scale_factor, print_matrix
+from library.classes.generators import ABSOLUTE_POSITION_SCALE, PADDING, PADDING, FICDataGenerator, get_output_scale_factor, print_matrix
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
@@ -30,8 +30,8 @@ ANALYSIS_PATH = os.path.join(DATA_PREFIX, "analysis")
 ANALYSIS_PREDICTION_CACHE_PATH = os.path.join(ANALYSIS_PATH, "prediction_cache.pkl")
 ANALYSIS_DATA_CACHE_PATH = os.path.join(ANALYSIS_PATH, "analysis_data_cache.pkl")
 
-CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)  # Needs to be one less than the actual size for relative vectors
-AT_SIZE = (1 + 2 * int(PADDING_X), 3 + 2 * int(PADDING_Y), 1)
+CG_SIZE = (12 + 12 * NEIGHBORHOOD_SIZE + 2 * int(PADDING), 3 + 2 * int(PADDING), 1)  # Needs to be one less than the actual size for relative vectors
+AT_SIZE = (1 + 2 * int(PADDING), 3 + 2 * int(PADDING), 1)
 
 
 def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
@@ -178,7 +178,7 @@ def predictions_to_analysis_data(predictions):
 
     for i in range(total_molecule):
         # Get the X positions of the molecule
-        X_poses = predictions[0][1][i, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]  # X is the same for every atom in the molecule
+        X_poses = predictions[0][1][i, PADDING:-PADDING, PADDING:-PADDING, 0]  # X is the same for every atom in the molecule
 
         # Scale up the X values to invert the scaling so that the absolute positions are again absolute in angstrom
         X_poses *= ABSOLUTE_POSITION_SCALE
@@ -197,8 +197,8 @@ def predictions_to_analysis_data(predictions):
         # Loop though every atom model prediction and add the one atom to the molecule
         for prediction in predictions:
             atom_name: str = prediction[0]
-            Y_true_atom = prediction[2][i, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
-            Y_pred_atom = prediction[3][i, PADDING_X:-PADDING_X, PADDING_Y:-PADDING_Y, 0]
+            Y_true_atom = prediction[2][i, PADDING:-PADDING, PADDING:-PADDING, 0]
+            Y_pred_atom = prediction[3][i, PADDING:-PADDING, PADDING:-PADDING, 0]
 
             # Invert scaling
             Y_true_atom *= get_output_scale_factor(atom_name)
