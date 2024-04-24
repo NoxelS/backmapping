@@ -1,0 +1,1 @@
+sbatch --exclude=fang1,fang48,fang51,fang52,fang53,fang54 --job-name=TRAIN --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/single_33.log --error=./jobs/logs/single_33.err --wrap="jobs/train_single.sh 33"
