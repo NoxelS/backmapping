@@ -197,4 +197,4 @@ with strategy.scope():
     # plt.axvline(pred_mean - pred_std, color='green', linestyle='dotted', linewidth=1)
 
     plt.legend(loc='upper right')
-    plt.savefig(f"ic_{target_ic_index}.png")
+    plt.savefig(os.path.join(DATA_PREFIX, f"ic_{target_ic_index}.png"))
