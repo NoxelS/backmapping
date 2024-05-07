@@ -364,8 +364,14 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
 
         # Try save to file
         try:
+            # Check if path exists
+            if not os.path.exists(os.path.dirname(self.cache_path)):
+                os.makedirs(os.path.dirname(self.cache_path))
+
+            # Save cache to file
             with open(self.cache_path, "wb") as f:
                 pickle.dump(self.cache, f, protocol=pickle.HIGHEST_PROTOCOL)
+
         except Exception as e:
             print(f"Could not save cache to file!")
             print(e)
