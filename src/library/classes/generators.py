@@ -12,7 +12,7 @@ from Bio.PDB.PDBParser import PDBParser
 
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
-from library.static.utils import print_matrix
+from library.static.utils import print_matrix, print_output_matrix
 
 
 # Read datapaths from config
@@ -162,11 +162,11 @@ def get_neighbour_residues(dataset_idx: int, path_to_csv: str):
     Returns:
         array: List of neighbour residue indices.
     """
-    # Get the bounding box by using the cahched line access
+    # Get the neighbours
     line = linecache.getline(path_to_csv, dataset_idx + 1).replace("\n", "")
     if len(line) == 0:
         return np.array([])
-    # Return the bounding box as a numpy array
+    # Return the the neighbors as numpy array
     return np.array([int(x) for x in line.split(",")])
 
 
@@ -495,15 +495,17 @@ class FICDataGenerator(BaseDataGenerator):
 
             # Make the absolute positions out of a vector mapping
             X = add_absolute_positions(cg_atoms, X, i, cg_box_size)
+            
+            print_output_matrix(X, PADDING)
 
             # Add the neighbourhood to the input
             for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):
                 neighbor_X = self.get_neighbor_X(
                     residue_idx=neighbourhood[j], box_size=cg_box_size, position_origin=[atom.get_vector() for atom in cg_atoms if atom.get_name() == "NC3"][0]
-                )[0, PADDING : 12 + PADDING, PADDING:-PADDING, 0]
-
+                )[0, PADDING : - PADDING, PADDING:PADDING+3, 0]
+                
                 # Add the neighbour to the input
-                X[i, PADDING + 12 + j * 12 : PADDING + 24 + j * 12, PADDING:-PADDING, 0] = neighbor_X
+                X[i, PADDING: -PADDING, PADDING + 3*(1+j): PADDING + 3*(2 + j), 0] = neighbor_X
 
             # Get the internal coordinate
             output_ic_value = self.__get_ic_from_cartesians(at_structure, self.ic_index, at_box_size)

@@ -89,3 +89,36 @@ def print_matrix(matrix):
                 print(f"{minus_sign_padding}{matrix[i, k, j, 0]:.4f}", end=" ")
             print()
         print(matrix.shape[1] * 8 * "-")
+
+
+def print_output_matrix(matrix, padding=0):
+    """
+    This function prints a matrix in ascii art.
+
+    Args:
+        matrix (list): List with shape (batch_size, i, j, 1)
+    """
+    # Prints an output/input matrix in ascii art
+    for i in range(matrix.shape[0]):
+        print(" ", end="")
+        for k in range(matrix.shape[1]):
+            print(f"{k:6d}", end="  ")
+        print()
+        print((matrix.shape[1] * 8 + 8) * "-")
+        # Batch
+        for j in range(matrix.shape[2]):
+            if j >= padding and j < matrix.shape[2] - padding:
+                print(f"[{['x','y','z'][(j-padding)%3]}{(j-padding)//3}]", end="")
+            else:
+                print(f"[  ]", end="")
+            # Y
+            for k in range(matrix.shape[1]):
+                # X
+                minus_sign_padding = " " if matrix[i, k, j, 0] >= 0 else ""
+                print(f"{minus_sign_padding}{matrix[i, k, j, 0]:.4f}", end=" ")
+                if (k + 1) == padding or (k + 1) == matrix.shape[1] - padding:
+                    print(2*" ", end="")
+            print("")
+            if (j+1) == padding or (j+1) == matrix.shape[2] - padding or (j-padding)%3 == 2:
+                print("")
+        print((matrix.shape[1] * 8 + 8) * "-")
