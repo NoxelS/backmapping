@@ -170,6 +170,7 @@ data/validate/
 data/membranes/
 data/membranes_test/
 data/molecules/
+data/cache/
 data/molecules_slow/
 data/molecules_test/
 data/tensorboard/
