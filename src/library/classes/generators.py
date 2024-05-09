@@ -713,7 +713,7 @@ class FICDataGenerator(BaseDataGenerator):
         # Return tensor as deep copy
         return tf.identity(X)
 
-    def __augment_data__(self, X, Y):
+    def __augment_data__(self, X, Y) -> tuple:
         """
         This augments the input data, because an internal coordinate is not dependent on the orientation of the molecule,
         this will only rotate the input data.
@@ -724,29 +724,30 @@ class FICDataGenerator(BaseDataGenerator):
 
         # Augment the data by randomly rotating the dataset
         for i in range(self.batch_size):
-            vectors_X = X[i, :, :, 0]
+            vectors_X = X[i, PADDING:-PADDING, PADDING:-PADDING, 0]
 
             # Randomly rotate the dataset
-            max_angle = 2 * np.pi
+            max_angle = np.pi
 
             angle_x = random.uniform(-max_angle, max_angle)
             angle_y = random.uniform(-max_angle, max_angle)
             angle_z = random.uniform(-max_angle, max_angle)
 
             # Loop over beads
-            for j in range(vectors_X.shape[0]):
-                vec = vectors_X[j, PADDING:-PADDING]
+            for j in range(12):
+                for k in range(int(vectors_X.shape[1] / 3)):
+                    vec = vectors_X[j, k * 3 : k * 3 + 3]
 
-                # Rotate
-                vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
-                vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
-                vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
+                    # Rotate
+                    vec = np.matmul(np.array([[1, 0, 0], [0, np.cos(angle_x), -np.sin(angle_x)], [0, np.sin(angle_x), np.cos(angle_x)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_y), 0, np.sin(angle_y)], [0, 1, 0], [-np.sin(angle_y), 0, np.cos(angle_y)]]), vec)
+                    vec = np.matmul(np.array([[np.cos(angle_z), -np.sin(angle_z), 0], [np.sin(angle_z), np.cos(angle_z), 0], [0, 0, 1]]), vec)
 
-                # Write back
-                vectors_X[j, PADDING:-PADDING] = vec
+                    # Write back
+                    vectors_X[j, k * 3 : k * 3 + 3] = vec
 
-            # Write the rotated vectors back to the matrix
-            X[i, :, :, 0] = vectors_X
+                # Write the rotated vectors back to the matrix
+                X[i, PADDING:-PADDING, PADDING:-PADDING, 0] = vectors_X
 
         # Make into tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)

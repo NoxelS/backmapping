@@ -7,7 +7,6 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from sympy import true
 
 from library.classes.generators import FICDataGenerator, inverse_scale_output_ic
 from library.classes.losses import BackmappingAbsolutePositionLoss
