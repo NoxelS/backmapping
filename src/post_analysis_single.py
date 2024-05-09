@@ -10,6 +10,7 @@ import tensorflow as tf
 from sympy import true
 
 from library.classes.generators import FICDataGenerator, inverse_scale_output_ic
+from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN, MODEL_TYPES
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_IC_max_index, ic_to_hlabel
@@ -26,8 +27,8 @@ DATA_USAGE = config(Keys.DATA_USAGE)
 USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
 PADDING = int(config(Keys.PADDING))
 CG_SIZE = (
-    12 + 12 * NEIGHBORHOOD_SIZE + 2 * PADDING,
-    3 + 2 * PADDING,
+    12 + 2 * PADDING,
+    3 * (1 + NEIGHBORHOOD_SIZE) + 2 * PADDING,
     1,
 )
 OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
@@ -123,9 +124,10 @@ with strategy.scope():
             load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
             # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
             # in the current tensorflow version. This hopefully will change in the future.
-            loss=tf.keras.losses.MeanAbsoluteError(),
+            loss=BackmappingAbsolutePositionLoss(),
             test_sample=sample_gen.__getitem__(0),
-            model_type=MODEL_TYPES.CNN_V1_1,
+            model_type=MODEL_TYPES.CNN_V2_0,
+            ic_index=target_ic_index,
         )
 
         # Start calcualting the ic for all validation samples
