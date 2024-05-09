@@ -277,14 +277,14 @@ MODEL_TYPE.create(
                 padding="valid",
                 activation=tf.keras.layers.LeakyReLU(alpha=0.01),
             ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**9 * 8,
-                kernel_size=(1, 4),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
+            # tf.keras.layers.BatchNormalization(),
+            # tf.keras.layers.Conv2D(
+            #     filters=2**9 * 8,
+            #     kernel_size=(1, 4),
+            #     strides=(1, 1),
+            #     padding="valid",
+            #     activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+            # ),
             tf.keras.layers.BatchNormalization(),
             tf.keras.layers.MaxPool2D(
                 pool_size=(3, 3),
