@@ -123,7 +123,7 @@ with strategy.scope():
             load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
             # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
             # in the current tensorflow version. This hopefully will change in the future.
-            loss=BackmappingAbsolutePositionLoss(),
+            # loss=BackmappingAbsolutePositionLoss(),
             test_sample=sample_gen.__getitem__(0),
             ic_index=target_ic_index,
         )

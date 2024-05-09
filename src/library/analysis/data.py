@@ -4,6 +4,8 @@ import time
 
 import numpy as np
 
+from library.classes.losses import BackmappingAbsolutePositionLoss
+
 # Disable tensorflow logging
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
@@ -112,7 +114,7 @@ def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
                         display_name=atom_name,
                         keep_checkpoints=True,
                         load_path=os.path.join(DATA_PREFIX, "models", atom_name, f"{MODEL_NAME_PREFIX}.h5"),
-                        loss=tf.keras.losses.MeanAbsoluteError(),
+                        loss=BackmappingAbsolutePositionLoss(),
                     )
 
                     # TODO: fix this with the batches so that we can use the whole dataset

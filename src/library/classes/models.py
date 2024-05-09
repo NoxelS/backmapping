@@ -2,6 +2,7 @@ import enum
 import os
 import socket
 import time
+from ast import expr_context
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -69,7 +70,7 @@ class IDOFNet:
         self.model.compile(
             optimizer=tf.optimizers.Adam(),
             loss=self.loss,
-            metrics=["accuracy", "mae"],
+            metrics=["accuracy", "mae", "mse", "mape"],
             run_eagerly=True,
         )
 
@@ -86,7 +87,6 @@ class IDOFNet:
                         "BackmappingAbsolutePositionLoss": self.loss,
                         "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
                     },
-                    compile=False,
                 )
                 print("Loaded model successfully from " + load_path)
             except FileNotFoundError:
@@ -94,6 +94,19 @@ class IDOFNet:
             except Exception as e:
                 print("Could not load model from " + load_path + ": ", end="")
                 print(e)
+                try:
+                    print("Trying to load model without compiling...")
+                    self.model = tf.keras.models.load_model(
+                        load_path,
+                        custom_objects={
+                            "BackmappingAbsolutePositionLoss": self.loss,
+                            "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
+                        },
+                        compile=False,
+                    )
+                except Exception as e:
+                    print(e)
+                    print(f"Could not load model from {load_path}, starting from scratch...")
         else:
             print(f"No backup found at {load_path}, starting from scratch...")
 
@@ -110,7 +123,7 @@ class IDOFNet:
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 1
+        conv_scale = 8
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -186,8 +199,8 @@ class IDOFNet:
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation="linear",
-                    # , kernel_initializer=tf.keras.initializers.Zeros()
-                    # , kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
@@ -338,7 +351,14 @@ class IDOFNet:
         """
         Logs the loss in physical units
         """
-        mae = logs["mae"]
+        mae = 0
+        try:
+            mae = logs["mae"]
+        except KeyError:
+            try:
+                mae = logs["mean_absolute_error"]
+            except KeyError:
+                return
 
         # Get scale
         scaled_mae = inverse_scale_output_ic(self.ic_index, mae) - inverse_scale_output_ic(self.ic_index, 0)
