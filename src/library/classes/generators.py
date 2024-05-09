@@ -11,7 +11,9 @@ import tensorflow as tf
 from Bio.PDB.PDBParser import PDBParser
 
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.static.utils import print_input_matrix, print_matrix
 
 # Read datapaths from config
@@ -222,8 +224,7 @@ def inverse_scale_output_ic(ic_index: int, value: float) -> float:
 
     if ic_type == "bond":
         # Bonds are between [0,1] -> [1A, 1.7A]
-        # return value * (1.7 - 1) + 1
-        return value * (1.62 - 1.5) + 1.5
+        return value * (1.7 - 1) + 1
     elif ic_type == "angle":
         # Angles are between [0,1] -> [90°, 160°]
         return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)

@@ -10,7 +10,7 @@ from Bio.PDB.Structure import Structure
 
 class Dataset:
     """
-        A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.
+    A class used to represent a membrane or molecule dataset. Does not contain any data, only metadata.
     """
 
     def __init__(self, name, path, type, parent=None):
@@ -19,14 +19,13 @@ class Dataset:
         self.parent = parent
         self.type = type
 
-
     def __repr__(self) -> str:
-        return f'<Dataset {self.name} at {hex(id(self))}>'
-    
-    def get_structure(self) -> Structure: 
+        return f"<Dataset {self.name} at {hex(id(self))}>"
+
+    def get_structure(self) -> Structure:
         parser = PDBParser(QUIET=True)
         return parser.get_structure(self.name, self.path)
-    
+
     def get_model(self) -> Model:
         return self.get_structure().get_models()[0]
 

@@ -10,9 +10,9 @@ import tensorflow as tf
 
 from library.classes.generators import FICDataGenerator, inverse_scale_output_ic
 from library.classes.losses import BackmappingAbsolutePositionLoss
-from library.classes.models import CNN, MODEL_TYPES
+from library.classes.models import IDOFNet
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_IC_max_index, ic_to_hlabel
+from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 
 ##### CONFIGURATION #####
 
@@ -33,7 +33,7 @@ CG_SIZE = (
 OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
 
 # This is the maximum internal coordinate index
-MAX_IC_INDEX = get_IC_max_index()
+MAX_IC_INDEX = get_max_ic_index()
 
 # Check if the internal coordinate index is valid
 if len(sys.argv) < 2:
@@ -114,7 +114,7 @@ with strategy.scope():
         if not os.path.exists(SAVE_PATH):
             os.makedirs(SAVE_PATH)
 
-        cnn = CNN(
+        net = IDOFNet(
             CG_SIZE,
             OUTPUT_SIZE,
             data_prefix=DATA_PREFIX,
@@ -125,7 +125,6 @@ with strategy.scope():
             # in the current tensorflow version. This hopefully will change in the future.
             loss=BackmappingAbsolutePositionLoss(),
             test_sample=sample_gen.__getitem__(0),
-            model_type=MODEL_TYPES.CNN_V2_0,
             ic_index=target_ic_index,
         )
 
@@ -136,7 +135,7 @@ with strategy.scope():
 
         for i in range(len(train_gen)):
             x, y_true = train_gen.__getitem__(i)
-            y_pred = cnn.model.predict(x)
+            y_pred = net.model.predict(x)
             predictions.append((y_true, y_pred))
 
         # Save the predictions

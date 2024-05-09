@@ -115,10 +115,10 @@ def generate_output_structure(extended_topology: ExtendedTopologyInfo = None):
             )
             nr += 1
 
-    print(get_IC_max_index())
+    print(get_max_ic_index())
 
 
-def get_IC_max_index() -> int:
+def get_max_ic_index() -> int:
     """
     Returns the maximum index of the internal coordinates.
     """

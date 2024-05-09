@@ -8,7 +8,7 @@ import numpy as np
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
 from library.classes.generators import INPUT_SCALE, PADDING, FICDataGenerator, inverse_scale_output_ic, print_matrix
-from library.classes.models import CNN
+from library.classes.models import IDOFNet
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
 
@@ -36,7 +36,7 @@ AT_SIZE = (1 + 2 * int(PADDING), 3 + 2 * int(PADDING), 1)
 
 def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
     """
-    Generates predictions for a given set of atom names using a pre-trained CNN model.
+    Generates predictions for a given set of atom names using a pre-trained IDOFNet model.
     If the prediction cache is available and up-to-date, it will be loaded instead of re-generating the predictions.
     If the cache is outdated, it will be deleted and the predictions will be re-generated.
 
@@ -104,8 +104,8 @@ def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
                     )
 
                     # Load model
-                    print(f"Loading model for atom {atom_name}")
-                    cnn = CNN(
+                    print("Loading model for atom {atom_name}")
+                    net = IDOFNet(
                         CG_SIZE,
                         AT_SIZE,
                         data_prefix=DATA_PREFIX,
@@ -122,8 +122,8 @@ def get_predictions(atom_names_to_fit_with_model, batch_size=2048, batches=1):
 
                         X = test_sample[0]
                         Y_true = test_sample[1]
-                        Y_pred = cnn.model.predict(X)
-                        loss = cnn.model.evaluate(X, Y_true, verbose=0, return_dict=True)
+                        Y_pred = net.model.predict(X)
+                        loss = net.model.evaluate(X, Y_true, verbose=0, return_dict=True)
 
                         # Add to list
                         predictions.append((atom_name, X, Y_true, Y_pred, loss))

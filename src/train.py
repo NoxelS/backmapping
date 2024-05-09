@@ -12,9 +12,9 @@ print_progress_bar(0, MAX_STEPS, prefix="Setting up the training environment", s
 import tensorflow as tf
 
 from library.classes.generators import FICDataGenerator
-from library.classes.models import CNN, MODEL_TYPES
+from library.classes.models import IDOFNet
 from library.config import Keys, config, print_config
-from library.datagen.topology import get_ic_from_index, get_IC_max_index, ic_to_hlabel
+from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 from master import PORT, encode_finished, encode_starting
 
 print_progress_bar(1, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading config...")
@@ -45,7 +45,7 @@ OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
 print_progress_bar(2, MAX_STEPS, prefix="Setting up the training environment", suffix="Checking arguments...")
 
 # This is the maximum internal coordinate index
-MAX_IC_INDEX = get_IC_max_index()
+MAX_IC_INDEX = get_max_ic_index()
 
 # Check if the internal coordinate index is valid
 if len(sys.argv) < 2:
@@ -78,6 +78,7 @@ if use_socket:
         client.connect((host_ip_address, PORT))
         client.send(encode_starting(target_ic_index))
         client.close()
+
     except Exception as _:
         # Sleep for 30 seconds to give the parent process time to start the server
         print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="Retrying to connect to parent...")
@@ -160,29 +161,25 @@ print(f"Starting to load and train the model for internal coordinate {target_ic_
 
 with strategy.scope():
 
-    cnn = CNN(
+    net = IDOFNet(
         CG_SIZE,
         OUTPUT_SIZE,
         data_prefix=DATA_PREFIX,
         display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
         keep_checkpoints=True,
         load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
-        # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
-        # in the current tensorflow version. This hopefully will change in the future.
-        # loss=tf.keras.losses.MeanSquaredError(),
         loss=BackmappingAbsolutePositionLoss(),
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,
         host_ip_address=host_ip_address if use_socket else None,
         port=PORT if use_socket else None,
-        model_type=MODEL_TYPES.CNN_V2_0,
         ic_index=target_ic_index,
     )
 
-    cnn.fit(train_gen, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_gen=validation_gen, use_tensorboard=USE_TENSORBOARD)
+    net.fit(train_gen, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_gen=validation_gen, use_tensorboard=USE_TENSORBOARD)
 
     try:
-        cnn.save()
+        net.save()
     except Exception as e:
         print(f"Could not save model: {e}")
 

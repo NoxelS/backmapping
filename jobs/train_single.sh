@@ -1,10 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=TRAIN
-#SBATCH --output=./jobs/logs/train-38-%j.log
-#SBATCH --error=./jobs/logs/train-38-%j.err
 #SBATCH --partition=deflt
-#SBATCH --nice=0
-
+#SBATCH --nice=100
 
 # This block is echoing some SLURM variables
 echo "###################### JOB DETAILS ########################"
@@ -23,7 +19,7 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 ###########################"
 
-python src/train.py 48
+python src/train.py $1 $2
 
 echo "####################### POST ANALYSIS ###########################"
 date

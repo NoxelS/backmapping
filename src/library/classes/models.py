@@ -11,303 +11,7 @@ from library.classes.generators import PADDING, inverse_scale_output_ic
 from library.datagen.topology import get_ic_from_index, get_ic_type
 
 
-# Enum to store the model types
-class MODEL_TYPES(enum.Enum):
-    CNN_V1_0 = 0
-    CNN_V1_1 = 1
-    CNN_V2_0 = 2
-
-
-REGISTERED_MODELS = []
-
-
-class MODEL_TYPE:
-    def __init__(self, model_factory, name, description):
-        """
-        This is the base class for all model types. It contains the basic structure of the model type.
-        Args:
-            model_factory (function): The function to create the model (input_size, output_size) -> tf.keras.Model
-            name (str): The name of the model type
-            description (str): The description of the model type
-        """
-        self.model_factory = model_factory
-        self.model_name = name
-        self.model_description = description
-
-    # Factory method
-    @staticmethod
-    def create(name, description, model_factory):
-        REGISTERED_MODELS.append(MODEL_TYPE(model_factory, name, description))
-        return MODEL_TYPE(model_factory, name, description)
-
-
-### MODELS ###
-MODEL_TYPE.create(
-    "CNN_v1_0",
-    """
-        This is the first CNN model. It is a simple CNN with 8 convolutional layers and 1 dense layer.
-        In essence it works just like the encoder part of an autoencoder.
-        It is thereotically possible to scale the number of layers up and down.
-        This model has 360'000 parameters.
-    """,
-    lambda input_size, output_size, display_name: tf.keras.Sequential(
-        [
-            ##### Input layer #####
-            tf.keras.layers.Input(input_size, sparse=False),
-            ##### Encoder #####
-            tf.keras.layers.Conv2D(
-                filters=2**0 * 4,
-                kernel_size=(2, 2),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**1 * 4,
-                kernel_size=(2, 2),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**2 * 4,
-                kernel_size=(2, 1),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**3 * 4,
-                kernel_size=(2, 1),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**4 * 4,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**5 * 4,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**6 * 4,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**7 * 4,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.MaxPool2D(
-                pool_size=(3, 3),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            ##### Output #####
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(
-                np.prod(output_size), activation="tanh", kernel_initializer=tf.keras.initializers.Zeros()
-            ),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
-            tf.keras.layers.Reshape(output_size),
-        ],
-        name=f"{display_name}_CNN_v1_0",
-    ),
-)
-
-MODEL_TYPE.create(
-    "CNN_v1_1",
-    """
-        This is the first CNN model. It is a simple CNN with 8 convolutional layers and 1 dense layer.
-        In essence it works just like the encoder part of an autoencoder.
-        It is thereotically possible to scale the number of layers up and down.
-        This model has 1,419,815 parameters and also a dropout layer.
-    """,
-    lambda input_size, output_size, display_name: tf.keras.Sequential(
-        [
-            ##### Input layer #####
-            tf.keras.layers.Input(input_size, sparse=False),
-            ##### Encoder #####
-            tf.keras.layers.Conv2D(
-                filters=2**0 * 8,
-                kernel_size=(2, 2),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**1 * 8,
-                kernel_size=(2, 2),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**2 * 8,
-                kernel_size=(2, 1),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**3 * 8,
-                kernel_size=(2, 1),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**4 * 8,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**5 * 8,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**6 * 8,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**7 * 8,
-                kernel_size=(2, 1),
-                strides=(2, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.MaxPool2D(
-                pool_size=(3, 3),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            ##### Output #####
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dropout(0.1),
-            tf.keras.layers.Dense(
-                np.prod(output_size), activation="tanh", kernel_initializer=tf.keras.initializers.Zeros()
-            ),  # tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
-            tf.keras.layers.Reshape(output_size),
-        ],
-        name=f"{display_name}_CNN_v1_1",
-    ),
-)
-
-
-MODEL_TYPE.create(
-    "CNN_v2_0",
-    """
-        This is the second CNN modal that is designed to predict internal degrees of freedom.
-    """,
-    lambda input_size, output_size, display_name: tf.keras.Sequential(
-        [
-            ##### Input layer #####
-            tf.keras.layers.Input(input_size, sparse=False),
-            tf.keras.layers.Cropping2D(cropping=((PADDING, PADDING), (PADDING, PADDING))),  # Remove hard set padding
-            ##### Encoder #####
-            tf.keras.layers.Conv2D(
-                filters=2**1 * 8,
-                kernel_size=(1, 1),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.Conv2D(
-                filters=2**2 * 8,
-                kernel_size=(3, 3),
-                strides=(1, 1),
-                padding="same",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**4 * 8,
-                kernel_size=(3, 4),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**5 * 8,
-                kernel_size=(3, 4),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**6 * 8,
-                kernel_size=(3, 4),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**7 * 8,
-                kernel_size=(3, 4),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.Conv2D(
-                filters=2**8 * 8,
-                kernel_size=(3, 5),
-                strides=(1, 1),
-                padding="valid",
-                activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            ),
-            # tf.keras.layers.BatchNormalization(),
-            # tf.keras.layers.Conv2D(
-            #     filters=2**9 * 8,
-            #     kernel_size=(1, 4),
-            #     strides=(1, 1),
-            #     padding="valid",
-            #     activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-            # ),
-            tf.keras.layers.BatchNormalization(),
-            tf.keras.layers.MaxPool2D(
-                pool_size=(3, 3),
-                padding="same",
-            ),
-            tf.keras.layers.BatchNormalization(),
-            ##### Output #####
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dropout(0.25),
-            tf.keras.layers.Dense(
-                np.prod(output_size),
-                activation="linear",
-                # , kernel_initializer=tf.keras.initializers.Zeros()
-                # , kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
-            ),
-            tf.keras.layers.Reshape(output_size),
-        ],
-        name=f"{display_name}_CNN_v2_0",
-    ),
-)
-
-
-class CNN:
+class IDOFNet:
     def __init__(
         self,
         input_size: tuple,
@@ -321,11 +25,10 @@ class CNN:
         socket=None,
         host_ip_address=None,
         port=None,
-        model_type: MODEL_TYPES = MODEL_TYPES.CNN_V1_0,
         ic_index=None,
     ):
         """
-        This is the base class for all CNNs. It contains the basic structure of the CNN and the fit function.
+        This is the base class for all IDOFNets. It contains the basic structure of the IDOFNet and the fit function.
 
         Args:
             input_size (tuple): The size of the input. Should be (x, y, 1)
@@ -339,6 +42,7 @@ class CNN:
             socket (socket, optional): The socket to send data to. Defaults to None.
             host_ip_address (str, optional): The ip address of the host. Defaults to None.
             port (int, optional): The port to send data to. Defaults to None.
+            ic_index (int, optional): The index of the internal coordinate. Defaults to None.
         """
         super().__init__()
 
@@ -358,27 +62,19 @@ class CNN:
             self.ic = get_ic_from_index(ic_index)
             self.ic_type = get_ic_type(self.ic)
 
-        # For showing samples
-        self.fig = plt.figure()
-        self.ax = self.fig.add_subplot(111, projection="3d")
-
         # Create the model based on the specified model type and input/output size/display_name
-        self.model = REGISTERED_MODELS[model_type.value].model_factory(input_size, output_size, display_name)
+        self.model = self.model_factory(input_size, output_size, display_name)
 
         # Compile the model
         self.model.compile(
-            optimizer=tf.optimizers.Adam(
-                # learning_rate=0.00001, # Start with 1% of the default learning rate
-            ),
+            optimizer=tf.optimizers.Adam(),
             loss=self.loss,
             metrics=["accuracy", "mae"],
             run_eagerly=True,
         )
 
         # Print the model summary
-        print(REGISTERED_MODELS[model_type.value].model_name)
-        print(REGISTERED_MODELS[model_type.value].model_description)
-        self.model.summary()
+        self.summary()
 
         # Load weights if path is given
         if load_path is not None:
@@ -390,13 +86,113 @@ class CNN:
                         "BackmappingAbsolutePositionLoss": self.loss,
                         "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
                     },
+                    compile=False,
                 )
-                print("Loaded model from " + load_path)
+                print("Loaded model successfully from " + load_path)
+            except FileNotFoundError:
+                print(f"Could not find model at {load_path}, starting from scratch...")
             except Exception as e:
-                print("Could not load model from " + load_path)
+                print("Could not load model from " + load_path + ": ", end="")
                 print(e)
         else:
             print(f"No backup found at {load_path}, starting from scratch...")
+
+    def model_factory(self, input_size, output_size, display_name):
+        """
+        This is the model factory for the default model.
+
+        Args:
+            input_size: The size of the input. Should be (x, y, 1)
+            output_size: The size of the output. Should be (x, y, 1)
+            display_name: The name of the model. Used for displaying the model summary and saving checkpoints/logs.
+
+        Returns:
+            tf.keras.Sequential: The model
+        """
+
+        conv_scale = 1
+        return tf.keras.Sequential(
+            [
+                ##### Input layer #####
+                tf.keras.layers.Input(input_size, sparse=False),
+                tf.keras.layers.Cropping2D(cropping=((PADDING, PADDING), (PADDING, PADDING))),  # Remove hard set padding
+                ##### Encoder #####
+                tf.keras.layers.Conv2D(
+                    filters=2**1 * conv_scale,
+                    kernel_size=(1, 1),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**2 * conv_scale,
+                    kernel_size=(3, 3),
+                    strides=(1, 1),
+                    padding="same",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**4 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**5 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**6 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**7 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**8 * conv_scale,
+                    kernel_size=(3, 5),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                # tf.keras.layers.BatchNormalization(),
+                # tf.keras.layers.Conv2D(
+                #     filters=2**9 * 8,
+                #     kernel_size=(1, 4),
+                #     strides=(1, 1),
+                #     padding="valid",
+                #     activation=tf.keras.layers.LeakyReLU(alpha=0.01),
+                # ),
+                tf.keras.layers.BatchNormalization(),
+                tf.keras.layers.MaxPool2D(
+                    pool_size=(3, 3),
+                    padding="same",
+                ),
+                tf.keras.layers.BatchNormalization(),
+                ##### Output #####
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dropout(0.10),
+                tf.keras.layers.Dense(
+                    np.prod(output_size),
+                    activation="linear",
+                    # , kernel_initializer=tf.keras.initializers.Zeros()
+                    # , kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1)),
+                ),
+                tf.keras.layers.Reshape(output_size),
+            ],
+            name=f"{display_name}_CNN_v2_0",
+        )
 
     def fit(
         self,
@@ -458,10 +254,6 @@ class CNN:
             ),
             # Update the current epoch and in the future other stuff
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.update_internals(epoch, logs)),
-            # Track the test sample after each epoch
-            # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda epoch, logs: self.track_test_samle(epoch, logs)),
-            # Track the test sample after each batch (live)
-            # tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs: self.live_track_test_samle(batch, logs)),
             # Callback to save weights after each epoch
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.save()),
             # Callback to send data to the socket after each epoch
@@ -505,10 +297,6 @@ class CNN:
                 )
             )
 
-        # Open plot for live tracking TODO: fix this
-        # self.fig.show()
-        # self.fig.canvas.draw()
-
         # Check history for last epoch
         if os.path.exists(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv")):
             last_epoch = 0
@@ -531,147 +319,6 @@ class CNN:
             initial_epoch=self.current_epoch,
         )
 
-    def track_test_samle(self, batch, logs=None):
-        """
-        Tracks the test sample after each batch and saves the figure to the hist folder.
-
-        Args:
-            batch (int): The current batch
-            logs (dict, optional): The logs from the training. Defaults to None.
-        """
-
-        # Predict the output
-        pred = self.model.predict(self.test_sample[0][0:1, :, :, :])[0, :, :, 0]
-        true = self.test_sample[1][0, :, :, 0]
-
-        # Remove padding
-        pred = pred[PADDING:-PADDING, PADDING:-PADDING]
-        true = true[PADDING:-PADDING, PADDING:-PADDING]
-
-        # Make 3D scatter
-        pred_positions = []
-        true_positions = []
-        for i, bond in enumerate(pred):
-            pred_positions.append(pred[i, :])
-        for i, bond in enumerate(true):
-            true_positions.append(true[i, :])
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-
-        ax.scatter([x[0] for x in true_positions], [x[1] for x in true_positions], [x[2] for x in true_positions], c="b", marker="o")
-        ax.scatter([x[0] for x in pred_positions], [x[1] for x in pred_positions], [x[2] for x in pred_positions], c="r", marker="o")
-
-        # Draw lines between the atoms predicted and true positions
-        for i in range(len(true_positions)):
-            ax.plot(
-                [true_positions[i][0], pred_positions[i][0]],
-                [true_positions[i][1], pred_positions[i][1]],
-                [true_positions[i][2], pred_positions[i][2]],
-                color="gray",
-                linestyle="-",
-                linewidth=0.1,
-            )
-
-        # Add legend
-        ax.legend(["True", "Predicted"])
-
-        # Add labels
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
-
-        ax.set_title(f"Atom Positions Epoch {self.current_epoch:03d} Batch {batch:03d}")
-
-        # Fix min, max of every coordinate of the true positions
-        min_x = min([x[0] for x in true_positions])
-        max_x = max([x[0] for x in true_positions])
-        min_y = min([x[1] for x in true_positions])
-        max_y = max([x[1] for x in true_positions])
-        min_z = min([x[2] for x in true_positions])
-        max_z = max([x[2] for x in true_positions])
-
-        # Make size fixed with padding
-        padding_factor = 0.1
-        scale_factor = 1
-        fixed_padding = 0.1
-
-        ax.set_xlim(scale_factor * min_x - padding_factor * (max_x - min_x) - fixed_padding, scale_factor * max_x + padding_factor * (max_x - min_x) + fixed_padding)
-        ax.set_ylim(scale_factor * min_y - padding_factor * (max_y - min_y) - fixed_padding, scale_factor * max_y + padding_factor * (max_y - min_y) + fixed_padding)
-        ax.set_zlim(scale_factor * min_z - padding_factor * (max_z - min_z) - fixed_padding, scale_factor * max_z + padding_factor * (max_z - min_z) + fixed_padding)
-
-        # Make angle fixed from 45 in x and 45 in y
-        ax.view_init(azim=-40, elev=35)
-
-        # Create directory if it does not exist
-        if not os.path.exists(os.path.join(self.data_prefix, "hist")):
-            os.makedirs(os.path.join(self.data_prefix, "hist"))
-
-        if not os.path.exists(os.path.join(self.data_prefix, "hist", "pred")):
-            os.makedirs(os.path.join(self.data_prefix, "hist", "pred"))
-
-        # Find the max number of the files in the folder
-        index = len(os.listdir(os.path.join(self.data_prefix, "hist", "pred")))
-
-        # Save the figure
-        # TODO: Fix save folder for atom specific models
-        fig.savefig(os.path.join(self.data_prefix, "hist", "pred", f"batch_{index}.png"))
-
-    def live_track_test_samle(self, batch, logs=None):
-        """
-        Does the same as track_test_samle but live. This is not working yet.
-
-        Args:
-            batch (int): The current batch
-            logs (dict, optional): The logs from the training. Defaults to None.
-        """
-
-        # Predict the output
-        pred = self.model.predict(self.test_sample[0][0:1, :, :, :])[0, :, :, 0]
-        true = self.test_sample[1][0, :, :, 0]
-
-        # Make 3D scatter
-        pred_positions = []
-        true_positions = []
-        for i, bond in enumerate(pred):
-            pred_positions.append(pred[i, :])
-        for i, bond in enumerate(true):
-            true_positions.append(true[i, :])
-
-        self.ax.clear()
-        self.ax.scatter([x[0] for x in true_positions], [x[1] for x in true_positions], [x[2] for x in true_positions], c="b", marker="o")
-        self.ax.scatter([x[0] for x in pred_positions], [x[1] for x in pred_positions], [x[2] for x in pred_positions], c="r", marker="o")
-
-        # Add legend
-        self.ax.legend(["True", "Predicted"])
-
-        # Add labels
-        self.ax.set_xlabel("X")
-        self.ax.set_ylabel("Y")
-        self.ax.set_zlabel("Z")
-        self.ax.set_title(f"Atom Positions Batch {batch}")
-
-        # Fix min, max of every coordinate of the true positions
-        min_x = min([x[0] for x in true_positions])
-        max_x = max([x[0] for x in true_positions])
-        min_y = min([x[1] for x in true_positions])
-        max_y = max([x[1] for x in true_positions])
-        min_z = min([x[2] for x in true_positions])
-        max_z = max([x[2] for x in true_positions])
-
-        # Make size fixed with padding
-        padding_factor = 0
-        self.ax.set_xlim(min_x - padding_factor * (max_x - min_x), max_x + padding_factor * (max_x - min_x))
-        self.ax.set_ylim(min_y - padding_factor * (max_y - min_y), max_y + padding_factor * (max_y - min_y))
-        self.ax.set_zlim(min_z - padding_factor * (max_z - min_z), max_z + padding_factor * (max_z - min_z))
-
-        # Make angle fixed from 45 in x and 45 in y
-        self.ax.view_init(azim=-45, elev=35)
-
-        # Update the plot
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
-
     def send_data_to_socket(self, epoch, logs):
         """
         Sends the data to the socket
@@ -689,15 +336,15 @@ class CNN:
 
     def log_phys_loss(self, epoch, logs):
         """
-        Logs the physical loss
+        Logs the loss in physical units
         """
         mae = logs["mae"]
 
         # Get scale
-        scaled_mae = inverse_scale_output_ic(self.ic_index, mae)
+        scaled_mae = inverse_scale_output_ic(self.ic_index, mae) - inverse_scale_output_ic(self.ic_index, 0)
         dim = "Å" if self.ic_type == "bond" else "°"
 
-        print(f" - PMAE: {scaled_mae:.6f}{dim}")
+        print(f" - pmae: {scaled_mae:.6f}{dim}")
 
     def update_internals(self, epoch, logs):
         """
@@ -724,7 +371,7 @@ class CNN:
         summary_writer1 = tf.summary.create_file_writer(summary_dir1)
 
         # Set step
-        step = batch + 148 * batch  # TODO: Fix this
+        step = batch + 148 * batch
 
         with summary_writer1.as_default():
             tf.summary.scalar("loss_b", logs["loss"], step=step)
@@ -832,3 +479,10 @@ class CNN:
 
         # Save the model as whole
         self.model.save(path, overwrite=True, save_format="h5")
+
+    def summary(self):
+        """
+        Prints the model summary
+        """
+        print(f"Summary of {self.display_name}")
+        self.model.summary()

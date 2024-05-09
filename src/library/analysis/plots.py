@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 from scipy.signal import savgol_filter
 
 from library.classes.losses import BackmappingAbsolutePositionLoss
-from library.classes.models import CNN
+from library.classes.models import IDOFNet
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log_progress
