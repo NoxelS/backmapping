@@ -125,7 +125,7 @@ class IDOFNet:
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 8
+        conv_scale = 4
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -197,7 +197,7 @@ class IDOFNet:
                 tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10),
+                tf.keras.layers.Dropout(0.10), # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation="sigmoid",
