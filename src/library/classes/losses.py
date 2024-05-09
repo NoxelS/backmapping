@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from library.classes.generators import PADDING, PADDING
+from library.classes.generators import PADDING
 
 
 class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
@@ -9,11 +9,11 @@ class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
 
     def call(self, y_true, y_pred):
         # We ignore the padding
-        pos_true = y_true[:, PADDING:-PADDING, PADDING:-PADDING, 0]
-        pos_pred = y_pred[:, PADDING:-PADDING, PADDING:-PADDING, 0]
-        
-        # Add loss for each atom position
-        positional_loss = tf.reduce_mean(tf.norm(pos_true - pos_pred))
+        ic_scaled_value_true = y_true[:, PADDING:-PADDING, PADDING:-PADDING, 0]
+        ic_scaled_value_pred = y_pred[:, PADDING:-PADDING, PADDING:-PADDING, 0]
 
-        # Calculate the total position loss
-        return positional_loss
+        # Add mse loss
+        loss = tf.reduce_mean(tf.abs(ic_scaled_value_true - ic_scaled_value_pred) ** 2)
+
+        # Calculate the total loss
+        return loss

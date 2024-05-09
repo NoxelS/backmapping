@@ -1,6 +1,10 @@
 #!/bin/bash
+#SBATCH --job-name=TRAIN
+#SBATCH --output=./jobs/logs/train-38-%j.log
+#SBATCH --error=./jobs/logs/train-38-%j.err
 #SBATCH --partition=deflt
-#SBATCH --nice=100
+#SBATCH --nice=0
+
 
 # This block is echoing some SLURM variables
 echo "###################### JOB DETAILS ########################"

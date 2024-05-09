@@ -3,7 +3,8 @@ import socket
 import sys
 import time
 
-from library.static.utils import print_matrix, print_progress_bar
+from library.classes.losses import BackmappingAbsolutePositionLoss
+from library.static.utils import print_input_matrix, print_matrix, print_progress_bar
 
 MAX_STEPS = 7
 print_progress_bar(0, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading Tensorflow...")
@@ -112,84 +113,83 @@ sample_gen = FICDataGenerator(
     validation_mode=False,
     ic_index=target_ic_index,
     neighbourhood_size=NEIGHBORHOOD_SIZE,
+    use_cache=False,
 )
 
-x,y = sample_gen.__getitem__(0)
+print_progress_bar(5, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading training generator...")
+train_gen = FICDataGenerator(
+    input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
+    output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
+    input_size=CG_SIZE,
+    output_size=OUTPUT_SIZE,
+    shuffle=False,
+    batch_size=BATCH_SIZE,
+    validate_split=VALIDATION_SPLIT,
+    validation_mode=False,
+    augmentation=False,
+    ic_index=target_ic_index,
+    neighbourhood_size=NEIGHBORHOOD_SIZE,
+    data_usage=DATA_USAGE,
+)
 
-print_matrix(x)
-
-# print_progress_bar(5, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading training generator...")
-# train_gen = FICDataGenerator(
-#     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
-#     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
-#     input_size=CG_SIZE,
-#     output_size=OUTPUT_SIZE,
-#     shuffle=False,
-#     batch_size=BATCH_SIZE,
-#     validate_split=VALIDATION_SPLIT,
-#     validation_mode=False,
-#     augmentation=True,
-#     ic_index=target_ic_index,
-# #     neighbourhood_size=NEIGHBORHOOD_SIZE,
-# #     data_usage=DATA_USAGE,
-# # )
-
-# # print_progress_bar(6, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading validation generator...")
-# # validation_gen = FICDataGenerator(
-# #     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
-# #     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
-# #     input_size=CG_SIZE,
-# #     output_size=OUTPUT_SIZE,
-# #     shuffle=False,
-# #     batch_size=BATCH_SIZE,
-# #     validate_split=VALIDATION_SPLIT,
-# #     validation_mode=True,
-# #     augmentation=False,
-# #     ic_index=target_ic_index,
-# #     neighbourhood_size=NEIGHBORHOOD_SIZE,
-# #     data_usage=DATA_USAGE,
-# # )
+print_progress_bar(6, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading validation generator...")
+validation_gen = FICDataGenerator(
+    input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
+    output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
+    input_size=CG_SIZE,
+    output_size=OUTPUT_SIZE,
+    shuffle=False,
+    batch_size=BATCH_SIZE,
+    validate_split=VALIDATION_SPLIT,
+    validation_mode=True,
+    augmentation=False,
+    ic_index=target_ic_index,
+    neighbourhood_size=NEIGHBORHOOD_SIZE,
+    data_usage=DATA_USAGE,
+)
 
 
-# # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
-# # performance when training on multiple GPUs.
-# strategy = tf.distribute.experimental.CentralStorageStrategy()
+# The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
+# performance when training on multiple GPUs.
+strategy = tf.distribute.experimental.CentralStorageStrategy()
 
-# print_progress_bar(7, MAX_STEPS, prefix="Setting up the training environment", suffix="Finished...                                           ")
-# print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
+print_progress_bar(7, MAX_STEPS, prefix="Setting up the training environment", suffix="Finished...                                           ")
+print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
 
 # with strategy.scope():
 
-# cnn = CNN(
-# CG_SIZE,
-# OUTPUT_SIZE,
-# data_prefix=DATA_PREFIX,
-# display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
-# keep_checkpoints=True,
-# load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
-# # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
-# # in the current tensorflow version. This hopefully will change in the future.
-# loss=tf.keras.losses.MeanAbsoluteError(),
-# test_sample=sample_gen.__getitem__(0),
-# socket=client if use_socket else None,
-# host_ip_address=host_ip_address if use_socket else None,
-# port=PORT if use_socket else None,
-# model_type=MODEL_TYPES.CNN_V1_1,
-# )
+cnn = CNN(
+    CG_SIZE,
+    OUTPUT_SIZE,
+    data_prefix=DATA_PREFIX,
+    display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
+    keep_checkpoints=True,
+    load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
+    # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
+    # in the current tensorflow version. This hopefully will change in the future.
+    # loss=tf.keras.losses.MeanSquaredError(),
+    loss=BackmappingAbsolutePositionLoss(),
+    test_sample=sample_gen.__getitem__(0),
+    socket=client if use_socket else None,
+    host_ip_address=host_ip_address if use_socket else None,
+    port=PORT if use_socket else None,
+    model_type=MODEL_TYPES.CNN_V2_0,
+    ic_index=target_ic_index,
+)
 
-# cnn.fit(train_gen, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_gen=validation_gen, use_tensorboard=USE_TENSORBOARD)
+cnn.fit(train_gen, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_gen=validation_gen, use_tensorboard=USE_TENSORBOARD)
 
-# try:
-# cnn.save()
-# except Exception as e:
-# print(f"Could not save model: {e}")
+try:
+    cnn.save()
+except Exception as e:
+    print(f"Could not save model: {e}")
 
-# # Send finished signal
-# if use_socket:
-# try:
-# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# client.connect((host_ip_address, PORT))
-# client.send(encode_finished(target_ic_index))
-# client.close()
-# except Exception as e:
-# print(f"Could not send finished signal: {e}")
+# Send finished signal
+if use_socket:
+    try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host_ip_address, PORT))
+        client.send(encode_finished(target_ic_index))
+        client.close()
+    except Exception as e:
+        print(f"Could not send finished signal: {e}")

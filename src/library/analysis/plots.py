@@ -12,8 +12,6 @@ from Bio.PDB import PDBIO, Atom, Chain, Model, Residue, Structure
 from matplotlib.lines import Line2D
 from scipy.signal import savgol_filter
 
-from library.analysis.data import get_predictions
-from library.classes.generators import get_output_scale_factor
 from library.classes.losses import BackmappingAbsolutePositionLoss
 from library.classes.models import CNN
 from library.config import Keys, config
@@ -65,10 +63,11 @@ def plot_loss_atom_name(predictions, loss="loss"):
     atom_names = [prediction[0] for prediction in predictions]
 
     # Scale losses according to the atom scale factor
-    losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
+    # TODO: fix
+    # losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
 
     # Make NMD colors
-    nmd = 1 # TODO: fix
+    nmd = 1  # TODO: fix
     nmd = nmd / np.max(nmd)
     colors = [plt.cm.cool(mean_distance) for mean_distance in nmd]
 
@@ -98,9 +97,10 @@ def plot_loss_nmd(predictions):
     atom_names = [prediction[0] for prediction in predictions]
 
     # Scale losses according to the atom scale factor
-    losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
+    # TODO: fix
+    # losses = [loss * get_output_scale_factor(atom_name) for atom_name, loss in zip(atom_names, losses)]
 
-    nmd = 1 # TODO: fix
+    nmd = 1  # TODO: fix
 
     # Normalize
     nmd = nmd / np.max(nmd)
@@ -154,8 +154,8 @@ def plot_cluster_hist(data_col=2):
 
     # Loop over all files in the hist folder
     for i, hist in enumerate(hist_files):
-        # file is named: training_history_C1.csv
-        atom_name = hist.split("_")[2].split(".")[0]
+        # file is named: training_history_prefix_ic.csv
+        ic_index = hist.split("_")[-1].split(".")[0]
         # mean_distance = mean_distances[atom_name]
 
         try:
@@ -179,9 +179,7 @@ def plot_cluster_hist(data_col=2):
 
         # Plot
         # color = plt.cm.cool(mean_distance)
-        print(atom_name)
-        print(hist[:, int(data_col)])
-        ax.plot(hist[:, 0] + 1, hist[:, int(data_col)] * scale_factor, label=str(atom_name))
+        ax.plot(hist[:, 0] + 1, hist[:, int(data_col)] * scale_factor, label=str(ic_index))
 
         # Add to average data
         avg_data.append(hist[:, int(data_col)] * scale_factor)

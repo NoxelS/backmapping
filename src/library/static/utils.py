@@ -91,7 +91,7 @@ def print_matrix(matrix):
         print(matrix.shape[1] * 8 * "-")
 
 
-def print_output_matrix(matrix, padding=0):
+def print_input_matrix(matrix, padding=0):
     """
     This function prints a matrix in ascii art.
 
@@ -117,8 +117,8 @@ def print_output_matrix(matrix, padding=0):
                 minus_sign_padding = " " if matrix[i, k, j, 0] >= 0 else ""
                 print(f"{minus_sign_padding}{matrix[i, k, j, 0]:.4f}", end=" ")
                 if (k + 1) == padding or (k + 1) == matrix.shape[1] - padding:
-                    print(2*" ", end="")
+                    print(2 * " ", end="")
             print("")
-            if (j+1) == padding or (j+1) == matrix.shape[2] - padding or (j-padding)%3 == 2:
+            if (j + 1) == padding or (j + 1) == matrix.shape[2] - padding or (j - padding) % 3 == 2:
                 print("")
         print((matrix.shape[1] * 8 + 8) * "-")

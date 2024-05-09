@@ -7,7 +7,7 @@ import numpy as np
 # Disable tensorflow logging
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
 
-from library.classes.generators import INPUT_SCALE, PADDING, PADDING, FICDataGenerator, get_output_scale_factor, print_matrix
+from library.classes.generators import INPUT_SCALE, PADDING, FICDataGenerator, inverse_scale_output_ic, print_matrix
 from library.classes.models import CNN
 from library.config import Keys, config
 from library.static.topologies import DOPC_AT_NAMES, DOPC_CG_NAMES
@@ -201,8 +201,8 @@ def predictions_to_analysis_data(predictions):
             Y_pred_atom = prediction[3][i, PADDING:-PADDING, PADDING:-PADDING, 0]
 
             # Invert scaling
-            Y_true_atom *= get_output_scale_factor(atom_name)
-            Y_pred_atom *= get_output_scale_factor(atom_name)
+            Y_true_atom = inverse_scale_output_ic(atom_name, Y_true_atom)
+            Y_pred_atom = inverse_scale_output_ic(atom_name, Y_pred_atom)
 
             # Add to molecule
             Y_true.append((atom_name, *Y_true_atom.numpy()))
