@@ -3,7 +3,7 @@ import socket
 import sys
 import time
 
-from library.classes.losses import BackmappingAbsolutePositionLoss
+from library.classes.losses import CustomLoss
 from library.static.utils import print_input_matrix, print_matrix, print_progress_bar
 
 MAX_STEPS = 7
@@ -168,7 +168,7 @@ with strategy.scope():
         display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
         keep_checkpoints=True,
         load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
-        # loss=BackmappingAbsolutePositionLoss(),
+        # loss=CustomLoss(),
         test_sample=sample_gen.__getitem__(0),
         socket=client if use_socket else None,
         host_ip_address=host_ip_address if use_socket else None,

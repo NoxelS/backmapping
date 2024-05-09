@@ -9,7 +9,7 @@ import numpy as np
 import tensorflow as tf
 
 from library.classes.generators import FICDataGenerator, inverse_scale_output_ic
-from library.classes.losses import BackmappingAbsolutePositionLoss
+from library.classes.losses import CustomLoss
 from library.classes.models import IDOFNet
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
@@ -123,7 +123,7 @@ with strategy.scope():
             load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
             # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
             # in the current tensorflow version. This hopefully will change in the future.
-            # loss=BackmappingAbsolutePositionLoss(),
+            # loss=CustomLoss(),
             test_sample=sample_gen.__getitem__(0),
             ic_index=target_ic_index,
         )

@@ -11,9 +11,7 @@ import tensorflow as tf
 from Bio.PDB.PDBParser import PDBParser
 
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.static.utils import print_input_matrix, print_matrix
 
 # Read datapaths from config
@@ -203,8 +201,8 @@ def scale_output_ic(ic_index: int, value: float) -> float:
     ic_type = get_ic_type(ic)
 
     if ic_type == "bond":
-        # Bonds are between [1A, 1.7A] -> [0,1]
-        return (value - 1) / (1.7 - 1)
+        # Bonds are between [1A, 1.7A] -> [0,1] -> [-0.25, 0.25]
+        return (value - 1) / (2 * (1.7 - 1)) - 0.25
     elif ic_type == "angle":
         # Angles are between [90°, 160°] -> [0,1]
         return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
@@ -223,8 +221,8 @@ def inverse_scale_output_ic(ic_index: int, value: float) -> float:
     ic_type = get_ic_type(ic)
 
     if ic_type == "bond":
-        # Bonds are between [0,1] -> [1A, 1.7A]
-        return value * (1.7 - 1) + 1
+        # Bonds are between [-0.25, 0.25] -> [0,1] -> [1A, 1.7A]
+        return (value + 0.25) * 2 * (1.7 - 1) + 1
     elif ic_type == "angle":
         # Angles are between [0,1] -> [90°, 160°]
         return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)

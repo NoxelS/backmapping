@@ -3,8 +3,8 @@ import tensorflow as tf
 from library.classes.generators import PADDING
 
 
-class BackmappingAbsolutePositionLoss(tf.keras.losses.Loss):
-    def __init__(self, name="backmapping_abs_loss"):
+class CustomLoss(tf.keras.losses.Loss):
+    def __init__(self, name="custom_loss"):
         super().__init__(name=name)
 
     def call(self, y_true, y_pred):
