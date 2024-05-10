@@ -7,6 +7,7 @@ import tensorflow as tf
 
 from library.classes.generators import PADDING, inverse_scale_output_ic
 from library.classes.losses import CustomLoss
+from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type
 
 
@@ -67,7 +68,7 @@ class IDOFNet:
 
         # Compile the model
         self.model.compile(
-            optimizer=tf.optimizers.Adam(),
+            optimizer=tf.optimizers.Adam(learning_rate=config(Keys.INITIAL_LEARNING_RATE)),
             loss=self.loss,
             metrics=["accuracy", "mae", "mse"],
             run_eagerly=True,
@@ -249,14 +250,14 @@ class IDOFNet:
             # is seen for a 'patience' number of epochs, the learning rate is reduced.
             # Here, it monitors 'val_loss' and if no improvement is seen for 10 epochs,
             tf.keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss",
-                factor=0.75,
-                patience=10,
+                monitor=config(Keys.LR_SCHEDULER_MONITOR),
+                factor=config(Keys.LR_SCHEDULER_FACTOR),
+                patience=config(Keys.LR_SCHEDULER_PATIENCE),
                 verbose=0,
-                mode="max",
-                min_delta=0.00000005,
-                cooldown=15,
-                min_lr=0.0000000000001,
+                mode=config(Keys.LR_SCHEDULER_MODE),
+                min_delta=config(Keys.LR_SCHEDULER_MIN_DELTA),
+                cooldown=config(Keys.LR_SCHEDULER_COOLDOWN),
+                min_lr=config(Keys.LR_SCHEDULER_MIN_LR),
             ),
             # The CSVLogger callback streams epoch results to a CSV file.
             # to monitor the training progress.
@@ -302,7 +303,7 @@ class IDOFNet:
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss",
                     min_delta=0.0001,
-                    patience=20,
+                    patience=config(Keys.EARLY_STOP_PATIENCE),
                     verbose=0,
                     mode="auto",
                     baseline=None,

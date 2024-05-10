@@ -1,13 +1,38 @@
 import configparser
 import os
 from enum import Enum
+from typing import Union
 
+# The global config is used to store all global variables that are used in the overall training and analysis process.
+# This includes paths to data, email parameters, master resolver parameters and global configuration parameters that
+# are not part of hyperparameter optimization.
+GLOBAL_CONFIG_FILE_PATH = "config.ini"
+GLOBAL_CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "data", "computational"]]  # Every section can hold up to 100 keys
 
-CONFIG_FILE_PATH = "config.ini"
-CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "training", "network"]]  # Every section can hold up to 100 keys
+# The hyperparameter optimization config is used to store all hyperparameters that are used in the training process.
+HP_CONFIGS_PATH = os.path.join("data", "configs")
+HP_DEFAULT_CONFIG_FILE_PATH = os.path.join(HP_CONFIGS_PATH, "default.ini")
+HP_CONFIG_SECTIONS = [_.upper() for _ in ["data_generator", "training", "network_structure", "info"]]  # Every section can hold up to 100 keys
+
+# This is the current hyperparameter configuration that is used in the training process. This is set by any scripts that
+# are using the hyperparameter optimization.
+global __current_hp_config_path
+__current_hp_config_path = HP_DEFAULT_CONFIG_FILE_PATH
+
+# Used to cache config values for faster access
+global __global_config_cache
+global __hp_config_cache
+__global_config_cache = {}
+__hp_config_cache = {}
 
 
 class Keys(Enum):
+    """
+    This is the global configuration key enum. It is used to access global and hyperparameter configuration parameters that are used in the
+    overall training and analysis process.
+    """
+
+    """GLOBAL CONFIG"""
     # Global config
     DATA_PATH = 0
 
@@ -19,21 +44,125 @@ class Keys(Enum):
     EMAIL_TARGET = 201
     EMAIL_USER = 202
 
-    # Training config
-    BATCH_SIZE = 300
+    # Data config
     VALIDATION_SPLIT = 301
-    NEIGHBORHOOD_SIZE = 302
-    EPOCHS = 303
-    MODEL_NAME_PREFIX = 304
     DATA_USAGE = 305
-    USE_TENSORBOARD = 306
     MAX_TRAINING_DATA = 307
-    
-    # Network config
-    PADDING = 400
-    INPUT_SCALE = 401
-    OUTPUT_SCALE = 402
-    PBC_CUTOFF = 403
+
+    # Computational config
+    USE_CENTRAL_STORAGE_STRATEGY = 400
+
+    """HYPERPARAMETER CONFIG"""
+    # Info config
+    HP_NAME = 1300
+    HP_DESCRIPTION = 1301
+    HP_VERSION = 1302
+    HP_AUTHOR = 1303
+    HP_DATE = 1304
+    HP_NOTES = 1305
+    HP_TAGS = 1306
+    MODEL_NAME_PREFIX = 1307
+
+    # Data_generator config
+    SAMPLEGEN_BATCH_SIZE = 1000
+    SAMPLEGEN_SHUFFLE = 1001
+    SAMPLEGEN_AUGMENTATION = 1002
+    SAMPLEGEN_USE_CACHE = 1003
+
+    TRAINGEN_BATCH_SIZE = 1004
+    TRAINGEN_SHUFFLE = 1005
+    TRAINGEN_AUGMENTATION = 1006
+    TRAINGEN_USE_CACHE = 1007
+
+    VALIDGEN_BATCH_SIZE = 1008
+    VALIDGEN_SHUFFLE = 1009
+    VALIDGEN_AUGMENTATION = 1010
+    VALIDGEN_USE_CACHE = 1011
+
+    # Training config
+    BATCH_SIZE = 1100
+    EPOCHS = 1101
+    INITIAL_LEARNING_RATE = 1102
+    USE_EARLY_STOP = 1103
+    EARLY_STOP_PATIENCE = 1104
+    USE_TENSORBOARD = 1105
+    LR_SCHEDULER_MONITOR = 1106
+    LR_SCHEDULER_FACTOR = 1107
+    LR_SCHEDULER_PATIENCE = 1108
+    LR_SCHEDULER_MIN_DELTA = 1109
+    LR_SCHEDULER_COOLDOWN = 1110
+    LR_SCHEDULER_MIN_LR = 1111
+    LR_SCHEDULER_MODE = 1112
+
+    # Network_structure config
+    NETWORK = 1200
+    PADDING = 1201
+    INPUT_SCALE = 1202
+    OUTPUT_SCALE = 1203
+    PBC_CUTOFF = 1204
+    NEIGHBORHOOD_SIZE = 1205
+
+
+def set_hp_config(config_path: str) -> configparser.ConfigParser:
+    """
+    Set the current hyperparameter config file.
+
+    Args:
+        config_path (str): The path to the hyperparameter config file.
+
+    Returns:
+        configparser.ConfigParser: The hyperparameter config parser.
+    """
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file {config_path} not found.")
+
+    # Check if the config file is a valid config file
+    hp_config = _get_config(config_path)
+
+    # Set the current hp config path
+    global __current_hp_config_path
+    __current_hp_config_path = config_path
+
+    # Clear the cache
+    global __hp_config_cache
+    __hp_config_cache = {}
+
+    return hp_config
+
+
+def set_hp_config_from_name(config_name: str) -> configparser.ConfigParser:
+    """
+    Set the current hyperparameter config file.
+
+    Args:
+        config_name (str): The name of the hyperparameter config file in the HP_CONFIGS_PATH.
+
+    Returns:
+        configparser.ConfigParser: The hyperparameter config parser.
+    """
+    return set_hp_config(os.path.join(HP_CONFIGS_PATH, f"{config_name}.ini"))
+
+
+def get_current_hp_config_path() -> str:
+    """
+    Get the current hyperparameter config file path.
+
+    Returns:
+        str: The path to the current hyperparameter config file.
+    """
+    global __current_hp_config_path
+    return __current_hp_config_path
+
+
+def get_available_hp_configs() -> list:
+    """
+    Get a list of available hyperparameter config file names.
+
+    Returns:
+        list: A list of available hyperparameter config file names.
+    """
+    return [_.replace(".ini", "") for _ in os.listdir(HP_CONFIGS_PATH) if _.endswith(".ini")]
 
 
 def _removeInlineComments(cfgparser):
@@ -42,20 +171,83 @@ def _removeInlineComments(cfgparser):
             cfgparser.set(section, item[0], item[1].split(";")[0].strip())
 
 
-def _get_config() -> configparser.ConfigParser:
+def _get_config(path=GLOBAL_CONFIG_FILE_PATH) -> configparser.ConfigParser:
     config_ = configparser.ConfigParser()
-    config_.read(filenames="config.ini", encoding="utf-8")
+    config_.read(filenames=path, encoding="utf-8")
     _removeInlineComments(config_)
     return config_
 
 
-def config(key: Keys):
+def validate_config():
+    """
+    Validate the global and hyperparameter config files.
+    """
+
+    # Validate global config
+    global_config = _get_config()
+    for section in GLOBAL_CONFIG_SECTIONS:
+        if section not in global_config.sections():
+            raise ValueError(f"Section {section} not found in global config file '{GLOBAL_CONFIG_FILE_PATH}'")
+
+    # Validate hyperparameter config
+    hp_config = _get_config(get_current_hp_config_path())
+    for section in HP_CONFIG_SECTIONS:
+        if section not in hp_config.sections():
+            raise ValueError(f"Section {section} not found in hyperparameter config file '{get_current_hp_config_path()}'")
+
+    for key in Keys:
+        config_sections = GLOBAL_CONFIG_SECTIONS if key.value < 1000 else HP_CONFIG_SECTIONS
+        config_section_index = key.value // 100 if key.value < 1000 else (key.value - 1000) // 100
+        file_path = GLOBAL_CONFIG_FILE_PATH if key.value < 1000 else get_current_hp_config_path()
+        try:
+            value = ""
+            if key.value < 1000:
+                value = global_config[config_sections[config_section_index]][key.name.lower()]
+            else:
+                value = hp_config[config_sections[config_section_index]][key.name.lower()]
+            if value == "":
+                raise ValueError(f"Key '{key.name.lower()}' under section '{config_sections[config_section_index]}' in '{file_path}' has no value in config file!")
+        except KeyError:
+            raise KeyError(f"Key '{key.name.lower()}' not found in config file under section '{config_sections[config_section_index]}' in '{file_path}'!")
+        except configparser.NoOptionError:
+            raise ValueError(f"Key '{key.name.lower()}' under section '{config_sections[config_section_index]}' in '{file_path}' has no value in config file!")
+
+
+def config(key: Keys) -> Union[str, int, float, bool]:
+    """
+    This function is used to access global and hyperparameter configuration parameters that are used in the overall training and analysis process.
+
+    Args:
+        key (Keys): The key of the configuration parameter.
+
+    Returns:
+        Union[str, int, float, bool]: The value of the configuration parameter.
+    """
+    global __global_config_cache
+    global __hp_config_cache
+
+    # Check if the value is already cached
+    if key.value < 1000:
+        if key in __global_config_cache:
+            return __global_config_cache[key]
+    else:
+        if key in __hp_config_cache:
+            return __hp_config_cache[key]
+
+    # Check if the key is a global config key or a hyperparameter config key
+    config_path = GLOBAL_CONFIG_FILE_PATH if key.value < 1000 else get_current_hp_config_path()
+    config_sections = GLOBAL_CONFIG_SECTIONS if key.value < 1000 else HP_CONFIG_SECTIONS
+    config_section_index = key.value // 100 if key.value < 1000 else (key.value - 1000) // 100
+
     value = ""
     try:
-        value = _get_config()[CONFIG_SECTIONS[key.value // 100]][key.name.lower()].strip()
+        value = _get_config(config_path)[config_sections[config_section_index]][key.name.lower()].strip()
     except KeyError:
-        # Retuzrn null
-        value = None
+        raise KeyError(f"Key {key.name.lower()} not found in config file under section {config_sections[config_section_index]} in '{config_path}'")
+    except configparser.NoOptionError:
+        raise ValueError(f"Key {key.name.lower()} has no value in config file")
+    except Exception as e:
+        raise e
 
     # Try to parse to float, int etc.
     if value.find(".") != -1:
@@ -74,11 +266,28 @@ def config(key: Keys):
     elif value == "False":
         value = False
 
+    # Cache the value
+    if key.value < 1000:
+        __global_config_cache[key] = value
+    else:
+        __hp_config_cache[key] = value
+
     return value
 
 
 def print_config():
+    print(f"Global config ({GLOBAL_CONFIG_FILE_PATH}):")
     config_ = _get_config()
+    for section in config_.sections():
+        print(f"[{section}]")
+        for name, value in config_[section].items():
+            key = Keys[name.upper()]
+            datatype = type(config(key)).__name__
+            print(f"{name} = {value} <{datatype}>")
+        print()
+
+    print(f"\nHyperparameter config ({get_current_hp_config_path()}):")
+    config_ = _get_config(get_current_hp_config_path())
     for section in config_.sections():
         print(f"[{section}]")
         for name, value in config_[section].items():
@@ -89,22 +298,32 @@ def print_config():
 
 
 if __name__ == "__main__":
+    """
+    This script is used to create a new config file with all keys from the Keys enum.
+    """
+
+    CONFIG_SECTIONS = GLOBAL_CONFIG_SECTIONS
+    CONFIG_FILE_PATH = GLOBAL_CONFIG_FILE_PATH
+
     config_ = configparser.ConfigParser()
+    hp_config_ = configparser.ConfigParser()
 
-    for section in CONFIG_SECTIONS:
+    for section in GLOBAL_CONFIG_SECTIONS:
         config_.add_section(section)
+    for section in HP_CONFIG_SECTIONS:
+        hp_config_.add_section(section)
     for key in Keys:
-        config_[CONFIG_SECTIONS[key.value // 100]][key.name.lower()] = ""
+        config_sections = GLOBAL_CONFIG_SECTIONS if key.value < 1000 else HP_CONFIG_SECTIONS
+        config_section_index = key.value // 100 if key.value < 1000 else (key.value - 1000) // 100
+        if key.value < 1000:
+            config_[config_sections[config_section_index]][key.name.lower()] = ""
+        else:
+            hp_config_[config_sections[config_section_index]][key.name.lower()] = ""
 
-    # Prompt user if config file already exists
-    if os.path.exists(CONFIG_FILE_PATH):
-        # Print config
-        print_config()
-        print(f"Config file already exists at {CONFIG_FILE_PATH}. Do you want to overwrite it? (y/n)")
-        if input().lower() != "y":
-            exit()
-
-    with open(CONFIG_FILE_PATH, "w") as configfile:
+    with open("config.empty.ini", "w") as configfile:
         config_.write(configfile)
 
-    print(f"Succesfully created config file at {CONFIG_FILE_PATH} with {len(Keys)} keys")
+    with open(os.path.join(HP_CONFIGS_PATH, "empty.ini"), "w") as configfile:
+        hp_config_.write(configfile)
+
+    print(f"Succesfully created config files.")
