@@ -7,8 +7,6 @@ import time
 from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
 from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 
-INPUT_SIZE = (12 + 2 * config(Keys.PADDING), 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)) + 2 * config(Keys.PADDING), 1)
-OUTPUT_SIZE = (1 + 2 * config(Keys.PADDING), 1 + 2 * config(Keys.PADDING), 1)
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
 
@@ -60,6 +58,9 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         use_socket = False
 
     ##### TRAINING #####
+
+    INPUT_SIZE = (12 + 2 * config(Keys.PADDING), 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)) + 2 * config(Keys.PADDING), 1)
+    OUTPUT_SIZE = (1 + 2 * config(Keys.PADDING), 1 + 2 * config(Keys.PADDING), 1)
 
     sample_gen = FICDataGenerator(
         input_dir_path=os.path.join(config(Keys.DATA_PATH), "training", "input"),
@@ -123,7 +124,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced}
                 target_network: IDOFNet = networks[config(Keys.NETWORK)]
             except KeyError:
-                raise ValueError(f"Invalid network type: '{config(Keys.NETWORK)}. Choose one of [{', '.join(networks.keys())}].")
+                raise ValueError(f"Invalid network type: '{config(Keys.NETWORK)}'. Choose one of [{', '.join(networks.keys())}].")
 
             # Create the network. This will also load the model if it exists.
             net = target_network(
@@ -143,7 +144,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
 
             # Abort if we are in dry run mode
             if dry_run:
-                print("Dry run mode is active. Aborting next step: training.")
+                print("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
                 return
 
             # Train the model
@@ -184,21 +185,34 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a model for a specific internal coordinate.")
 
     # Add internal coordinate index argument
-    parser.add_argument(dest="IC_INDEX", type=int, help="The index of the free internal coordinate that should be fitted")
+    parser.add_argument(dest="ic_index", type=int, help="The index of the free internal coordinate that should be fitted")
 
     # Add optional host argument
-    parser.add_argument("--host", dest="MASTER_IP", type=str, help="The IP address of the master. If not provided, the script will run in standalone mode.")
+    parser.add_argument("--host", type=str, help="The IP address of the master. If not provided, the script will run in standalone mode.")
 
     # Add optional hyperparameter configuration name argument
-    parser.add_argument("--config", dest="CONFIG_NAME", type=str, help="The name of the hyperparameter configuration.", default="default")
+    parser.add_argument("--config", type=str, help="The name of the hyperparameter configuration.", default="default")
 
     # Add dry run argument
     parser.add_argument("--dry-run", action="store_true", help="Whether to run the script in dry run mode.", default=False)
 
+    # Add purge run argument
+    parser.add_argument(
+        "--purge", action="store_true", help="Whether to clean caches and saves of the model before training. This does not remove data generator caches!", default=False
+    )
+
+    # Add purge generator caches argument
+    parser.add_argument(
+        "--purge-gen-caches",
+        action="store_true",
+        help="Whether to clean data generator caches before training. IMPORTANT: This removed all caches that contain the target ic index because the cache files do not depend on the model structure or hyperparameters!",
+        default=False,
+    )
+
     args = parser.parse_args()
 
     # Check if the internal coordinate index is valid
-    target_ic_index = int(sys.argv[1])
+    target_ic_index = args.ic_index
     if target_ic_index < 0 or target_ic_index > MAX_IC_INDEX:
         raise Exception(f"Invalid ic index: {target_ic_index}, choose one of: 0-{MAX_IC_INDEX}")
 
@@ -207,11 +221,56 @@ if __name__ == "__main__":
     if target_ic["fixed"]:
         raise ValueError(f"Internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)}) is not a free internal coordinate!")
 
+    # Clean the model directory if requested
+    if args.purge:
+        dirs_to_clean = [
+            os.path.join(config(Keys.DATA_PATH), "models", str(target_ic_index), f"{config(Keys.MODEL_NAME_PREFIX)}.h5"),
+            os.path.join(config(Keys.DATA_PATH), "hist", f"training_history_{config(Keys.MODEL_NAME_PREFIX)}_{str(target_ic_index)}.csv"),
+        ]
+
+        if args.dry_run:
+            print("Would clean up caches and saves:", dirs_to_clean)
+
+        else:
+            print("Cleaning up caches and saves...")
+            # Linux
+            for file in dirs_to_clean:
+                # Try as a file
+                try:
+                    os.remove(file)
+                except Exception as e:
+                    # Linux
+                    try:
+                        os.system(f"rm -rf {file}")
+                    except Exception as e:
+                        # Windows
+                        try:
+                            os.system(f"rmdir /s /q {file}")
+                        except Exception as e:
+                            pass
+
+    # Clean the data generator caches if requested
+    # Note: This removed all caches that contain the target ic index because the cache files
+    # do not depend on the model structure or hyperparameters.
+    if args.purge_gen_caches:
+        cache_files = [_ for _ in os.listdir(os.path.join(config(Keys.DATA_PATH), "cache")) if f"_{target_ic_index}_" in _]
+
+        if args.dry_run:
+            print("Would clean up data generator caches:", cache_files)
+        else:
+            print("Cleaning up data generator caches...")
+            for file in cache_files:
+                try:
+                    os.remove(os.path.join(config(Keys.DATA_PATH), "cache", file))
+                except Exception as e:
+                    pass
+
     # Load the configuration and validate it
     set_hp_config_from_name(args.config)
     validate_config()
 
     # Print the configuration
+    print("Successfully loaded configuration:")
     print_config()
 
     # Run the script

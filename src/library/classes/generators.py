@@ -286,6 +286,8 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         self.parser = PDBParser(QUIET=True)
         self.cache = {}
 
+        print("Starting to load data for the data generator...")
+
         max_index = int(os.listdir(input_dir_path).__len__() - 1)
 
         self.len = int(max_index * (1 - validate_split))
