@@ -1,8 +1,5 @@
-import enum
 import os
 import socket
-import time
-from ast import expr_context
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +11,7 @@ from library.datagen.topology import get_ic_from_index, get_ic_type
 
 
 class IDOFNet:
+
     def __init__(
         self,
         input_size: tuple,
@@ -197,7 +195,7 @@ class IDOFNet:
                 tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10), # Maybe move this after the dense
+                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation="sigmoid",
@@ -506,3 +504,67 @@ class IDOFNet:
         """
         print(f"Summary of {self.display_name}")
         self.model.summary()
+
+
+class IDOFNet_Reduced(IDOFNet):
+
+    def model_factory(self, input_size, output_size, display_name):
+        """
+        This is the model factory for the default model.
+
+        Args:
+            input_size: The size of the input. Should be (x, y, 1)
+            output_size: The size of the output. Should be (x, y, 1)
+            display_name: The name of the model. Used for displaying the model summary and saving checkpoints/logs.
+
+        Returns:
+            tf.keras.Sequential: The model
+        """
+
+        conv_scale = 1
+        return tf.keras.Sequential(
+            [
+                ##### Input layer #####
+                tf.keras.layers.Input(input_size, sparse=False),
+                tf.keras.layers.Cropping2D(cropping=((PADDING, PADDING), (PADDING, PADDING))),  # Remove hard set padding
+                ##### Encoder #####
+                tf.keras.layers.Conv2D(
+                    filters=2**1 * conv_scale,
+                    kernel_size=(1, 1),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**2 * conv_scale,
+                    kernel_size=(3, 3),
+                    strides=(1, 1),
+                    padding="same",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**4 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.BatchNormalization(),
+                tf.keras.layers.MaxPool2D(
+                    pool_size=(3, 3),
+                    padding="same",
+                ),
+                tf.keras.layers.BatchNormalization(),
+                ##### Output #####
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dense(
+                    np.prod(output_size),
+                    activation="sigmoid",
+                    kernel_initializer=tf.keras.initializers.Zeros(),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1),
+                ),
+                tf.keras.layers.Reshape(output_size),
+            ],
+            name=f"{display_name}_IDOFNet_default_v_1_0",
+        )

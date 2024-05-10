@@ -12,7 +12,7 @@ print_progress_bar(0, MAX_STEPS, prefix="Setting up the training environment", s
 import tensorflow as tf
 
 from library.classes.generators import FICDataGenerator
-from library.classes.models import IDOFNet
+from library.classes.models import IDOFNet, IDOFNet_Reduced
 from library.config import Keys, config, print_config
 from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 from master import PORT, encode_finished, encode_starting
@@ -161,7 +161,7 @@ print(f"Starting to load and train the model for internal coordinate {target_ic_
 
 with strategy.scope():
 
-    net = IDOFNet(
+    net = IDOFNet_Reduced(
         CG_SIZE,
         OUTPUT_SIZE,
         data_prefix=DATA_PREFIX,
