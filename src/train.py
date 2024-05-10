@@ -221,20 +221,30 @@ if __name__ == "__main__":
     if target_ic["fixed"]:
         raise ValueError(f"Internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)}) is not a free internal coordinate!")
 
+    # Load the configuration and validate it
+    set_hp_config_from_name(args.config)
+    validate_config()
+
+    # Print the configuration
+    print("Successfully loaded configuration:")
+    print_config()
+
     # Clean the model directory if requested
     if args.purge:
-        dirs_to_clean = [
+        files_to_clean = [
             os.path.join(config(Keys.DATA_PATH), "models", str(target_ic_index), f"{config(Keys.MODEL_NAME_PREFIX)}.h5"),
             os.path.join(config(Keys.DATA_PATH), "hist", f"training_history_{config(Keys.MODEL_NAME_PREFIX)}_{str(target_ic_index)}.csv"),
         ]
 
+        files_to_clean = [_ for _ in files_to_clean if os.path.exists(_)]
+
         if args.dry_run:
-            print("Would clean up caches and saves:", dirs_to_clean)
+            print("Would clean up caches and saves:", files_to_clean)
 
         else:
             print("Cleaning up caches and saves...")
             # Linux
-            for file in dirs_to_clean:
+            for file in files_to_clean:
                 # Try as a file
                 try:
                     os.remove(file)
@@ -264,14 +274,6 @@ if __name__ == "__main__":
                     os.remove(os.path.join(config(Keys.DATA_PATH), "cache", file))
                 except Exception as e:
                     pass
-
-    # Load the configuration and validate it
-    set_hp_config_from_name(args.config)
-    validate_config()
-
-    # Print the configuration
-    print("Successfully loaded configuration:")
-    print_config()
 
     # Run the script
     train_model(args.ic_index, use_socket=bool(args.host), host_ip_address=args.host, dry_run=args.dry_run)
