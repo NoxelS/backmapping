@@ -3,22 +3,14 @@ import socket
 import sys
 import time
 
-from library.classes.losses import CustomLoss
-from library.static.utils import print_input_matrix, print_matrix, print_progress_bar
-
-MAX_STEPS = 7
-print_progress_bar(0, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading Tensorflow...")
-
 import tensorflow as tf
 
 from library.classes.generators import FICDataGenerator
+from library.classes.losses import CustomLoss
 from library.classes.models import IDOFNet, IDOFNet_Reduced
 from library.config import Keys, config, print_config
 from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 from master import PORT, encode_finished, encode_starting
-
-print_progress_bar(1, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading config...")
-
 
 ##### CONFIGURATION #####
 
@@ -41,8 +33,6 @@ CG_SIZE = (
 )  # 12 because we have an origin set
 
 OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
-
-print_progress_bar(2, MAX_STEPS, prefix="Setting up the training environment", suffix="Checking arguments...")
 
 # This is the maximum internal coordinate index
 MAX_IC_INDEX = get_max_ic_index()
@@ -68,12 +58,9 @@ use_socket = len(sys.argv) > 2
 client = None
 
 if use_socket:
-    print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading socket...")
-
     # Try to connect to the parent process
     try:
         host_ip_address = sys.argv[2]
-        print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix=f"Trying to connect to parent {host_ip_address}...")
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host_ip_address, PORT))
         client.send(encode_starting(target_ic_index))
@@ -81,28 +68,23 @@ if use_socket:
 
     except Exception as _:
         # Sleep for 30 seconds to give the parent process time to start the server
-        print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="Retrying to connect to parent...")
         time.sleep(30)
 
         # Try again
         try:
-            print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="Retrying to connect to parent...")
             host_ip_address = sys.argv[2]
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.connect((host_ip_address, PORT))
             client.send(encode_starting(target_ic_index))
             client.close()
         except ConnectionRefusedError:
-            print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="No parent found, not using socket...")
             use_socket = False
         except TimeoutError:
-            print_progress_bar(3, MAX_STEPS, prefix="Setting up the training environment", suffix="No parent found, not using socket...")
             use_socket = False
 
 
 ##### TRAINING #####
 
-print_progress_bar(4, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading sample generator...")
 sample_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
@@ -119,7 +101,6 @@ sample_gen = FICDataGenerator(
 )
 
 
-print_progress_bar(5, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading training generator...")
 train_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
@@ -135,7 +116,6 @@ train_gen = FICDataGenerator(
     data_usage=DATA_USAGE,
 )
 
-print_progress_bar(6, MAX_STEPS, prefix="Setting up the training environment", suffix="Loading validation generator...")
 validation_gen = FICDataGenerator(
     input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
     output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
@@ -156,7 +136,6 @@ validation_gen = FICDataGenerator(
 # performance when training on multiple GPUs.
 strategy = tf.distribute.experimental.CentralStorageStrategy()
 
-print_progress_bar(7, MAX_STEPS, prefix="Setting up the training environment", suffix="Finished...                                           ")
 print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
 
 with strategy.scope():
