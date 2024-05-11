@@ -554,14 +554,14 @@ class IDOFNet_Reduced(IDOFNet):
                     padding="same",
                 ),
                 tf.keras.layers.BatchNormalization(),
-                ##### Output #####
+                ##### Output ##### 
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation="sigmoid",
                     kernel_initializer=tf.keras.initializers.Zeros(),
-                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal                                                                                                                                                                                                                                                                                                                                                                                      (mean=0.0, stddev=0.1),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
