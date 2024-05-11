@@ -1,11 +1,14 @@
 import argparse
+import logging
 import os
 import socket
 import sys
 import time
 
-from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
-from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
+from library.config import (Keys, config, print_config,
+                            set_hp_config_from_name, validate_config)
+from library.datagen.topology import (get_ic_from_index, get_max_ic_index,
+                                      ic_to_hlabel)
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
@@ -20,17 +23,21 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         host_ip_address (str, optional): The IP address of the host. Defaults to "localhost".
     """
 
+    # Import tensorflow here to avoid tensorflow logging messages before the logger is set up and
+    # to avoid tensorflow taking too long to import when running the script in dry run mode.
     import tensorflow as tf
 
+    # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
     from library.classes.models import IDOFNet, IDOFNet_Reduced
     from master import PORT, encode_finished, encode_starting
 
-    ##### SOCKET #####
+    # If a host is provided, try to connect to it. This will be used to communicate with the parent process
+    # to signal the start and end of the training process and also update the parent process about the progress.
+    # This is useful when running the script in parallel on multiple GPUs or on multiple machines.
     client = None
-    if use_socket and not dry_run:
-        # Try to connect to the parent process
+    if use_socket and not dry_run:  # Try to connect to the parent process
         try:
             host_ip_address = sys.argv[2]
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,11 +46,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
             client.close()
 
         except Exception as _:
-            # Sleep for 30 seconds to give the parent process time to start the server
-            time.sleep(30)
-
-            # Try again
-            try:
+            time.sleep(30)  # Sleep for 30 seconds to give the parent process time to start the server
+            try:  # Try again
                 host_ip_address = sys.argv[2]
                 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 client.connect((host_ip_address, PORT))
@@ -53,12 +57,15 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 use_socket = False
             except TimeoutError:
                 use_socket = False
+            except Exception as e:
+                logging.error(f"Could not connect to parent process: {e}")
+                use_socket = False
+
     if use_socket and dry_run:
-        print("Socket communication is not possible in dry run mode. Disabling socket communication.")
+        logging.info("Socket communication is not possible in dry run mode. Disabling socket communication.")
         use_socket = False
 
-    ##### TRAINING #####
-
+    # Define the input and output size of the model, this can be changed via the hyperparameter configuration
     INPUT_SIZE = (12 + 2 * config(Keys.PADDING), 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)) + 2 * config(Keys.PADDING), 1)
     OUTPUT_SIZE = (1 + 2 * config(Keys.PADDING), 1 + 2 * config(Keys.PADDING), 1)
 
@@ -111,20 +118,23 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
 
     # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
     # performance when training on multiple GPUs.
-    strategy = tf.distribute.experimental.CentralStorageStrategy()
-    default_startegy = tf.distribute.get_strategy()
+    strategy = tf.distribute.get_strategy()
+    if config(Keys.USE_CENTRAL_STORAGE_STRATEGY):
+        strategy = tf.distribute.experimental.CentralStorageStrategy()
 
-    print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
+    logging.debug(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
 
-    with strategy if config(Keys.USE_CENTRAL_STORAGE_STRATEGY) else default_startegy.scope():
+    with strategy.scope():
 
         try:
-            # Select the right network type based on the configuration
             try:
+                # Select the right network type based on the configuration
                 networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced}
                 target_network: IDOFNet = networks[config(Keys.NETWORK)]
             except KeyError:
                 raise ValueError(f"Invalid network type: '{config(Keys.NETWORK)}'. Choose one of [{', '.join(networks.keys())}].")
+            except Exception as e:
+                raise ValueError(f"Could not load network: {e}")
 
             # Create the network. This will also load the model if it exists.
             net = target_network(
@@ -144,7 +154,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
 
             # Abort if we are in dry run mode
             if dry_run:
-                print("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
+                logging.critical("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
                 return
 
             # Train the model
@@ -158,16 +168,16 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                     early_stop=config(Keys.USE_EARLY_STOP),
                 )
             except Exception as e:
-                print(f"Could not train model: {e}")
+                logging.error(f"Could not train model: {e}")
 
             # Save the model
             try:
                 net.save()
             except Exception as e:
-                print(f"Could not save model: {e}")
+                logging.error(f"Could not save model: {e}")
 
         except Exception as e:
-            print(f"Could not create model: {e}")
+            logging.error(f"Could not create model: {e}")
 
     # Send finished signal
     if use_socket:
@@ -177,7 +187,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
             client.send(encode_finished(target_ic_index))
             client.close()
         except Exception as e:
-            print(f"Could not send finished signal: {e}")
+            logging.error(f"Could not send finished signal: {e}")
 
 
 if __name__ == "__main__":
@@ -191,7 +201,7 @@ if __name__ == "__main__":
     parser.add_argument("--host", type=str, help="The IP address of the master. If not provided, the script will run in standalone mode.")
 
     # Add optional hyperparameter configuration name argument
-    parser.add_argument("--config", type=str, help="The name of the hyperparameter configuration.", default="default")
+    parser.add_argument("-c", "--config", type=str, help="The name of the hyperparameter configuration.", default="default")
 
     # Add dry run argument
     parser.add_argument("--dry-run", action="store_true", help="Whether to run the script in dry run mode.", default=False)
@@ -209,7 +219,16 @@ if __name__ == "__main__":
         default=False,
     )
 
+    # Add argument for verbose
+    parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output, defaults to off.", default=0)
+
+    # Parse the arguments
     args = parser.parse_args()
+
+    # Set up logger with the right verbosity
+    verbosity = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(format="[%(asctime)s] %(levelname)s {%(filename)s:%(lineno)d}: %(message)s", datefmt="%m-%d %H:%M:%S", level=verbosity)
+    logging.debug("Verbose output enabled.") if args.verbose else None
 
     # Check if the internal coordinate index is valid
     target_ic_index = args.ic_index
@@ -226,7 +245,7 @@ if __name__ == "__main__":
     validate_config()
 
     # Print the configuration
-    print("Successfully loaded configuration:")
+    logging.debug("Successfully loaded configuration:")
     print_config()
 
     # Clean the model directory if requested
@@ -239,10 +258,10 @@ if __name__ == "__main__":
         files_to_clean = [_ for _ in files_to_clean if os.path.exists(_)]
 
         if args.dry_run:
-            print("Would clean up caches and saves:", files_to_clean)
+            logging.debug("Would clean up caches and saves:", files_to_clean)
 
         else:
-            print("Cleaning up caches and saves...")
+            logging.debug("Cleaning up caches and saves...")
             # Linux
             for file in files_to_clean:
                 # Try as a file
@@ -266,9 +285,9 @@ if __name__ == "__main__":
         cache_files = [_ for _ in os.listdir(os.path.join(config(Keys.DATA_PATH), "cache")) if f"_{target_ic_index}_" in _]
 
         if args.dry_run:
-            print("Would clean up data generator caches:", cache_files)
+            logging.debug("Would clean up data generator caches:", cache_files)
         else:
-            print("Cleaning up data generator caches...")
+            logging.debug("Cleaning up data generator caches...")
             for file in cache_files:
                 try:
                     os.remove(os.path.join(config(Keys.DATA_PATH), "cache", file))

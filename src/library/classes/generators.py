@@ -1,5 +1,6 @@
 import json
 import linecache
+import logging
 import os
 import pickle
 import random
@@ -286,7 +287,7 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         self.parser = PDBParser(QUIET=True)
         self.cache = {}
 
-        print("Starting to load data for the data generator...")
+        logging.debug("Starting to load data for the data generator...")
 
         max_index = int(os.listdir(input_dir_path).__len__() - 1)
 
@@ -310,7 +311,7 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         self.end_index = self.start_index + self.len - 1
 
         # Debug
-        print(f"Found {self.len} residues in ({self.input_dir_path})")
+        logging.debug(f"Found {self.len} residues in ({self.input_dir_path})")
 
         self.cache_name = cache_name
 
@@ -325,11 +326,11 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
             try:
                 with open(self.cache_path, "rb") as f:
                     self.cache = pickle.load(f)
-                    print(f"Loaded cache from file ({self.cache_path}) with {len(self.cache)} batches ({len(self.cache)*self.batch_size} residues)")
+                    logging.debug(f"Loaded cache from file ({self.cache_path}) with {len(self.cache)} batches ({len(self.cache)*self.batch_size} residues)")
             except Exception as e:
-                print(f"Could not load cache from file!")
+                logging.error(f"Could not load cache from file!")
         else:
-            print(f"Not using cache...")
+            logging.debug(f"Not using cache...")
         # Initialize
         self.on_epoch_end()
 
@@ -380,10 +381,10 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         try:
             self.cache[idx] = output
         except MemoryError:
-            print(f"Not enough memory to cache batch {idx}/{self.__len__()}!")
+            logging.error(f"Not enough memory to cache batch {idx}/{self.__len__()}!")
         except Exception as e:
-            print(f"Could not cache batch {idx}/{self.__len__()}!")
-            print(e)
+            logging.error(f"Could not cache batch {idx}/{self.__len__()}!")
+            logging.error(e)
 
         # Try save to file
         try:
@@ -396,8 +397,8 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
                 pickle.dump(self.cache, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         except Exception as e:
-            print(f"Could not save cache to file!")
-            print(e)
+            logging.error(f"Could not save cache to file!")
+            logging.error(e)
 
     def __load_cached_item__(self, idx):
         """
@@ -415,8 +416,8 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         except KeyError:
             return None
         except Exception as e:
-            print(f"Could not load cached batch {idx}/{self.__len__()}!")
-            print(e)
+            logging.error(f"Could not load cached batch {idx}/{self.__len__()}!")
+            logging.error(e)
             return None
 
     def __get_cache_size__(self):
@@ -554,14 +555,14 @@ class FICDataGenerator(BaseDataGenerator):
                 # Find batch that is not healthy
                 for i in range(Y.shape[0]):
                     if not is_output_matrix_healthy(Y[i : i + 1, :, :, :], [0, 1]):
-                        print(f"Unhealty batch: {i}")
+                        logging.error(f"Unhealty batch: {i}")
                         print_matrix(Y[i : i + 1, :, :, :])
                         break
             if not is_output_matrix_healthy(X):
                 # Find batch that is not healthy
                 for i in range(X.shape[0]):
                     if not is_output_matrix_healthy(X[i : i + 1, :, :, :]):
-                        print(f"Unhealty batch: {i}")
+                        logging.error(f"Unhealty batch: {i}")
                         print_matrix(X[i : i + 1, :, :, :])
                         break
             raise Exception(f"Found values outside of [-1, 1], see print before.")

@@ -1,3 +1,4 @@
+import logging
 import os
 import socket
 
@@ -89,14 +90,13 @@ class IDOFNet:
                         "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
                     },
                 )
-                print("Loaded model successfully from " + load_path)
+                logging.info("Loaded model successfully from " + load_path)
             except FileNotFoundError:
-                print(f"Could not find model at {load_path}, starting from scratch...")
+                logging.info(f"Could not find model at {load_path}, starting from scratch...")
             except Exception as e:
-                print("Could not load model from " + load_path + ": ", end="")
-                print(e)
+                logging.info("Could not load model from " + load_path + ": " + str(e))
                 try:
-                    print("Trying to load model without compiling...")
+                    logging.debug("Trying to load model without compiling...")
                     self.model = tf.keras.models.load_model(
                         load_path,
                         custom_objects={
@@ -106,10 +106,10 @@ class IDOFNet:
                         compile=False,
                     )
                 except Exception as e:
-                    print(e)
-                    print(f"Could not load model from {load_path}, starting from scratch...")
+                    logging.debug(e)
+                    logging.debug(f"Could not load model from {load_path}, starting from scratch...")
         else:
-            print(f"No backup found at {load_path}, starting from scratch...")
+            logging.debug(f"No backup found at {load_path}, starting from scratch...")
 
     def model_factory(self, input_size, output_size, display_name):
         """
@@ -317,7 +317,7 @@ class IDOFNet:
             with open(os.path.join(self.data_prefix, "hist", f"training_history_{self.display_name}.csv"), "r") as f:
                 last_epoch = len(f.readlines()) - 2  # -2 because header and last empty line
             self.current_epoch = np.max([last_epoch + 1, 0])  # We assume that the last epoch was finished
-            print(f"Starting from epoch {self.current_epoch}")
+            logging.debug(f"Starting from epoch {self.current_epoch}")
 
         # Here we use generators to generate batches of data for the training loop.
         self.hist = self.model.fit(
@@ -343,8 +343,8 @@ class IDOFNet:
                 self.socket.send(f"{self.display_name}:{epoch}:{logs['loss']:.6f}".encode())
                 self.socket.close()
             except Exception as e:
-                print("Could not send data to socket")
-                print(e)
+                logging.error("Could not send data to socket")
+                logging.error(e)
 
     def log_phys_loss(self, epoch, logs):
         """
@@ -503,7 +503,7 @@ class IDOFNet:
         """
         Prints the model summary
         """
-        print(f"Summary of {self.display_name}")
+        logging.debug(f"Summary of {self.display_name}")
         self.model.summary()
 
 

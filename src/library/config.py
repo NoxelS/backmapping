@@ -1,4 +1,5 @@
 import configparser
+import logging
 import os
 from enum import Enum
 from typing import Union
@@ -276,25 +277,25 @@ def config(key: Keys) -> Union[str, int, float, bool]:
 
 
 def print_config():
-    print(f"Global config ({GLOBAL_CONFIG_FILE_PATH}):")
+    logging.debug(f"Global config ({GLOBAL_CONFIG_FILE_PATH}):")
     config_ = _get_config()
     for section in config_.sections():
-        print(f"[{section}]")
+        logging.debug(f"[{section}]")
         for name, value in config_[section].items():
             key = Keys[name.upper()]
             datatype = type(config(key)).__name__
-            print(f"{name} = {value} <{datatype}>")
-        print()
+            logging.debug(f"{name} = {value} <{datatype}>")
+        logging.debug("")
 
-    print(f"\nHyperparameter config ({get_current_hp_config_path()}):")
+    logging.debug(f"Hyperparameter config ({get_current_hp_config_path()}):")
     config_ = _get_config(get_current_hp_config_path())
     for section in config_.sections():
-        print(f"[{section}]")
+        logging.debug(f"[{section}]")
         for name, value in config_[section].items():
             key = Keys[name.upper()]
             datatype = type(config(key)).__name__
-            print(f"{name} = {value} <{datatype}>")
-        print()
+            logging.debug(f"{name} = {value} <{datatype}>")
+        logging.debug("")
 
 
 if __name__ == "__main__":
@@ -326,4 +327,4 @@ if __name__ == "__main__":
     with open(os.path.join(HP_CONFIGS_PATH, "empty.ini"), "w") as configfile:
         hp_config_.write(configfile)
 
-    print(f"Succesfully created config files.")
+    logging.debug(f"Succesfully created config files.")
