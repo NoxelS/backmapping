@@ -5,10 +5,8 @@ import socket
 import sys
 import time
 
-from library.config import (Keys, config, print_config,
-                            set_hp_config_from_name, validate_config)
-from library.datagen.topology import (get_ic_from_index, get_max_ic_index,
-                                      ic_to_hlabel)
+from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
+from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
@@ -293,6 +291,11 @@ if __name__ == "__main__":
                     os.remove(os.path.join(config(Keys.DATA_PATH), "cache", file))
                 except Exception as e:
                     pass
+
+    # Display the hyperparameter configuration name
+    logging.info(
+        f"Using hyperparameter configuration '{config(Keys.HP_NAME)}' (v{config(Keys.HP_VERSION)}, {config(Keys.HP_AUTHOR)}): {config(Keys.HP_DESCRIPTION)} {config(Keys.HP_NOTES)}"
+    )
 
     # Run the script
     train_model(args.ic_index, use_socket=bool(args.host), host_ip_address=args.host, dry_run=args.dry_run)
