@@ -22,10 +22,10 @@ AT_BOUNDING_BOX_RELATION_PATH = os.path.join(config(Keys.DATA_PATH), "box_sizes_
 
 
 # Read generator config
-PADDING = config(Keys.PADDING)  # Padding on the input and output matrices
 PBC_CUTOFF = config(Keys.PBC_CUTOFF)  # If a bond is longer than this, it is considered to be on the other side of the simulation box
 INPUT_SCALE = config(Keys.INPUT_SCALE)  # This factor is used to scale down bead positions
-OUTPUT_SCALE = config(Keys.OUTPUT_SCALE)  # The scale factor to downscale the output matrix (applied after the transformation to [0,1])
+# Currently not used
+# OUTPUT_SCALE = config(Keys.OUTPUT_SCALE)  # The scale factor to downscale the output matrix (applied after the transformation to [0,1])
 
 
 def fix_pbc(vector, box_size, cutoff=[PBC_CUTOFF, PBC_CUTOFF, PBC_CUTOFF]):
@@ -123,11 +123,9 @@ def add_absolute_positions(atoms, output_matrix, batch_index, box, target_atom=N
         if np.isnan(position[0]) or np.isnan(position[1]) or np.isnan(position[2]) or np.isinf(position[0]) or np.isinf(position[1]) or np.isinf(position[2]):
             raise Exception(f"Found nan or inf in vector ({position})!")
 
-        # TODO: translate to [0,1] here
-
         # Write the relative vectors to the output matrix
         for k in range(3):
-            output_matrix[batch_index, j + PADDING, PADDING + k, 0] = (
+            output_matrix[batch_index, j, k, 0] = (
                 position[k] * position_scale
             )  # <- Position scale factor depends on if the atom is a bead or an atom (beads contain possible neighbors and cover a much larger area!)
 
@@ -245,8 +243,8 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         self,
         input_dir_path: str,
         output_dir_path: str,
-        input_size: tuple = (11 + 2 * PADDING, 3 + 2 * PADDING, 1),
-        output_size: tuple = (53 + 2 * PADDING, 3 + 2 * PADDING, 1),
+        input_size: tuple,
+        output_size: tuple,
         shuffle: bool = False,
         batch_size: int = 1,
         validate_split: float = 0.1,
@@ -262,8 +260,8 @@ class BaseDataGenerator(tf.keras.utils.Sequence):
         Args:
             input_dir_path (str): The path to the directory where the input data (X) is located
             output_dir_path (str): The path to the directory where the output data (Y) is located
-            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING, 3 + 2 * PADDING, 1).
-            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING, 3 + 2 * PADDING, 1).
+            input_size (tuple, optional): The size/shape of the input data.
+            output_size (tuple, optional): The size/shape of the output data.
             shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
             batch_size (int, optional): The size of each batch. Defaults to 1.
             validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
@@ -435,8 +433,8 @@ class FICDataGenerator(BaseDataGenerator):
         self,
         input_dir_path,
         output_dir_path,
-        input_size,  # We have one more bead position than relativ vectors
-        output_size,  # We have one more atom position than relativ vectors
+        input_size,
+        output_size,
         ic_index,
         shuffle=False,
         batch_size=1,
@@ -451,8 +449,8 @@ class FICDataGenerator(BaseDataGenerator):
         Args:
             input_dir_path (str): The path to the directory where the input data (X) is located
             output_dir_path (str): The path to the directory where the output data (Y) is located
-            input_size (tuple, optional): The size/shape of the input data. Defaults to (11 + 2 * PADDING, 3 + 2 * PADDING, 1).
-            output_size (tuple, optional): The size/shape of the output data. Defaults to (53 + 2 * PADDING, 3 + 2 * PADDING, 1).
+            input_size (tuple, optional): The size/shape of the input data.
+            output_size (tuple, optional): The size/shape of the output data.
             shuffle (bool, optional): If the data should be shuffled after each epoch. Defaults to False.
             batch_size (int, optional): The size of each batch. Defaults to 1.
             validate_split (float, optional): The percentage of data that should be used for validation. Defaults to 0.1.
@@ -533,17 +531,17 @@ class FICDataGenerator(BaseDataGenerator):
             for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):
                 neighbor_X = self.get_neighbor_X(
                     residue_idx=neighbourhood[j], box_size=cg_box_size, position_origin=[atom.get_vector() for atom in cg_atoms if atom.get_name() == "NC3"][0]
-                )[0, PADDING:-PADDING, PADDING : PADDING + 3, 0]
+                )[0, :, 0 : 3, 0]
 
                 # Add the neighbour to the input
-                X[i, PADDING:-PADDING, PADDING + 3 * (1 + j) : PADDING + 3 * (2 + j), 0] = neighbor_X
+                X[i, :, 3 * (1 + j) : 3 * (2 + j), 0] = neighbor_X
 
             # Get the internal coordinate
             output_ic_value = self.__get_ic_from_cartesians(at_structure, self.ic_index, at_box_size)
             scaled_output_ic_value = scale_output_ic(self.ic_index, output_ic_value)
 
             # Write the internal coordinate to the output matrix
-            Y[i, PADDING, PADDING, 0] = scaled_output_ic_value
+            Y[i, 0, 0, 0] = scaled_output_ic_value
 
         # Convert to tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)
@@ -726,7 +724,7 @@ class FICDataGenerator(BaseDataGenerator):
 
         # Augment the data by randomly rotating the dataset
         for i in range(self.batch_size):
-            vectors_X = X[i, PADDING:-PADDING, PADDING:-PADDING, 0]
+            vectors_X = X[i, :, :, 0]
 
             # Randomly rotate the dataset
             max_angle = np.pi
@@ -749,7 +747,7 @@ class FICDataGenerator(BaseDataGenerator):
                     vectors_X[j, k * 3 : k * 3 + 3] = vec
 
                 # Write the rotated vectors back to the matrix
-                X[i, PADDING:-PADDING, PADDING:-PADDING, 0] = vectors_X
+                X[i, :, :, 0] = vectors_X
 
         # Make into tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)

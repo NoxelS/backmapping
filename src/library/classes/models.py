@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from library.classes.generators import PADDING, inverse_scale_output_ic
+from library.classes.generators import inverse_scale_output_ic
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type
@@ -129,7 +129,6 @@ class IDOFNet:
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
-                tf.keras.layers.Cropping2D(cropping=((PADDING, PADDING), (PADDING, PADDING))),  # Remove hard set padding
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
                     filters=2**1 * conv_scale,
@@ -527,7 +526,6 @@ class IDOFNet_Reduced(IDOFNet):
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
-                tf.keras.layers.Cropping2D(cropping=((PADDING, PADDING), (PADDING, PADDING))),  # Remove hard set padding
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
                     filters=2**1 * conv_scale,

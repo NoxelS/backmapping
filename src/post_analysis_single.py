@@ -24,13 +24,13 @@ EPOCHS = config(Keys.EPOCHS)
 MODEL_NAME_PREFIX = config(Keys.MODEL_NAME_PREFIX)
 DATA_USAGE = config(Keys.DATA_USAGE)
 USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
-PADDING = int(config(Keys.PADDING))
+
 CG_SIZE = (
-    12 + 2 * PADDING,
-    3 * (1 + NEIGHBORHOOD_SIZE) + 2 * PADDING,
+    12,
+    3 * (1 + NEIGHBORHOOD_SIZE),
     1,
 )
-OUTPUT_SIZE = (1 + 2 * PADDING, 1 + 2 * PADDING, 1)
+OUTPUT_SIZE = (1, 1, 1)
 
 # This is the maximum internal coordinate index
 MAX_IC_INDEX = get_max_ic_index()
@@ -159,8 +159,8 @@ with strategy.scope():
         y_true, y_pred = preds
 
         # Remove padding
-        y_pred = y_pred[:, PADDING, PADDING, 0]
-        y_true = y_true[:, PADDING, PADDING, 0]
+        y_pred = y_pred[:, 0, 0, 0]
+        y_true = y_true[:, 0, 0, 0]
 
         # Loop over all samples in the batch and save in array
         for j in range(y_pred.shape[0]):
