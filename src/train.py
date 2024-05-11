@@ -256,7 +256,7 @@ if __name__ == "__main__":
         files_to_clean = [_ for _ in files_to_clean if os.path.exists(_)]
 
         if args.dry_run:
-            logging.debug("Would clean up caches and saves:", files_to_clean)
+            logging.debug("Would clean up caches and saves:" + str(files_to_clean))
 
         else:
             logging.debug("Cleaning up caches and saves...")
@@ -283,7 +283,7 @@ if __name__ == "__main__":
         cache_files = [_ for _ in os.listdir(os.path.join(config(Keys.DATA_PATH), "cache")) if f"_{target_ic_index}_" in _]
 
         if args.dry_run:
-            logging.debug("Would clean up data generator caches:", cache_files)
+            logging.debug("Would clean up data generator caches:" + str(cache_files))
         else:
             logging.debug("Cleaning up data generator caches...")
             for file in cache_files:
