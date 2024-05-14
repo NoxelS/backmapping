@@ -66,8 +66,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
 
     # Define the input and output size of the model, this can be changed via the hyperparameter configuration
     # The input and output size does not include batch_sizes, those will be added on runtime by tf
-    INPUT_SIZE = (12, 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)), 1) # (cg_beads, 3(1 + N_B), 1)
-    OUTPUT_SIZE = (1, 1, 1) # ic
+    INPUT_SIZE = (12, 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)), 1)  # (cg_beads, 3(1 + N_B), 1)
+    OUTPUT_SIZE = (1, 1, 1)  # ic
 
     sample_gen = FICDataGenerator(
         input_dir_path=os.path.join(config(Keys.DATA_PATH), "training", "input"),
@@ -137,7 +137,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 raise ValueError(f"Could not load network: {e}")
 
             # Create the network. This will also load the model if it exists.
-            net = target_network(
+            net: IDOFNet = target_network(
                 INPUT_SIZE,
                 OUTPUT_SIZE,
                 data_prefix=config(Keys.DATA_PATH),
@@ -178,6 +178,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
 
         except Exception as e:
             logging.error(f"Could not create model: {e}")
+            raise e
 
     # Send finished signal
     if use_socket:
@@ -253,6 +254,7 @@ if __name__ == "__main__":
         files_to_clean = [
             os.path.join(config(Keys.DATA_PATH), "models", str(target_ic_index), f"{config(Keys.MODEL_NAME_PREFIX)}.h5"),
             os.path.join(config(Keys.DATA_PATH), "hist", f"training_history_{config(Keys.MODEL_NAME_PREFIX)}_{str(target_ic_index)}.csv"),
+            os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{str(target_ic_index)}"),
         ]
 
         files_to_clean = [_ for _ in files_to_clean if os.path.exists(_)]

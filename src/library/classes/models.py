@@ -1,15 +1,20 @@
 import logging
 import os
 import socket
+import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from library.classes.generators import inverse_scale_output_ic
+from library.classes.generators import (BaseDataGenerator,
+                                        inverse_scale_output_ic,
+                                        scale_output_ic)
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 
 
 class IDOFNet:
@@ -58,6 +63,9 @@ class IDOFNet:
         self.socket = socket
         self.host_ip_address = host_ip_address
         self.port = port
+
+        # For tracking predictions along training. This is a dict with epoch as key and the predictions as value
+        self.predictions = {}
 
         self.ic_index = ic_index
         if self.ic_index is not None:
@@ -273,6 +281,8 @@ class IDOFNet:
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.send_data_to_socket(epoch, logs)),
             # Callback to log the physical loss after each epoch
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.log_phys_loss(epoch, logs)),
+            # Callback to plot the output histogram after each epoch
+            self.plot_output_histogram_callback(train_generator),  # Here we can also use validation_gen, depends on what we want to track
         ]
 
         if use_tensorboard:
@@ -505,6 +515,116 @@ class IDOFNet:
         logging.debug(f"Summary of {self.display_name}")
         self.model.summary()
 
+    def plot_output_histogram(self, data_generator: BaseDataGenerator):
+        analysis_folder = os.path.join(config(Keys.DATA_PATH), "analysis", self.display_name)
+        file_name = f"predictions_{self.current_epoch}.png"
+        save_file_path = os.path.join(analysis_folder, file_name)
+
+        # For debugging
+        start_time = time.time()
+
+        # Create directory if it does not exist
+        if not os.path.exists(analysis_folder):
+            os.makedirs(analysis_folder)
+
+        true_ics = []
+        pred_ics = []
+
+        # Predict all data
+        for i in range(len(data_generator)):
+            x, y_true = data_generator.__getitem__(i)
+            y_pred = self.model.predict(x)
+
+            # Remove dimensionality
+            y_pred = y_pred[:, 0, 0, 0]
+            y_true = y_true[:, 0, 0, 0]
+
+            # Add to list
+            for i in range(len(y_true)):
+                true_ics.append(y_true[i])
+                pred_ics.append(y_pred[i])
+
+        # To numpy
+        true_ics = np.array(true_ics)
+        pred_ics = np.array(pred_ics)
+
+        # Reverse apply the scale function
+        true_ics = inverse_scale_output_ic(self.ic_index, true_ics)
+        pred_ics = inverse_scale_output_ic(self.ic_index, pred_ics)
+
+        # Calculate mean and std
+        true_mean = np.mean(true_ics)
+        pred_mean = np.mean(pred_ics)
+        true_std = np.std(true_ics)
+        pred_std = np.std(pred_ics)
+
+        # Print Mean
+        logging.debug(f"Prediction comparison after {self.current_epoch} epochs: true mean: {true_mean}, pred mean: {pred_mean}")
+        logging.debug(f"Prediction comparison after {self.current_epoch} epochs: true std: {true_std}, pred std: {pred_std}")
+
+        # Save the predictions
+        self.predictions[self.current_epoch] = pred_ics
+
+        # Loop through all predictions and plot them in one histogram
+        plt.figure(figsize=(10, 6))
+
+        # Get min and max epoch
+        min_epoch = min(self.predictions.keys())
+        max_epoch = max(self.predictions.keys())
+
+        # Calculate alphas based on epoch
+        alphas = np.linspace(0.1, 1, max_epoch - min_epoch + 1) if max_epoch - min_epoch > 0 else [1]
+        first_pred = self.predictions[min_epoch]
+
+        # Loop through all predictions
+        for i, pred_ics in enumerate(self.predictions.values()):
+            # Make histogram with the same bins
+            bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 150)
+            # Plot the results as relative histogram
+            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="green")
+
+        # Plot the true values (always the same)
+        bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 150)
+        plt.hist(true_ics, bins=bins, alpha=1, color="purple", label="True")
+
+        # Get dim of ic
+        dim = "Å" if self.ic_type == "bond" else "°"
+        xlabel = "Bond length" if self.ic_type == "bond" else "Angle"
+        ic_label = ic_to_hlabel(self.ic)
+
+        # Set theme
+        plt.style.use("seaborn-paper")
+
+        # Label the plot
+        plt.xlabel(f"{xlabel} ({dim})")
+        plt.ylabel("Frequency")
+        plt.title(f"{xlabel} {ic_label} After {self.current_epoch} Epochs\n(Training Data)")
+        plt.grid(True)
+        plt.legend(loc="upper right")
+
+        # Save the plot
+        plt.savefig(save_file_path)
+        plt.close()
+        logging.debug(f"Saved plot to {save_file_path}")
+
+        # Log time it took
+        logging.debug(f"Time it took to plot output histogram: {time.time() - start_time:.2f} seconds")
+
+    def plot_output_histogram_callback(self, data_generator: BaseDataGenerator):
+        """
+        Plots the output histogram after 5 epochs
+        """
+        n = 1
+
+        def plot_every_N_epochs(epoch, logs):
+            if epoch % n == 0:
+                try:
+                    self.plot_output_histogram(data_generator)
+                except Exception as e:
+                    logging.error(f"Could not plot output histogram: {e}")
+
+        return tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_every_N_epochs)
+
 
 class IDOFNet_Reduced(IDOFNet):
 
@@ -521,7 +641,15 @@ class IDOFNet_Reduced(IDOFNet):
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 1
+        # Get the mean of the std to predict from the extended topology
+        mean = self.ic["mean"]
+        std = self.ic["std"]
+
+        # Scale the mean to the output, this will be the starting point of the model
+        mean_scaled = scale_output_ic(self.ic_index, mean)
+        std_scaled = scale_output_ic(self.ic_index, std) - scale_output_ic(self.ic_index, 0)
+
+        conv_scale = 4
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -554,16 +682,16 @@ class IDOFNet_Reduced(IDOFNet):
                     padding="same",
                 ),
                 tf.keras.layers.BatchNormalization(),
-                ##### Output ##### 
+                ##### Output #####
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     np.prod(output_size),
-                    activation="sigmoid",
-                    kernel_initializer=tf.keras.initializers.Zeros(),
-                    # kernel_initializer=tf.keras.initializers.RandomNormal                                                                                                                                                                                                                                                                                                                                                                                      (mean=0.0, stddev=0.1),
+                    activation="linear",
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
-            name=f"{display_name}_IDOFNet_default_v_1_0",
+            name=f"{display_name}_IDOFNet_reduced_v_1_0",
         )

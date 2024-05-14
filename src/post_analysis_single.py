@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 import socket
@@ -182,8 +183,8 @@ with strategy.scope():
     pred_std = np.std(pred_ics)
 
     # Print Mean
-    print(f"True mean: {true_mean}")
-    print(f"Pred mean: {pred_mean}")
+    logging.debug(f"True mean: {true_mean}")
+    logging.debug(f"Pred mean: {pred_mean}")
 
     # Make histogram with the same bins
     bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 150)
@@ -202,5 +203,5 @@ with strategy.scope():
     # plt.axvline(pred_mean + pred_std, color="green", linestyle="dotted", linewidth=1)
     # plt.axvline(pred_mean - pred_std, color="green", linestyle="dotted", linewidth=1)
 
-    # plt.legend(loc="upper right")
+    plt.legend(loc="upper right")
     plt.savefig(os.path.join(DATA_PREFIX, "analysis", f"ic_hist_{target_ic_index}.png"))
