@@ -8,10 +8,14 @@ import numpy as np
 import tensorflow as tf
 from django import conf
 
-from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+from library.classes.generators import (BaseDataGenerator,
+                                        inverse_scale_output_ic,
+                                        scale_output_ic)
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.notify import send_notification
 
 
@@ -718,7 +722,7 @@ class IDOFNet_Reduced(IDOFNet):
                 ),
                 tf.keras.layers.Dense(
                     np.prod(output_size),
-                    activation="sigmoid",
+                    activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
                     kernel_initializer=tf.keras.initializers.Zeros(),
                     # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
