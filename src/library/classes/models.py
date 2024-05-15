@@ -8,14 +8,10 @@ import numpy as np
 import tensorflow as tf
 from django import conf
 
-from library.classes.generators import (BaseDataGenerator,
-                                        inverse_scale_output_ic,
-                                        scale_output_ic)
+from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 
 
@@ -81,7 +77,7 @@ class IDOFNet:
         self.model.compile(
             optimizer=tf.optimizers.Adam(learning_rate=config(Keys.INITIAL_LEARNING_RATE)),
             loss=self.loss,
-            metrics=["accuracy", "mae", "mse"],
+            metrics=["mae", "mse"],
             run_eagerly=True,
         )
 

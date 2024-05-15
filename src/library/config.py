@@ -106,6 +106,7 @@ class Keys(Enum):
     OUTPUT_SCALE = 1203
     PBC_CUTOFF = 1204
     NEIGHBORHOOD_SIZE = 1205
+    LOSS_FUNCTION = 1206
 
     # Plotting config
     PREDICTION_COOLDOWN = 1400
