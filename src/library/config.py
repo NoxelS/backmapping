@@ -8,12 +8,12 @@ from typing import Union
 # This includes paths to data, email parameters, master resolver parameters and global configuration parameters that
 # are not part of hyperparameter optimization.
 GLOBAL_CONFIG_FILE_PATH = "config.ini"
-GLOBAL_CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "data", "computational"]]  # Every section can hold up to 100 keys
+GLOBAL_CONFIG_SECTIONS = [_.upper() for _ in ["global", "train_master", "email", "data", "computational", "ntfy"]]  # Every section can hold up to 100 keys
 
 # The hyperparameter optimization config is used to store all hyperparameters that are used in the training process.
 HP_CONFIGS_PATH = os.path.join("data", "configs")
 HP_DEFAULT_CONFIG_FILE_PATH = os.path.join(HP_CONFIGS_PATH, "default.ini")
-HP_CONFIG_SECTIONS = [_.upper() for _ in ["data_generator", "training", "network_structure", "info"]]  # Every section can hold up to 100 keys
+HP_CONFIG_SECTIONS = [_.upper() for _ in ["data_generator", "training", "network_structure", "info", "plotting"]]  # Every section can hold up to 100 keys
 
 # This is the current hyperparameter configuration that is used in the training process. This is set by any scripts that
 # are using the hyperparameter optimization.
@@ -52,6 +52,11 @@ class Keys(Enum):
 
     # Computational config
     USE_CENTRAL_STORAGE_STRATEGY = 400
+
+    # NTFY config
+    USE_NTFY = 500
+    NTFY_CHANNEL = 501
+    NTFY_TRAINING_COOLDOWN = 502
 
     """HYPERPARAMETER CONFIG"""
     # Info config
@@ -97,11 +102,13 @@ class Keys(Enum):
 
     # Network_structure config
     NETWORK = 1200
-    PADDING = 1201
     INPUT_SCALE = 1202
     OUTPUT_SCALE = 1203
     PBC_CUTOFF = 1204
     NEIGHBORHOOD_SIZE = 1205
+
+    # Plotting config
+    PREDICTION_COOLDOWN = 1400
 
 
 def set_hp_config(config_path: str) -> configparser.ConfigParser:

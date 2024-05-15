@@ -6,6 +6,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from django import conf
 
 from library.classes.generators import (BaseDataGenerator,
                                         inverse_scale_output_ic,
@@ -15,6 +16,7 @@ from library.config import Keys, config
 from library.datagen.topology import (get_ic_from_index, get_ic_type,
                                       ic_to_hlabel,
                                       load_extended_topology_info)
+from library.notify import send_notification
 
 
 class IDOFNet:
@@ -284,6 +286,10 @@ class IDOFNet:
             # Callback to plot the output histogram after each epoch
             self.plot_output_histogram_callback(train_generator),  # Here we can also use validation_gen, depends on what we want to track
         ]
+
+        if config(Keys.USE_NTFY):
+            # Send notifications after n epochs, where n is set via config
+            callbacks.append(self.send_notifications())
 
         if use_tensorboard:
             # The TensorBoard callback writes a log for TensorBoard, which allows
@@ -573,19 +579,19 @@ class IDOFNet:
         max_epoch = max(self.predictions.keys())
 
         # Calculate alphas based on epoch
-        alphas = np.linspace(0.1, 1, max_epoch - min_epoch + 1) if max_epoch - min_epoch > 0 else [1]
+        alphas = np.linspace(0.1, 0.9, max_epoch - min_epoch + 1) if max_epoch - min_epoch > 0 else [1]
         first_pred = self.predictions[min_epoch]
 
         # Loop through all predictions
         for i, pred_ics in enumerate(self.predictions.values()):
             # Make histogram with the same bins
-            bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 150)
+            bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 400)
             # Plot the results as relative histogram
             plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="green")
 
         # Plot the true values (always the same)
-        bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 150)
-        plt.hist(true_ics, bins=bins, alpha=1, color="purple", label="True")
+        bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 400)
+        plt.hist(true_ics, bins=bins, alpha=0.9, color="purple", label="True")
 
         # Get dim of ic
         dim = "Å" if self.ic_type == "bond" else "°"
@@ -614,7 +620,7 @@ class IDOFNet:
         """
         Plots the output histogram after 5 epochs
         """
-        n = 1
+        n = config(Keys.PREDICTION_COOLDOWN)
 
         def plot_every_N_epochs(epoch, logs):
             if epoch % n == 0:
@@ -624,6 +630,29 @@ class IDOFNet:
                     logging.error(f"Could not plot output histogram: {e}")
 
         return tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_every_N_epochs)
+
+    def send_notifications(self) -> tf.keras.callbacks.Callback:
+        """
+        Send notifications via ntfy after each epoch
+
+        Returns:
+            tf.keras.callbacks.Callback: The callback
+        """
+        epoch_cooldown = config(Keys.NTFY_TRAINING_COOLDOWN)
+
+        def send(epoch, logs):
+            if epoch % epoch_cooldown == 0:
+                ok = send_notification(
+                    title=f"{self.display_name}: Epoch {epoch} finished",
+                    message=f"Loss: {logs['loss']:.6f}",
+                    tags="info",
+                )
+                if ok:
+                    logging.debug(f"Sent notification for epoch {epoch}.")
+                else:
+                    logging.error(f"Could not send notification for epoch {epoch}.")
+
+        return tf.keras.callbacks.LambdaCallback(on_epoch_end=send)
 
 
 class IDOFNet_Reduced(IDOFNet):
@@ -686,10 +715,16 @@ class IDOFNet_Reduced(IDOFNet):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
+                    100 * np.prod(output_size),
+                    activation="sigmoid",
+                    kernel_initializer=tf.keras.initializers.Zeros(),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                ),
+                tf.keras.layers.Dense(
                     np.prod(output_size),
-                    activation="linear",
-                    # kernel_initializer=tf.keras.initializers.Zeros(),
-                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                    activation="sigmoid",
+                    kernel_initializer=tf.keras.initializers.Zeros(),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],

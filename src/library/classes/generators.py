@@ -198,16 +198,24 @@ def scale_output_ic(ic_index: int, value: float) -> float:
     """
     ic = get_ic_from_index(ic_index)
     ic_type = get_ic_type(ic)
+    mean, std = float(ic["mean"]), float(ic["std"])
 
     if ic_type == "bond":
         # Bonds are between [1A, 1.7A] -> [0,1] -> [-0.25, 0.25]
-        return (value - 1) / (2 * (1.7 - 1)) - 0.25
+        # return (value - 1) / (2 * (1.7 - 1)) - 0.25
+        # Normalization
+        return ((value - mean) / std) / 100
+
     elif ic_type == "angle":
         # Angles are between [90°, 160°] -> [0,1]
-        return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
+        # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
+        return (value - mean) / std
     elif ic_type == "dihedral":
         # Dihedrals are between [50°, 140°] -> [0,1]
-        return (value - np.deg2rad(50)) / (np.deg2rad(140) - np.deg2rad(50))
+        # return (value - np.deg2rad(50)) / (np.deg2rad(140) - np.deg2rad(50))
+        # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
+        return (value - mean) / std
+
     else:
         raise Exception(f"Internal coordinate type {ic_type} not supported!")
 
@@ -218,16 +226,21 @@ def inverse_scale_output_ic(ic_index: int, value: float) -> float:
     """
     ic = get_ic_from_index(ic_index)
     ic_type = get_ic_type(ic)
+    mean, std = float(ic["mean"]), float(ic["std"])
 
     if ic_type == "bond":
         # Bonds are between [-0.25, 0.25] -> [0,1] -> [1A, 1.7A]
-        return (value + 0.25) * 2 * (1.7 - 1) + 1
+        # return (value + 0.25) * 2 * (1.7 - 1) + 1
+        # Inverse normalization
+        return 100 * value * std + mean
     elif ic_type == "angle":
         # Angles are between [0,1] -> [90°, 160°]
-        return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)
+        # return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)
+        return value * std + mean
     elif ic_type == "dihedral":
         # Dihedrals are between [0,1] ->  [50°, 140°]
-        return value * (np.deg2rad(140) - np.deg2rad(50)) + np.deg2rad(50)
+        # return value * (np.deg2rad(140) - np.deg2rad(50)) + np.deg2rad(50)
+        return value * std + mean
     else:
         raise Exception(f"Internal coordinate type {ic_type} not supported!")
 
@@ -531,7 +544,7 @@ class FICDataGenerator(BaseDataGenerator):
             for j in range(np.min([self.neighbourhood_size, neighbourhood.__len__()])):
                 neighbor_X = self.get_neighbor_X(
                     residue_idx=neighbourhood[j], box_size=cg_box_size, position_origin=[atom.get_vector() for atom in cg_atoms if atom.get_name() == "NC3"][0]
-                )[0, :, 0 : 3, 0]
+                )[0, :, 0:3, 0]
 
                 # Add the neighbour to the input
                 X[i, :, 3 * (1 + j) : 3 * (2 + j), 0] = neighbor_X
@@ -548,11 +561,11 @@ class FICDataGenerator(BaseDataGenerator):
         Y = tf.convert_to_tensor(Y, dtype=tf.float32)
 
         # Check if values that are not in [-1, 1] or [0, 1] exist
-        if not is_output_matrix_healthy(Y, [0, 1]) or not is_output_matrix_healthy(X):
-            if not is_output_matrix_healthy(Y, [0, 1]):
+        if not is_output_matrix_healthy(Y, [-1, 1]) or not is_output_matrix_healthy(X):
+            if not is_output_matrix_healthy(Y, [-1, 1]):
                 # Find batch that is not healthy
                 for i in range(Y.shape[0]):
-                    if not is_output_matrix_healthy(Y[i : i + 1, :, :, :], [0, 1]):
+                    if not is_output_matrix_healthy(Y[i : i + 1, :, :, :], [-1, 1]):
                         logging.error(f"Unhealty batch: {i}")
                         print_matrix(Y[i : i + 1, :, :, :])
                         break

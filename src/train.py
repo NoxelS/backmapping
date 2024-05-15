@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import shutil
 import socket
 import sys
 import time
@@ -116,9 +117,11 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         use_cache=config(Keys.VALIDGEN_USE_CACHE),
     )
 
+    # Set up the strategy for multi-GPU training, this is the default strategy
+    strategy = tf.distribute.get_strategy()
+
     # The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
     # performance when training on multiple GPUs.
-    strategy = tf.distribute.get_strategy()
     if config(Keys.USE_CENTRAL_STORAGE_STRATEGY):
         strategy = tf.distribute.experimental.CentralStorageStrategy()
 
@@ -257,7 +260,7 @@ if __name__ == "__main__":
             os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{str(target_ic_index)}"),
         ]
 
-        files_to_clean = [_ for _ in files_to_clean if os.path.exists(_)]
+        # Todo: fix deletion of analysis folder
 
         if args.dry_run:
             logging.debug("Would clean up caches and saves:" + str(files_to_clean))
@@ -265,20 +268,28 @@ if __name__ == "__main__":
         else:
             logging.debug("Cleaning up caches and saves...")
             # Linux
-            for file in files_to_clean:
+            for target in files_to_clean:
                 # Try as a file
                 try:
-                    os.remove(file)
+                    os.remove(target)
+                    shutil.rmtree(target)
+                    os.system(f"rmdir /s /q {target}")
                 except Exception as e:
                     # Linux
                     try:
-                        os.system(f"rm -rf {file}")
+                        os.system(f"rm -rf {target}")
+                        shutil.rmtree(target)
+                        os.system(f"rmdir /s /q {target}")
                     except Exception as e:
                         # Windows
                         try:
-                            os.system(f"rmdir /s /q {file}")
+                            shutil.rmtree(target)
                         except Exception as e:
-                            pass
+                            print(e)
+                            try:
+                                os.system(f"rmdir /s /q {target}")
+                            except Exception as e:
+                                pass
 
     # Clean the data generator caches if requested
     # Note: This removed all caches that contain the target ic index because the cache files
@@ -290,9 +301,9 @@ if __name__ == "__main__":
             logging.debug("Would clean up data generator caches:" + str(cache_files))
         else:
             logging.debug("Cleaning up data generator caches...")
-            for file in cache_files:
+            for target in cache_files:
                 try:
-                    os.remove(os.path.join(config(Keys.DATA_PATH), "cache", file))
+                    os.remove(os.path.join(config(Keys.DATA_PATH), "cache", target))
                 except Exception as e:
                     pass
 
