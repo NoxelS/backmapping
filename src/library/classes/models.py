@@ -6,13 +6,13 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from django import conf
 
 from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
+from library.plot_config import set_plot_config
 
 
 class IDOFNet:
@@ -665,6 +665,49 @@ class IDOFNet:
                     logging.error(f"Could not send notification for epoch {epoch}.")
 
         return tf.keras.callbacks.LambdaCallback(on_epoch_end=send)
+
+    def plot_weight_distribution(self):
+        """
+        This makes a histogram of every layer and prints the weight histograms.
+        # TODO: Plot the weights as 3D historgram to keep track of previous epochs
+        """
+
+        # Load default plot config
+        set_plot_config()
+
+        # Load all trainable variables
+        vars = self.model.trainable_variables
+        
+        # Get all conv variables
+        conv_vars = [var for var in vars if "conv" in var.name]
+        
+        # Plot all conv_vars with kernel and bais side by side
+        for i, var in enumerate(conv_vars):
+            fig, axs = plt.subplots(2, 1, figsize=(10, 6))
+            axs[0].hist(var.numpy().flatten(), bins=100)
+            axs[0].set_title(f"{var.name} Kernel Distribution")
+            axs[0].set_xlabel("Value")
+            axs[0].set_ylabel("Frequency")
+            axs[1].hist(var.numpy().flatten(), bins=100)
+            axs[1].set_title(f"{var.name} Bias Distribution")
+            axs[1].set_xlabel("Value")
+            axs[1].set_ylabel("Frequency")
+            
+            plt.savefig(f"weight_distribution_conv_{i}.pdf")
+            
+        # Plot the left vars
+        left_vars = [var for var in vars if "conv" not in var.name]
+        
+        # Plot all left_vars
+        for i, var in enumerate(left_vars):
+            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+            ax.hist(var.numpy().flatten(), bins=100)
+            ax.set_title(f"{var.name} Distribution")
+            ax.set_xlabel("Value")
+            ax.set_ylabel("Frequency")
+
+            plt.savefig(f"weight_distribution_{i}.pdf")
+
 
 
 class IDOFNet_Reduced(IDOFNet):
