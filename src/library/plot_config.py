@@ -109,3 +109,6 @@ def set_plot_config():
     mpl.rcParams.update({"ytick.direction": "in"})
     mpl.rcParams.update({"xtick.top": True})
     mpl.rcParams.update({"ytick.right": True})
+
+    # Add space between subplots
+    mpl.rcParams.update({"figure.subplot.hspace": 0.9})
