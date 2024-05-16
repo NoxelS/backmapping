@@ -8,14 +8,10 @@ import numpy as np
 import tensorflow as tf
 from django import conf
 
-from library.classes.generators import (BaseDataGenerator,
-                                        inverse_scale_output_ic,
-                                        scale_output_ic)
+from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 
 
@@ -536,8 +532,10 @@ class IDOFNet:
         true_ics = []
         pred_ics = []
 
+        number_of_batched_to_predict = 1
+
         # Predict all data
-        for i in range(len(data_generator)):
+        for i in range(np.min([number_of_batched_to_predict, len(data_generator)])):
             x, y_true = data_generator.__getitem__(i)
             y_pred = self.model.predict(x)
 
@@ -578,8 +576,16 @@ class IDOFNet:
         min_epoch = min(self.predictions.keys())
         max_epoch = max(self.predictions.keys())
 
+        # Calculate number of predictions
+        number_of_predictions = int((max_epoch - min_epoch) / config(Keys.PREDICTION_COOLDOWN) + 1)
+
         # Calculate alphas based on epoch
-        alphas = np.linspace(0.1, 0.9, max_epoch - min_epoch + 1) if max_epoch - min_epoch > 0 else [1]
+        alphas = np.linspace(0.1, 0.5, number_of_predictions) if max_epoch - min_epoch > 0 else [1]
+
+        # Change the current epochs alpha to 1
+        alphas[-1] = 0.9
+
+        # Get the first prediction for the bins
         first_pred = self.predictions[min_epoch]
 
         # Loop through all predictions
@@ -587,7 +593,13 @@ class IDOFNet:
             # Make histogram with the same bins
             bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 400)
             # Plot the results as relative histogram
-            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="green")
+            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="green", label="Predicted" if i == len(self.predictions) - 1 else None)
+            # Plot the epoch at the mean of the predictions
+            # plt.text(np.mean(pred_ics), 0, f"{min_epoch + i * config(Keys.PREDICTION_COOLDOWN)}", fontsize=8, color="black", alpha=alphas[i])
+            # Plot the epoch at the point where the max frequency is
+            x = bins[np.argmax(np.histogram(pred_ics, bins=bins)[0])]
+            y = np.max(np.histogram(pred_ics, bins=bins)[0])
+            plt.text(x, y, f"{min_epoch + i * config(Keys.PREDICTION_COOLDOWN)}", fontsize=8, color="green", alpha=alphas[i])
 
         # Plot the true values (always the same)
         bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 400)
@@ -604,7 +616,7 @@ class IDOFNet:
         # Label the plot
         plt.xlabel(f"{xlabel} ({dim})")
         plt.ylabel("Frequency")
-        plt.title(f"{xlabel} {ic_label} After {self.current_epoch} Epochs\n(Training Data)")
+        plt.title(f"{xlabel} {ic_label} After {self.current_epoch + 1} Epoch{'s' if self.current_epoch == 0 else ''}\n(Training Data)")
         plt.grid(True)
         plt.legend(loc="upper right")
 
@@ -705,6 +717,34 @@ class IDOFNet_Reduced(IDOFNet):
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
+                tf.keras.layers.Conv2D(
+                    filters=2**5 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**6 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**7 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**8 * conv_scale,
+                    kernel_size=(3, 5),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                ),
                 tf.keras.layers.BatchNormalization(),
                 tf.keras.layers.MaxPool2D(
                     pool_size=(3, 3),
@@ -714,17 +754,17 @@ class IDOFNet_Reduced(IDOFNet):
                 ##### Output #####
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
-                tf.keras.layers.Dense(
-                    100 * np.prod(output_size),
-                    activation="sigmoid",
-                    kernel_initializer=tf.keras.initializers.Zeros(),
-                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
-                ),
+                # tf.keras.layers.Dense(
+                #     100 * np.prod(output_size),
+                #     activation="sigmoid",
+                #     kernel_initializer=tf.keras.initializers.Zeros(),
+                #     # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                # ),
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
-                    kernel_initializer=tf.keras.initializers.Zeros(),
-                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
