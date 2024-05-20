@@ -192,6 +192,7 @@ data/**/*.png
 *.h5
 *.mp4
 *.pdb
+*.pdf
 
 .vscode/
 
