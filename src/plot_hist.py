@@ -7,13 +7,13 @@ from library.config import Keys, config
 
 plot_names = [
     "",
-    "training_loss.png",
-    "training_mse.png",
-    "training_lr.png",
-    "training_mae.png",
-    "training_val_acc.png",
-    "training_val_loss.png",
-    "training_val_mae.png",
+    "training_loss.pdf",
+    "training_mse.pdf",
+    "training_lr.pdf",
+    "training_mae.pdf",
+    "training_val_acc.pdf",
+    "training_val_loss.pdf",
+    "training_val_mae.pdf",
 ]
 
 for i in range(1, 7):

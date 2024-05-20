@@ -15,6 +15,7 @@ from scipy.signal import savgol_filter
 from library.classes.losses import CustomLoss
 from library.classes.models import IDOFNet
 from library.config import Keys, config
+from library.plot_config import set_plot_config
 from library.static.topologies import DOPC_AT_NAMES
 from library.static.utils import DEFAULT_ELEMENT_COLOR_MAP, log_progress
 from library.static.vector_mappings import DOPC_AT_MAPPING
@@ -121,33 +122,16 @@ def plot_loss_nmd(predictions):
 
 @log_progress("plotting cluster hist")
 def plot_cluster_hist(data_col=2):
-    # Get mean distances to color the plot accordingly
-    # mean_distances = {}
 
-    # # Read csv
-    # with open(os.path.join(config(Keys.DATA_PATH), "mean_distances.csv"), "r") as f:
-    #     # Skip header
-    #     f.readline()
+    # Load plot config
+    set_plot_config()
 
-    #     for line in f.readlines():
-    #         # Split line
-    #         line = line.split(",")
-    #         # Get mean distance
-    #         mean_distances[line[0]] = float(line[1])
-
-    # # Normalize mean distances
-    # mean_distances = {k: v / max(mean_distances.values()) for k, v in mean_distances.items()}
-
-    fig = plt.figure(figsize=FIG_SIZE_SQUARE)
+    fig = plt.figure()
     ax = fig.add_subplot(111)
 
     min_loss = 99999
 
     hist_files = os.listdir(PATH_TO_HIST)
-
-    # Sort by average distance
-    # hist_files.sort(key=lambda x: mean_distances[x.split("_")[2].split(".")[0]])
-    # hist_files.reverse()
 
     # Data to find the average graph
     avg_data = []
@@ -156,7 +140,6 @@ def plot_cluster_hist(data_col=2):
     for i, hist in enumerate(hist_files):
         # file is named: training_history_prefix_ic.csv
         ic_index = hist.split("_")[-1].split(".")[0]
-        # mean_distance = mean_distances[atom_name]
 
         try:
             # Load csv
@@ -171,18 +154,15 @@ def plot_cluster_hist(data_col=2):
         # There are maybe multiple train cylces so reindex the epochs accordingly
         hist[:, 0] = np.arange(hist.shape[0])
 
-        # Get scaling factor
-        scale_factor = 3600  # get_scale_factor(atom_name)
-
-        if np.min(hist[:, int(data_col)] * scale_factor) < min_loss:
-            min_loss = np.min(hist[:, int(data_col)] * scale_factor)
+        if np.min(hist[:, int(data_col)]) < min_loss:
+            min_loss = np.min(hist[:, int(data_col)])
 
         # Plot
         # color = plt.cm.cool(mean_distance)
-        ax.plot(hist[:, 0] + 1, hist[:, int(data_col)] * scale_factor, label=str(ic_index))
+        ax.plot(hist[:, 0] + 1, hist[:, int(data_col)], label=str(ic_index))
 
         # Add to average data
-        avg_data.append(hist[:, int(data_col)] * scale_factor)
+        avg_data.append(hist[:, int(data_col)])
 
     # Plot average avg_data = list for every atom with the history of the loss
     max_epoch = np.max([len(i) for i in avg_data])
