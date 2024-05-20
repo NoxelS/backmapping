@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import socket
@@ -6,11 +7,16 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from matplotlib.colors import LightSource
 
-from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+from library.classes.generators import (BaseDataGenerator,
+                                        inverse_scale_output_ic,
+                                        scale_output_ic)
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -64,6 +70,9 @@ class IDOFNet:
 
         # For tracking predictions along training. This is a dict with epoch as key and the predictions as value
         self.predictions = {}
+
+        # For tracking the weight distributions
+        self.weight_distributions = {}
 
         self.ic_index = ic_index
         if self.ic_index is not None:
@@ -281,6 +290,8 @@ class IDOFNet:
             tf.keras.callbacks.LambdaCallback(on_epoch_end=lambda epoch, logs: self.log_phys_loss(epoch, logs)),
             # Callback to plot the output histogram after each epoch
             self.plot_output_histogram_callback(train_generator),  # Here we can also use validation_gen, depends on what we want to track
+            # Callback to plot the weight distribution after each epoch
+            self.plot_weight_distribution_callback(),
         ]
 
         if config(Keys.USE_NTFY):
@@ -519,8 +530,11 @@ class IDOFNet:
 
     def plot_output_histogram(self, data_generator: BaseDataGenerator):
         analysis_folder = os.path.join(config(Keys.DATA_PATH), "analysis", self.display_name)
-        file_name = f"predictions_{self.current_epoch}.png"
+        file_name = f"predictions_{self.current_epoch}.pdf"
         save_file_path = os.path.join(analysis_folder, file_name)
+
+        # Load plot config
+        set_plot_config()
 
         # For debugging
         start_time = time.time()
@@ -569,9 +583,6 @@ class IDOFNet:
         # Save the predictions
         self.predictions[self.current_epoch] = pred_ics
 
-        # Loop through all predictions and plot them in one histogram
-        plt.figure(figsize=(10, 6))
-
         # Get min and max epoch
         min_epoch = min(self.predictions.keys())
         max_epoch = max(self.predictions.keys())
@@ -593,31 +604,21 @@ class IDOFNet:
             # Make histogram with the same bins
             bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 400)
             # Plot the results as relative histogram
-            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="green", label="Predicted" if i == len(self.predictions) - 1 else None)
-            # Plot the epoch at the mean of the predictions
-            # plt.text(np.mean(pred_ics), 0, f"{min_epoch + i * config(Keys.PREDICTION_COOLDOWN)}", fontsize=8, color="black", alpha=alphas[i])
-            # Plot the epoch at the point where the max frequency is
-            x = bins[np.argmax(np.histogram(pred_ics, bins=bins)[0])]
-            y = np.max(np.histogram(pred_ics, bins=bins)[0])
-            plt.text(x, y, f"{min_epoch + i * config(Keys.PREDICTION_COOLDOWN)}", fontsize=8, color="green", alpha=alphas[i])
+            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="xkcd:azure", label="Predicted" if i == len(self.predictions) - 1 else None)
 
         # Plot the true values (always the same)
         bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 400)
-        plt.hist(true_ics, bins=bins, alpha=0.9, color="purple", label="True")
+        plt.hist(true_ics, bins=bins, alpha=0.8, color="xkcd:purple", label="True")
 
         # Get dim of ic
         dim = "Å" if self.ic_type == "bond" else "°"
-        xlabel = "Bond length" if self.ic_type == "bond" else "Angle"
+        xlabel = "Bond Length" if self.ic_type == "bond" else "Angle"
         ic_label = ic_to_hlabel(self.ic)
-
-        # Set theme
-        plt.style.use("seaborn-paper")
 
         # Label the plot
         plt.xlabel(f"{xlabel} ({dim})")
         plt.ylabel("Frequency")
-        plt.title(f"{xlabel} {ic_label} After {self.current_epoch + 1} Epoch{'s' if self.current_epoch == 0 else ''}\n(Training Data)")
-        plt.grid(True)
+        plt.title(f"{xlabel} {ic_label} After {self.current_epoch + 1} Epoch{'s' if self.current_epoch > 1 else ''}")
         plt.legend(loc="upper right")
 
         # Save the plot
@@ -669,45 +670,110 @@ class IDOFNet:
     def plot_weight_distribution(self):
         """
         This makes a histogram of every layer and prints the weight histograms.
-        # TODO: Plot the weights as 3D historgram to keep track of previous epochs
         """
+        # Folder to save the analysis to
+        analysis_folder = os.path.join(config(Keys.DATA_PATH), "analysis", self.display_name, "weights")
+        if not os.path.exists(analysis_folder):
+            os.makedirs(analysis_folder)
 
-        # Load default plot config
-        set_plot_config()
+        # For debugging
+        start_time = time.time()
 
-        # Load all trainable variables
+        # Load all current trainable variables
         vars = self.model.trainable_variables
-        
-        # Get all conv variables
-        conv_vars = [var for var in vars if "conv" in var.name]
-        
-        # Plot all conv_vars with kernel and bais side by side
-        for i, var in enumerate(conv_vars):
-            fig, axs = plt.subplots(2, 1, figsize=(10, 6))
-            axs[0].hist(var.numpy().flatten(), bins=100)
-            axs[0].set_title(f"{var.name} Kernel Distribution")
-            axs[0].set_xlabel("Value")
-            axs[0].set_ylabel("Frequency")
-            axs[1].hist(var.numpy().flatten(), bins=100)
-            axs[1].set_title(f"{var.name} Bias Distribution")
-            axs[1].set_xlabel("Value")
-            axs[1].set_ylabel("Frequency")
-            
-            plt.savefig(f"weight_distribution_conv_{i}.pdf")
-            
-        # Plot the left vars
-        left_vars = [var for var in vars if "conv" not in var.name]
-        
-        # Plot all left_vars
-        for i, var in enumerate(left_vars):
-            fig, ax = plt.subplots(1, 1, figsize=(10, 6))
-            ax.hist(var.numpy().flatten(), bins=100)
-            ax.set_title(f"{var.name} Distribution")
-            ax.set_xlabel("Value")
-            ax.set_ylabel("Frequency")
 
-            plt.savefig(f"weight_distribution_{i}.pdf")
+        # Make a deep copy of the vars
+        self.weight_distributions[self.current_epoch] = copy.deepcopy(vars)
 
+        for var in vars:
+            # Get the var name
+            var_name = var.name
+            layer_name = var_name.split("/")[0]
+            layer_postfix = var_name.split("/")[1].split(":")[0]
+
+            # Get the bins of the min epoch in the weight distribution
+            first_vars = self.weight_distributions[min(self.weight_distributions.keys())]
+            first_var = [v for v in first_vars if var_name == v.name][0]
+            bins = np.linspace(first_var.numpy().min(), first_var.numpy().max(), 100)
+
+            # Load default plot config
+            set_plot_config()
+
+            # Create a figure for the layer that holds all layer variables
+            fig = plt.figure(figsize=(10, 6))
+            ax = fig.add_subplot(111, projection="3d")
+
+            # Variables for stacking bar plots
+            xpos, ypos, zpos = [], [], []
+            dx, dy, dz = [], [], []
+
+            for epoch in self.weight_distributions.keys():
+                # Get the current epoch weights
+                current_vars = self.weight_distributions[epoch]
+
+                # Get the vars weights
+                current_var = [v for v in current_vars if var_name == v.name][0]
+
+                # Get the weights
+                weights = current_var.numpy().flatten()
+
+                # Get the histogram
+                hist, bin_edges = np.histogram(weights, bins=bins)
+
+                # Add to the bar plot data
+                xpos.extend([epoch] * len(hist))
+                ypos.extend(bin_edges[:-1])
+                zpos.extend([0] * len(hist))
+                dx.extend([0.1] * len(hist))  # Adjust the width of the bars
+                dy.extend(bin_edges[1:] - bin_edges[:-1])
+                dz.extend(hist)
+
+            # Create a light source
+            ls = LightSource(azdeg=0, altdeg=65)
+
+            # Plot the stacked bar plots
+            ax.bar3d(xpos, ypos, zpos, dx, dy, dz, shade=True, lightsource=ls, color="xkcd:lightgreen")
+
+            # Set labels
+            ax.set_xlabel("Epoch")
+            ax.set_ylabel("Weight")
+            ax.set_zlabel("Frequency")
+
+            # Ticks
+            ax.set_xticks(list(self.weight_distributions.keys()))
+
+            # Set title
+            ax.set_title(f"Weight Distribution of {layer_name} {layer_postfix}")
+
+            # Change the view angle so we can look at the y-axis
+            ax.view_init(elev=20, azim=25)
+
+            # Create the save dir
+            save_dir = os.path.join(analysis_folder, f"{layer_name}_{layer_postfix}")
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+
+            # Save the plot
+            plt.savefig(os.path.join(save_dir, f"weight_distribution_{layer_name}_{layer_postfix}_{self.current_epoch}.pdf"))
+            plt.close(fig)
+
+        # Log time it took
+        logging.debug(f"Time it took to plot weight histograms: {time.time() - start_time:.2f} seconds")
+
+    def plot_weight_distribution_callback(self):
+        """
+        Plots the weight distribution after 5 epochs
+        """
+        n = 1  # TODO: Change this to a config value
+
+        def plot_every_N_epochs(epoch, logs):
+            if epoch % n == 0:
+                try:
+                    self.plot_weight_distribution()
+                except Exception as e:
+                    logging.error(f"Could not plot weight distribution: {e}")
+
+        return tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_every_N_epochs)
 
 
 class IDOFNet_Reduced(IDOFNet):
