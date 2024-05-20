@@ -231,8 +231,14 @@ if __name__ == "__main__":
 
     # Set up logger with the right verbosity
     verbosity = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(format="[%(asctime)s] %(levelname)s {%(filename)s:%(lineno)d}: %(message)s", datefmt="%m-%d %H:%M:%S", level=verbosity)
+    logging.basicConfig(format="[%(asctime)s] %(levelname)s {%(name)s:%(filename)s:%(lineno)d}: %(message)s", datefmt="%m-%d %H:%M:%S", level=verbosity)
     logging.debug("Verbose output enabled.") if args.verbose else None
+
+    # Disable matplotlib logging
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("matplotlib.pyplot").setLevel(logging.ERROR)
+    logging.getLogger("fontTools").setLevel(logging.ERROR)
+    logging.getLogger("fontTools.subset").setLevel(logging.ERROR)
 
     # Check if the internal coordinate index is valid
     target_ic_index = args.ic_index
