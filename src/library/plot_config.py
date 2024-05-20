@@ -1,17 +1,16 @@
-from re import A
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-
-import matplotlib.font_manager as font_manager
-import logging
 import os
 
-from library.config import config, Keys
+import matplotlib as mpl
+import matplotlib.font_manager as font_manager
+import matplotlib.pyplot as plt
+
+from library.config import Keys, config
 
 SMALL_SIZE = 10
 MEDIUM_SIZE = 12
 BIGGER_SIZE = 14
 THEMES = ["seaborn-pastel"]
+
 
 def load_matplotlib_local_fonts():
     """
@@ -26,15 +25,17 @@ def load_matplotlib_local_fonts():
 
     #  Set it as default matplotlib font
     mpl.rc("font", family="sans-serif")
-    mpl.rcParams.update({
-        "font.sans-serif": prop.get_name(),
-    })
+    mpl.rcParams.update(
+        {
+            "font.sans-serif": prop.get_name(),
+        }
+    )
 
 
 def set_plot_config():
     """
-        This function sets the plot configuration for matplotlib
-        to make the plots uniform and look like proper paper plots.
+    This function sets the plot configuration for matplotlib
+    to make the plots uniform and look like proper paper plots.
     """
 
     # Load local fonts
@@ -42,9 +43,6 @@ def set_plot_config():
 
     # Set the theme
     plt.style.use([theme for theme in plt.style.available if theme in THEMES][0])
-    logging.debug(
-        f"Using theme: {[theme for theme in plt.style.available if theme in THEMES][0]}"
-    )
 
     # Set the font size
     mpl.rcParams.update({"font.size": SMALL_SIZE})  # controls default text sizes
@@ -56,7 +54,7 @@ def set_plot_config():
     mpl.rcParams.update({"legend.fontsize": SMALL_SIZE})  # legend fontsize
     mpl.rcParams.update({"legend.title_fontsize": SMALL_SIZE})
     mpl.rcParams.update({"figure.titlesize": 24})  # fontsize of the figure title
-    mpl.rcParams.update({"figure.titleweight": 'bold'})  # fontsize of the figure title
+    mpl.rcParams.update({"figure.titleweight": "bold"})  # fontsize of the figure title
 
     # Set font style
     mpl.rcParams.update({"pdf.fonttype": 42})
