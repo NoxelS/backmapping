@@ -209,7 +209,7 @@ def scale_output_ic(ic_index: int, value: float) -> float:
     elif ic_type == "angle":
         # Angles are between [90°, 160°] -> [0,1]
         # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
-        return (value - mean) / std
+        return (value - mean) / std / 100
     elif ic_type == "dihedral":
         # Dihedrals are between [50°, 140°] -> [0,1]
         # return (value - np.deg2rad(50)) / (np.deg2rad(140) - np.deg2rad(50))
@@ -236,7 +236,7 @@ def inverse_scale_output_ic(ic_index: int, value: float) -> float:
     elif ic_type == "angle":
         # Angles are between [0,1] -> [90°, 160°]
         # return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)
-        return value * std + mean
+        return 100 * value * std + mean
     elif ic_type == "dihedral":
         # Dihedrals are between [0,1] ->  [50°, 140°]
         # return value * (np.deg2rad(140) - np.deg2rad(50)) + np.deg2rad(50)
