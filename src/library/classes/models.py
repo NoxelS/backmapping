@@ -9,14 +9,10 @@ import numpy as np
 import tensorflow as tf
 from matplotlib.colors import LightSource
 
-from library.classes.generators import (BaseDataGenerator,
-                                        inverse_scale_output_ic,
-                                        scale_output_ic)
+from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -673,8 +669,7 @@ class IDOFNet:
         """
         # Folder to save the analysis to
         analysis_folder = os.path.join(config(Keys.DATA_PATH), "analysis", self.display_name, "weights")
-        if not os.path.exists(analysis_folder):
-            os.makedirs(analysis_folder)
+        os.makedirs(analysis_folder) if not os.path.exists(analysis_folder) else None
 
         # For debugging
         start_time = time.time()
@@ -799,7 +794,7 @@ class IDOFNet_Reduced(IDOFNet):
         mean_scaled = scale_output_ic(self.ic_index, mean)
         std_scaled = scale_output_ic(self.ic_index, std) - scale_output_ic(self.ic_index, 0)
 
-        conv_scale = 4
+        conv_scale = 2
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -863,12 +858,12 @@ class IDOFNet_Reduced(IDOFNet):
                 ##### Output #####
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
-                # tf.keras.layers.Dense(
-                #     100 * np.prod(output_size),
-                #     activation="sigmoid",
-                #     kernel_initializer=tf.keras.initializers.Zeros(),
-                #     # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
-                # ),
+                tf.keras.layers.Dense(
+                    100 * np.prod(output_size),
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                ),
                 tf.keras.layers.Dense(
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
