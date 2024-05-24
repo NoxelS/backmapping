@@ -170,3 +170,7 @@ free_ics=(
 echo "Number of free ics: ${#free_ics[@]}"
 echo "Free ics: ${free_ics[@]}"
 echo ""
+
+# Select 10 random ics
+random_ics=($(shuf -e "${free_ics[@]}" -n 10))
+echo "Random ics: ${random_ics[@]}"
