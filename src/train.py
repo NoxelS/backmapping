@@ -33,8 +33,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import (IDOFAngleNet_Reduced, IDOFNet,
-                                        IDOFNet_Reduced)
+    from library.classes.models import (IDOFAngleNet, IDOFAngleNet_Reduced,
+                                        IDOFNet, IDOFNet_Reduced)
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process
@@ -136,7 +136,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         try:
             try:
                 # Select the right network type based on the configuration
-                networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced, "IDOFAngleNet_Reduced": IDOFAngleNet_Reduced}
+                networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced, "IDOFAngleNet_Reduced": IDOFAngleNet_Reduced, "IDOFAngleNet": IDOFAngleNet}
                 target_network: IDOFNet = networks[config(Keys.NETWORK)]
             except KeyError:
                 raise ValueError(f"Invalid network type: '{config(Keys.NETWORK)}'. Choose one of [{', '.join(networks.keys())}].")

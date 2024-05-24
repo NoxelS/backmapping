@@ -11,11 +11,15 @@ from keras import backend as K
 from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
-from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+from library.classes.generators import (BaseDataGenerator,
+                                        inverse_scale_output_ic,
+                                        scale_output_ic)
 from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -145,7 +149,16 @@ class IDOFNet:
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 4
+        # Get the mean of the std to predict from the extended topology
+        mean = self.ic["mean"]
+        std = self.ic["std"]
+
+        # Scale the mean to the output, this will be the starting point of the model
+        mean_scaled = scale_output_ic(self.ic_index, mean)
+        std_scaled = scale_output_ic(self.ic_index, std) - scale_output_ic(self.ic_index, 0)
+
+        conv_scale = 8
+
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -200,14 +213,6 @@ class IDOFNet:
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
-                # tf.keras.layers.BatchNormalization(),
-                # tf.keras.layers.Conv2D(
-                #     filters=2**9 * 8,
-                #     kernel_size=(1, 4),
-                #     strides=(1, 1),
-                #     padding="valid",
-                #     activation=tf.keras.layers.LeakyReLU(alpha=0.01),
-                # ),
                 tf.keras.layers.BatchNormalization(),
                 tf.keras.layers.MaxPool2D(
                     pool_size=(3, 3),
@@ -218,14 +223,20 @@ class IDOFNet:
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
+                    1024,
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                ),
+                tf.keras.layers.Dense(
                     np.prod(output_size),
-                    activation="sigmoid",
-                    kernel_initializer=tf.keras.initializers.Zeros(),
-                    # kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.1),
+                    activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
+                    # kernel_initializer=tf.keras.initializers.Zeros(),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
-            name=f"{display_name}_IDOFNet_default_v_1_0",
+            name=f"{display_name}_IDOFNet_v_1_0",
         )
 
     def fit(
@@ -787,6 +798,109 @@ class IDOFNet:
                     logging.error(f"Could not plot weight distribution: {e}")
 
         return tf.keras.callbacks.LambdaCallback(on_epoch_end=plot_every_N_epochs)
+
+
+class IDOFAngleNet(IDOFNet):
+
+    def model_factory(self, input_size, output_size, display_name):
+        """
+        This is the model factory for the angle model.
+
+        Args:
+            input_size: The size of the input.
+            output_size: The size of the output.
+            display_name: The name of the model. Used for displaying the model summary and saving checkpoints/logs.
+
+        Returns:
+            tf.keras.Sequential: The model
+        """
+
+        conv_scale = 8
+        return tf.keras.Sequential(
+            [
+                ##### Input layer #####
+                tf.keras.layers.Input(input_size, sparse=False),
+                ##### Encoder #####
+                tf.keras.layers.Conv2D(
+                    filters=2**1 * conv_scale,
+                    kernel_size=(1, 1),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_1",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**2 * conv_scale,
+                    kernel_size=(3, 3),
+                    strides=(1, 1),
+                    padding="same",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_2",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**4 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_3",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**5 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_4",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**6 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_5",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**7 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_6",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**8 * conv_scale,
+                    kernel_size=(3, 5),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_7",
+                ),
+                tf.keras.layers.BatchNormalization(name="batch_norm_1"),
+                tf.keras.layers.MaxPool2D(
+                    pool_size=(3, 3),
+                    padding="same",
+                    name="max_pool",
+                ),
+                tf.keras.layers.BatchNormalization(name="batch_norm_2"),
+                ##### Output #####
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dense(
+                    1024,
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="feature_extraction",
+                ),
+                # PolarAngleLayer(np.prod(output_size), name="polar_angle_layer"),
+                tf.keras.layers.Dense(
+                    np.prod(output_size),
+                    activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
+                ),
+                tf.keras.layers.Reshape(output_size, name="output_reshape"),
+            ],
+            name=f"{display_name}_IDOFAngleNet_v_1_0",
+        )
 
 
 class IDOFNet_Reduced(IDOFNet):
