@@ -15,4 +15,4 @@ from library.analysis.plots import plot_hist_single
 #     plot_cluster_hist(i).savefig(os.path.join(os.path.join(config(Keys.DATA_PATH), "hist"), plot_names[i]), **{"dpi": 300, "bbox_inches": "tight"})
 #     print(f"Saved {plot_names[i]}")
 
-plot_hist_single(93)
+plot_hist_single(94)

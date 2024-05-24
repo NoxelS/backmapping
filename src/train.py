@@ -6,8 +6,11 @@ import socket
 import sys
 import time
 
-from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
-from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
+from library.config import (Keys, config, print_config,
+                            set_hp_config_from_name, validate_config)
+from library.datagen.topology import (get_ic_from_index,
+                                      get_ic_type_from_index, get_max_ic_index,
+                                      ic_to_hlabel)
 from library.static.utils import print_input_matrix
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
@@ -30,7 +33,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import IDOFNet, IDOFNet_Reduced
+    from library.classes.models import (IDOFAngleNet_Reduced, IDOFNet,
+                                        IDOFNet_Reduced)
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process
@@ -68,7 +72,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Define the input and output size of the model, this can be changed via the hyperparameter configuration
     # The input and output size does not include batch_sizes, those will be added on runtime by tf
     INPUT_SIZE = (12, 3 * (1 + config(Keys.NEIGHBORHOOD_SIZE)), 1)  # (cg_beads, 3(1 + N_B), 1)
-    OUTPUT_SIZE = (1, 1, 1)  # ic
+    OUTPUT_SIZE = (1, 1, 1) if get_ic_type_from_index(target_ic_index) == "bond" else (1, 2, 1)
 
     sample_gen = FICDataGenerator(
         input_dir_path=os.path.join(config(Keys.DATA_PATH), "training", "input"),
@@ -132,7 +136,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         try:
             try:
                 # Select the right network type based on the configuration
-                networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced}
+                networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced, "IDOFAngleNet_Reduced": IDOFAngleNet_Reduced}
                 target_network: IDOFNet = networks[config(Keys.NETWORK)]
             except KeyError:
                 raise ValueError(f"Invalid network type: '{config(Keys.NETWORK)}'. Choose one of [{', '.join(networks.keys())}].")

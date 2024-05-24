@@ -133,7 +133,7 @@ def plot_hist_single(ic_index: int):
     fig, ax = plt.subplots()
 
     ic_type = get_ic_type_from_index(ic_index)
-    dim = "Å" if ic_type == "bond" else "°"
+    dim = "Å" if ic_type == "bond" else "a.u."
 
     # Find the file
     target_csv_file = [file for file in os.listdir(PATH_TO_HIST) if f"{ic_index}.csv" in file][0]
@@ -157,8 +157,9 @@ def plot_hist_single(ic_index: int):
     )
 
     # Scale the losses accordingly
-    hist_loss = inverse_scale_output_ic(ic_index, hist_loss) - inverse_scale_output_ic(ic_index, 0)
-    hist_val_loss = inverse_scale_output_ic(ic_index, hist_val_loss) - inverse_scale_output_ic(ic_index, 0)
+    if ic_type == "bond":
+        hist_loss = inverse_scale_output_ic(ic_index, hist_loss) - inverse_scale_output_ic(ic_index, 0)
+        hist_val_loss = inverse_scale_output_ic(ic_index, hist_val_loss) - inverse_scale_output_ic(ic_index, 0)
 
     # There are maybe multiple train cylces so reindex the epochs accordingly
     hist_epoch = np.arange(hist.shape[0])
@@ -183,27 +184,28 @@ def plot_hist_single(ic_index: int):
     min_y = min(min(hist_loss), min(hist_val_loss))
 
     # Add h-line for each lr change
-    for i in lr_pices[1:-1]:
-        ax.axvline(x=i, color=colors[i], linestyle=":", alpha=0.4, linewidth=1.25)
-        ax.text(
-            i - 0.1,
-            max_y - 0.2 * (max_y - min_y),
-            f"lr: {hist_lr[i]:.1e}",
-            rotation=90,
-            verticalalignment="center",
-            horizontalalignment="right",
-            fontsize=12,
-            color="black",
-            fontweight=500,
-            alpha=0.75,
-        )
+    if len(lr_pices) <= 10:
+        for i in lr_pices[1:-1]:
+            ax.axvline(x=i, color=colors[i], linestyle=":", alpha=0.4, linewidth=1.25)
+            ax.text(
+                i - 0.1,
+                max_y - 0.2 * (max_y - min_y),
+                f"lr: {hist_lr[i]:.1e}",
+                rotation=90,
+                verticalalignment="center",
+                horizontalalignment="right",
+                fontsize=12,
+                color="black",
+                fontweight=500,
+                alpha=0.75,
+            )
 
     # Plot minimum loss
     ax.axhline(y=min_loss, color="black", linestyle="-", alpha=0.5, linewidth=0.75)
     ax.text(
         1,
         min_loss,
-        f"Min. Loss: {min_loss:.4f}{dim}",
+        f"Min. Loss: {min_loss:.4f}{dim if ic_type == 'bond' else ''}",
         verticalalignment="top",
         horizontalalignment="left",
         fontsize=10,
@@ -217,7 +219,7 @@ def plot_hist_single(ic_index: int):
     ax.text(
         1,
         min_val_loss,
-        f"Min. Val. Loss: {min_val_loss:.4f}{dim}",
+        f"Min. Val. Loss: {min_val_loss:.4f}{dim if ic_type == 'bond' else ''}",
         verticalalignment="top",
         horizontalalignment="left",
         fontsize=10,
@@ -258,7 +260,7 @@ def plot_hist_single(ic_index: int):
         [],
         [],
         color="black",
-        marker="s",
+        # marker="s",
         linestyle="-",
         label="Training Loss",
         markerfacecolor="white",
@@ -267,7 +269,7 @@ def plot_hist_single(ic_index: int):
         [],
         [],
         color="black",
-        marker="v",
+        # marker="v",
         linestyle="--",
         label="Validation Loss",
         markerfacecolor="white",

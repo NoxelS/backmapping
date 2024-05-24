@@ -122,3 +122,17 @@ def print_input_matrix(matrix, padding=0):
             if (j + 1) == padding or (j + 1) == matrix.shape[2] - padding or (j - padding) % 3 == 2:
                 print("")
         print((matrix.shape[1] * 8 + 8) * "-")
+
+
+def to_significant(value, significant_digits=3):
+    """
+    This function converts a number to a string with a certain number of significant digits.
+
+    Args:
+        value (float): The number to convert.
+        significant_digits (int): The number of significant digits to keep.
+
+    Returns:
+        str: The number as a string with the specified number of significant digits.
+    """
+    return "{:.{}g}".format(value, significant_digits)

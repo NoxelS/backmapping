@@ -7,14 +7,21 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from keras import backend as K
+from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
 from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 from library.plot_config import set_plot_config
+
+# Register custom activation functions for the polar angle layer
+# See https://datascience.stackexchange.com/questions/58884/how-to-create-custom-activation-functions-in-keras-tensorflow
+get_custom_objects().update({"sin": tf.math.sin, "cos": tf.math.cos, "PolarAngleLayer": PolarAngleLayer})
 
 
 class IDOFNet:
@@ -99,6 +106,9 @@ class IDOFNet:
                         "CustomLoss": CustomLoss,
                         "custom_loss": CustomLoss,
                         "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
+                        "PolarAngleLayer": PolarAngleLayer,
+                        "sin": tf.math.sin,
+                        "cos": tf.math.cos,
                     },
                 )
                 logging.info("Loaded model successfully from " + load_path)
@@ -287,7 +297,7 @@ class IDOFNet:
             # Callback to plot the output histogram after each epoch
             self.plot_output_histogram_callback(train_generator),  # Here we can also use validation_gen, depends on what we want to track
             # Callback to plot the weight distribution after each epoch
-            self.plot_weight_distribution_callback(),
+            # self.plot_weight_distribution_callback(),
         ]
 
         if config(Keys.USE_NTFY):
@@ -378,10 +388,10 @@ class IDOFNet:
                 return
 
         # Get scale
-        scaled_mae = inverse_scale_output_ic(self.ic_index, mae) - inverse_scale_output_ic(self.ic_index, 0)
-        dim = "Å" if self.ic_type == "bond" else "°"
-
-        print(f" - pmae: {scaled_mae:.6f}{dim}")
+        if self.ic_type == "bond":
+            scaled_mae = inverse_scale_output_ic(self.ic_index, mae) - inverse_scale_output_ic(self.ic_index, 0)
+            dim = "Å" if self.ic_type == "bond" else "°"
+            print(f" - pmae: {scaled_mae:.6f}{dim}")
 
     def update_internals(self, epoch, logs):
         """
@@ -515,7 +525,10 @@ class IDOFNet:
             raise Exception("No path given to save the model")
 
         # Save the model as whole
-        self.model.save(path, overwrite=True, save_format="h5")
+        try:
+            self.model.save(path, overwrite=True, save_format="h5")
+        except Exception as e:
+            logging.error(f"Could not save model to {path}: {e}")
 
     def summary(self):
         """
@@ -550,21 +563,26 @@ class IDOFNet:
             y_pred = self.model.predict(x)
 
             # Remove dimensionality
-            y_pred = y_pred[:, 0, 0, 0]
-            y_true = y_true[:, 0, 0, 0]
+            y_pred = y_pred[:, 0, :, 0]
+            y_true = y_true[:, 0, :, 0]
 
             # Add to list
             for i in range(len(y_true)):
                 true_ics.append(y_true[i])
                 pred_ics.append(y_pred[i])
 
+        # Reverse apply the scale function
+        true_ics = [inverse_scale_output_ic(self.ic_index, true_ic) for true_ic in true_ics]
+        pred_ics = [inverse_scale_output_ic(self.ic_index, pred_ic) for pred_ic in pred_ics]
+
+        # If the ic is not a bond, convert to degrees
+        if self.ic_type != "bond":
+            true_ics = [np.rad2deg(true_ic) for true_ic in true_ics]
+            pred_ics = [np.rad2deg(pred_ic) for pred_ic in pred_ics]
+
         # To numpy
         true_ics = np.array(true_ics)
         pred_ics = np.array(pred_ics)
-
-        # Reverse apply the scale function
-        true_ics = inverse_scale_output_ic(self.ic_index, true_ics)
-        pred_ics = inverse_scale_output_ic(self.ic_index, pred_ics)
 
         # Calculate mean and std
         true_mean = np.mean(true_ics)
@@ -873,4 +891,107 @@ class IDOFNet_Reduced(IDOFNet):
                 tf.keras.layers.Reshape(output_size),
             ],
             name=f"{display_name}_IDOFNet_reduced_v_1_0",
+        )
+
+
+class IDOFAngleNet_Reduced(IDOFNet):
+
+    def model_factory(self, input_size, output_size, display_name):
+        """
+        This is the model factory for the angle model.
+
+        Args:
+            input_size: The size of the input.
+            output_size: The size of the output.
+            display_name: The name of the model. Used for displaying the model summary and saving checkpoints/logs.
+
+        Returns:
+            tf.keras.Sequential: The model
+        """
+
+        conv_scale = 1
+        return tf.keras.Sequential(
+            [
+                ##### Input layer #####
+                tf.keras.layers.Input(input_size, sparse=False),
+                ##### Encoder #####
+                tf.keras.layers.Conv2D(
+                    filters=2**1 * conv_scale,
+                    kernel_size=(1, 1),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_1",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**2 * conv_scale,
+                    kernel_size=(3, 3),
+                    strides=(1, 1),
+                    padding="same",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_2",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**4 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_3",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**5 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_4",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**6 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_5",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**7 * conv_scale,
+                    kernel_size=(3, 4),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_6",
+                ),
+                tf.keras.layers.Conv2D(
+                    filters=2**8 * conv_scale,
+                    kernel_size=(3, 5),
+                    strides=(1, 1),
+                    padding="valid",
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="conv_7",
+                ),
+                tf.keras.layers.BatchNormalization(name="batch_norm_1"),
+                tf.keras.layers.MaxPool2D(
+                    pool_size=(3, 3),
+                    padding="same",
+                    name="max_pool",
+                ),
+                tf.keras.layers.BatchNormalization(name="batch_norm_2"),
+                ##### Output #####
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dense(
+                    50 * np.prod(output_size),
+                    activation=tf.keras.layers.LeakyReLU(alpha=0.03),
+                    name="feature_extraction",
+                ),
+                # PolarAngleLayer(np.prod(output_size), name="polar_angle_layer"),
+                tf.keras.layers.Dense(
+                    np.prod(output_size),
+                    activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
+                ),
+                tf.keras.layers.Reshape(output_size, name="output_reshape"),
+            ],
+            name=f"{display_name}_IDOFAngleNet_reduced_v_1_0",
         )

@@ -6,6 +6,7 @@ import pickle
 import random
 import sys
 from ctypes import Structure
+from typing import Union
 
 import numpy as np
 import tensorflow as tf
@@ -192,7 +193,7 @@ def get_size(obj, seen=None):
     return size
 
 
-def scale_output_ic(ic_index: int, value: float) -> float:
+def scale_output_ic(ic_index: int, value: float) -> Union[float, tuple]:
     """
     Scales the output internal coordinate value based on the internal coordinate index.
     """
@@ -209,18 +210,18 @@ def scale_output_ic(ic_index: int, value: float) -> float:
     elif ic_type == "angle":
         # Angles are between [90°, 160°] -> [0,1]
         # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
-        return (value - mean) / std / 100
+        return [np.cos(value), np.sin(value)]
     elif ic_type == "dihedral":
         # Dihedrals are between [50°, 140°] -> [0,1]
         # return (value - np.deg2rad(50)) / (np.deg2rad(140) - np.deg2rad(50))
         # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
-        return (value - mean) / std
+        return [np.cos(value), np.sin(value)]
 
     else:
         raise Exception(f"Internal coordinate type {ic_type} not supported!")
 
 
-def inverse_scale_output_ic(ic_index: int, value: float) -> float:
+def inverse_scale_output_ic(ic_index: int, value: Union[float, tuple]) -> float:
     """
     Inversely scales the output internal coordinate value based on the internal coordinate index.
     """
@@ -234,13 +235,11 @@ def inverse_scale_output_ic(ic_index: int, value: float) -> float:
         # Inverse normalization
         return 100 * value * std + mean
     elif ic_type == "angle":
-        # Angles are between [0,1] -> [90°, 160°]
-        # return value * (np.deg2rad(160) - np.deg2rad(90)) + np.deg2rad(90)
-        return 100 * value * std + mean
+        # Angles are [cos(phi), sin(phi)]
+        return np.arctan2(value[1], value[0])
     elif ic_type == "dihedral":
-        # Dihedrals are between [0,1] ->  [50°, 140°]
-        # return value * (np.deg2rad(140) - np.deg2rad(50)) + np.deg2rad(50)
-        return value * std + mean
+        # Angles are [cos(phi), sin(phi)]
+        return np.arctan2(value[1], value[0])
     else:
         raise Exception(f"Internal coordinate type {ic_type} not supported!")
 
@@ -549,12 +548,15 @@ class FICDataGenerator(BaseDataGenerator):
                 # Add the neighbour to the input
                 X[i, :, 3 * (1 + j) : 3 * (2 + j), 0] = neighbor_X
 
+            # Scale the input via an exponential function
+            X[i, :, :, 0] = np.exp(X[i, :, :, 0]) / 2
+
             # Get the internal coordinate
             output_ic_value = self.__get_ic_from_cartesians(at_structure, self.ic_index, at_box_size)
             scaled_output_ic_value = scale_output_ic(self.ic_index, output_ic_value)
 
             # Write the internal coordinate to the output matrix
-            Y[i, 0, 0, 0] = scaled_output_ic_value
+            Y[i, 0, :, 0] = scaled_output_ic_value
 
         # Convert to tensor
         X = tf.convert_to_tensor(X, dtype=tf.float32)
