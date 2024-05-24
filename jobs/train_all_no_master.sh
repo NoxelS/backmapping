@@ -322,13 +322,16 @@ dihedral_ics=($(shuf -e "${dihedral_ics[@]}" -n 5))
 mkdir -p ./jobs/logs/$SLURM_JOBID
 
 for ic in "${bond_ics[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_bond"
+do
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=IDOF-$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_bond"
 done
 
 for ic in "${angle_ics[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_angle"
+do
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=IDOF-$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_angle"
 done
 
 for ic in "${dihedral_ics[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_angle"
+do
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=IDOF-$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/$ic.log --error=./jobs/logs/$SLURM_JOBID/$ic.err --wrap="jobs/train_single.sh $ic smaug_angle"
 done
