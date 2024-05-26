@@ -15,6 +15,7 @@ from library.static.utils import print_input_matrix
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
+os.environ["SM_FRAMEWORK"] = "tf.keras"
 
 def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address: str = "localhost", dry_run=False) -> None:
     """
@@ -158,6 +159,12 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 port=PORT if use_socket else None,
                 ic_index=target_ic_index,
             )
+            
+            # Immediately plot the output histogram
+            try:
+                net.plot_output_histogram(train_gen)
+            except Exception as e:
+                logging.error(f"Could not plot output histogram: {e}")
 
             # Abort if we are in dry run mode
             if dry_run:

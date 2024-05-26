@@ -7,14 +7,13 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
-from keras.utils import get_custom_objects
+# from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
 from library.classes.generators import (BaseDataGenerator,
                                         inverse_scale_output_ic,
                                         scale_output_ic)
-from library.classes.layers import PolarAngleLayer
+# from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
 from library.datagen.topology import (get_ic_from_index, get_ic_type,
@@ -25,7 +24,7 @@ from library.plot_config import set_plot_config
 
 # Register custom activation functions for the polar angle layer
 # See https://datascience.stackexchange.com/questions/58884/how-to-create-custom-activation-functions-in-keras-tensorflow
-get_custom_objects().update({"sin": tf.math.sin, "cos": tf.math.cos, "PolarAngleLayer": PolarAngleLayer})
+# get_custom_objects().update({"sin": tf.math.sin, "cos": tf.math.cos, "PolarAngleLayer": PolarAngleLayer})
 
 
 class IDOFNet:
@@ -110,7 +109,7 @@ class IDOFNet:
                         "CustomLoss": CustomLoss,
                         "custom_loss": CustomLoss,
                         "LeakyReLU": tf.keras.layers.LeakyReLU(alpha=0.01),
-                        "PolarAngleLayer": PolarAngleLayer,
+                        # "PolarAngleLayer": PolarAngleLayer,
                         "sin": tf.math.sin,
                         "cos": tf.math.cos,
                     },
