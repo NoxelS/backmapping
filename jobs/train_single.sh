@@ -19,8 +19,8 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 WITH CONFIG $2 ###########################"
 
-python src/train.py -v --dry-run --config $2 $1
+python src/train.py -v --config $2 $1
 
 echo "####################### POST ANALYSIS ###########################"
 date
-echo "Finished!"
+echo "Finished!"6
