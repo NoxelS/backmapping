@@ -548,9 +548,6 @@ class FICDataGenerator(BaseDataGenerator):
                 # Add the neighbour to the input
                 X[i, :, 3 * (1 + j) : 3 * (2 + j), 0] = neighbor_X
 
-            # Scale the input via an exponential function
-            X[i, :, :, 0] = np.exp(X[i, :, :, 0]) / 2
-
             # Get the internal coordinate
             output_ic_value = self.__get_ic_from_cartesians(at_structure, self.ic_index, at_box_size)
             scaled_output_ic_value = scale_output_ic(self.ic_index, output_ic_value)
@@ -742,7 +739,7 @@ class FICDataGenerator(BaseDataGenerator):
             vectors_X = X[i, :, :, 0]
 
             # Randomly rotate the dataset
-            max_angle = np.pi
+            max_angle = np.deg2rad(15) # Only rotate +-15 degrees
 
             angle_x = random.uniform(-max_angle, max_angle)
             angle_y = random.uniform(-max_angle, max_angle)
