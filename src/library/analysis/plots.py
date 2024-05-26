@@ -1,20 +1,7 @@
-import logging
 import os
-import pickle
-import socket
-import sys
-import time
-from operator import inv
-from re import T
-from tkinter import font
-from turtle import color
 
-import ffmpeg
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ft2font import LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH
-from pyparsing import line
-from xarray import align
 
 from library.classes.generators import inverse_scale_output_ic
 from library.config import Keys, config
@@ -300,4 +287,4 @@ def plot_hist_single(ic_index: int):
     title = f"Training History for {ic_type.capitalize()} {'Angle ' if ic_type == 'dihedral' else ''}{ic_to_hlabel(get_ic_from_index(ic_index))}"
     ax.set_title(title)
 
-    fig.savefig("test.pdf")
+    fig.savefig(f"hist_{ic_index}.pdf")

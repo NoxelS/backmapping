@@ -1,18 +1,15 @@
 from library.analysis.plots import plot_hist_single
 
-# plot_names = [
-#     "",
-#     "training_loss.pdf",
-#     "training_mse.pdf",
-#     "training_lr.pdf",
-#     "training_mae.pdf",
-#     "training_val_acc.pdf",
-#     "training_val_loss.pdf",
-#     "training_val_mae.pdf",
-# ]
+import os
+from library.config import config, Keys 
 
-# for i in range(1, 7):
-#     plot_cluster_hist(i).savefig(os.path.join(os.path.join(config(Keys.DATA_PATH), "hist"), plot_names[i]), **{"dpi": 300, "bbox_inches": "tight"})
-#     print(f"Saved {plot_names[i]}")
+# Find all hist files
+hist_files = [file for file in os.listdir(os.path.join(config(Keys.DATA_PATH), "hist")) if ".csv" in file]
+indices = [int(file.split("_")[-1].split(".")[0]) for file in hist_files]
 
-plot_hist_single(94)
+for index in indices:
+    try:
+        plot_hist_single(index)
+    except Exception as e:
+        print(f"Could not plot for index {index}")
+        print(e)

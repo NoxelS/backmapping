@@ -9,7 +9,7 @@ from library.config import Keys, config
 SMALL_SIZE = 10
 MEDIUM_SIZE = 12
 BIGGER_SIZE = 14
-THEMES = ["seaborn-pastel"]
+THEMES = ["seaborn-pastel", "seaborn-v0_8-pastel"]
 
 
 def load_matplotlib_local_fonts():
@@ -18,7 +18,7 @@ def load_matplotlib_local_fonts():
     Taken from: https://stackoverflow.com/a/69016300/315168
     """
 
-    font_path = os.path.join(config(Keys.DATA_PATH), "static", "fonts", "Arial.ttf")
+    font_path = os.path.join("data", "static", "fonts", "Arial.ttf")
     assert os.path.exists(font_path)
     font_manager.fontManager.addfont(font_path)
     prop = font_manager.FontProperties(fname=font_path)
@@ -42,7 +42,10 @@ def set_plot_config():
     load_matplotlib_local_fonts()
 
     # Set the theme
-    plt.style.use([theme for theme in plt.style.available if theme in THEMES][0])
+    try:
+        plt.style.use([theme for theme in plt.style.available if theme in THEMES][0])
+    except IndexError:
+        print("No theme found in the available themes. Using default theme.")
 
     # Set the font size
     mpl.rcParams.update({"font.size": SMALL_SIZE})  # controls default text sizes
