@@ -12,11 +12,13 @@ from library.datagen.topology import (get_ic_from_index,
                                       get_ic_type_from_index, get_max_ic_index,
                                       ic_to_hlabel)
 from library.static.utils import print_input_matrix
+from library.handlers import error_handled
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
 
+@error_handled()
 def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address: str = "localhost", dry_run=False) -> None:
     """
     Trains a model for the given internal coordinate index.
@@ -135,6 +137,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     with strategy.scope():
 
         try:
+            # TODO: Make a static factory function in the IDOFNet class that selects the right network based on the configuration so
+            #       the type of network does not have to be selected manually here.
             try:
                 # Select the right network type based on the configuration
                 networks = {"IDOFNet": IDOFNet, "IDOFNet_Reduced": IDOFNet_Reduced, "IDOFAngleNet_Reduced": IDOFAngleNet_Reduced, "IDOFAngleNet": IDOFAngleNet}
