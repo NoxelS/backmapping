@@ -335,7 +335,7 @@ if __name__ == "__main__":
         try:
             os.makedirs(os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{args.ic_index}"), exist_ok=True)
             shutil.copyfile(
-                os.path.join(config(Keys.DATA_PATH), "configs", f"{args.config}.ini"),
+                os.path.join("data", "configs", f"{args.config}.ini"),
                 os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{args.ic_index}", f"{args.config}.ini"),
             )
         except Exception as e:
