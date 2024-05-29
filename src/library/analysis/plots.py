@@ -114,19 +114,22 @@ def plot_cluster_hist(data_col=2):
     return fig
 
 
-def plot_hist_single(ic_index: int):
+def plot_hist_single(file: str):
     # Load plot config
     set_plot_config()
     fig, ax = plt.subplots()
 
+    # Load csv
+    hist = np.loadtxt(os.path.join(config(Keys.DATA_PATH), "hist", file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
+
+    # Model name and ic index from file name
+    model_name = file.replace("training_history_", "").replace(".csv", "")
+    print(model_name[::-1].split("_", 1)[0][::-1])
+    ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
+    config_name = model_name[::-1].split("_", 1)[1][::-1]
+
     ic_type = get_ic_type_from_index(ic_index)
     dim = "Å" if ic_type == "bond" else "a.u."
-
-    # Find the file
-    target_csv_file = [file for file in os.listdir(PATH_TO_HIST) if f"{ic_index}.csv" in file][0]
-
-    # Load csv
-    hist = np.loadtxt(os.path.join(PATH_TO_HIST, target_csv_file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
 
     # If only one row, add dimension
     if len(hist.shape) == 1:
@@ -284,7 +287,7 @@ def plot_hist_single(ic_index: int):
 
     # ax.set_xticks(np.arange(len(hist_epoch)))
 
-    title = f"Training History for {ic_type.capitalize()} {'Angle ' if ic_type == 'dihedral' else ''}{ic_to_hlabel(get_ic_from_index(ic_index))}"
+    title = f"Training History for {ic_type.capitalize()} {'Angle ' if ic_type == 'dihedral' else ''}{ic_to_hlabel(get_ic_from_index(ic_index))} ({config_name})"
     ax.set_title(title)
 
-    fig.savefig(f"hist_{ic_index}.pdf")
+    fig.savefig(f"hist_{model_name}.pdf")

@@ -202,3 +202,6 @@ config.ini
 .Trash-1000/*
 **/.Trash-1000/
 **/.Trash-1000/*
+
+data/analysis/*
+!data/analysis/readme.md

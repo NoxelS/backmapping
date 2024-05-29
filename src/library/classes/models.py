@@ -7,18 +7,16 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+
 # from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
-from library.classes.generators import (BaseDataGenerator,
-                                        inverse_scale_output_ic,
-                                        scale_output_ic)
+from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+
 # from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -156,7 +154,7 @@ class IDOFNet:
         mean_scaled = scale_output_ic(self.ic_index, mean)
         std_scaled = scale_output_ic(self.ic_index, std) - scale_output_ic(self.ic_index, 0)
 
-        conv_scale = 8
+        filters_scale = config(Keys.FILTERS_SCALE)
 
         return tf.keras.Sequential(
             [
@@ -164,49 +162,49 @@ class IDOFNet:
                 tf.keras.layers.Input(input_size, sparse=False),
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
-                    filters=2**1 * conv_scale,
+                    filters=2**1 * filters_scale,
                     kernel_size=(1, 1),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**2 * conv_scale,
+                    filters=2**2 * filters_scale,
                     kernel_size=(3, 3),
                     strides=(1, 1),
                     padding="same",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**4 * conv_scale,
+                    filters=2**4 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**5 * conv_scale,
+                    filters=2**5 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**6 * conv_scale,
+                    filters=2**6 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**7 * conv_scale,
+                    filters=2**7 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**8 * conv_scale,
+                    filters=2**8 * filters_scale,
                     kernel_size=(3, 5),
                     strides=(1, 1),
                     padding="valid",
@@ -814,14 +812,14 @@ class IDOFAngleNet(IDOFNet):
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 8
+        filters_scale = config(Keys.FILTERS_SCALE)
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
-                    filters=2**1 * conv_scale,
+                    filters=2**1 * filters_scale,
                     kernel_size=(1, 1),
                     strides=(1, 1),
                     padding="valid",
@@ -829,7 +827,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_1",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**2 * conv_scale,
+                    filters=2**2 * filters_scale,
                     kernel_size=(3, 3),
                     strides=(1, 1),
                     padding="same",
@@ -837,7 +835,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_2",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**4 * conv_scale,
+                    filters=2**4 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -845,7 +843,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_3",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**5 * conv_scale,
+                    filters=2**5 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -853,7 +851,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_4",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**6 * conv_scale,
+                    filters=2**6 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -861,7 +859,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_5",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**7 * conv_scale,
+                    filters=2**7 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -869,7 +867,7 @@ class IDOFAngleNet(IDOFNet):
                     name="conv_6",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**8 * conv_scale,
+                    filters=2**8 * filters_scale,
                     kernel_size=(3, 5),
                     strides=(1, 1),
                     padding="valid",
@@ -925,56 +923,56 @@ class IDOFNet_Reduced(IDOFNet):
         mean_scaled = scale_output_ic(self.ic_index, mean)
         std_scaled = scale_output_ic(self.ic_index, std) - scale_output_ic(self.ic_index, 0)
 
-        conv_scale = 2
+        filters_scale = config(Keys.FILTERS_SCALE)
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
-                    filters=2**1 * conv_scale,
+                    filters=2**1 * filters_scale,
                     kernel_size=(1, 1),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**2 * conv_scale,
+                    filters=2**2 * filters_scale,
                     kernel_size=(3, 3),
                     strides=(1, 1),
                     padding="same",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**4 * conv_scale,
+                    filters=2**4 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**5 * conv_scale,
+                    filters=2**5 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**6 * conv_scale,
+                    filters=2**6 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**7 * conv_scale,
+                    filters=2**7 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**8 * conv_scale,
+                    filters=2**8 * filters_scale,
                     kernel_size=(3, 5),
                     strides=(1, 1),
                     padding="valid",
@@ -1022,14 +1020,14 @@ class IDOFAngleNet_Reduced(IDOFNet):
             tf.keras.Sequential: The model
         """
 
-        conv_scale = 1
+        filters_scale = config(Keys.FILTERS_SCALE)
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
                 tf.keras.layers.Input(input_size, sparse=False),
                 ##### Encoder #####
                 tf.keras.layers.Conv2D(
-                    filters=2**1 * conv_scale,
+                    filters=2**1 * filters_scale,
                     kernel_size=(1, 1),
                     strides=(1, 1),
                     padding="valid",
@@ -1037,7 +1035,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_1",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**2 * conv_scale,
+                    filters=2**2 * filters_scale,
                     kernel_size=(3, 3),
                     strides=(1, 1),
                     padding="same",
@@ -1045,7 +1043,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_2",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**4 * conv_scale,
+                    filters=2**4 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -1053,7 +1051,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_3",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**5 * conv_scale,
+                    filters=2**5 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -1061,7 +1059,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_4",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**6 * conv_scale,
+                    filters=2**6 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -1069,7 +1067,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_5",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**7 * conv_scale,
+                    filters=2**7 * filters_scale,
                     kernel_size=(3, 4),
                     strides=(1, 1),
                     padding="valid",
@@ -1077,7 +1075,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                     name="conv_6",
                 ),
                 tf.keras.layers.Conv2D(
-                    filters=2**8 * conv_scale,
+                    filters=2**8 * filters_scale,
                     kernel_size=(3, 5),
                     strides=(1, 1),
                     padding="valid",

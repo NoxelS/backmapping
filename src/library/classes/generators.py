@@ -13,7 +13,9 @@ import tensorflow as tf
 from Bio.PDB.PDBParser import PDBParser
 
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.static.utils import print_input_matrix, print_matrix
 
 # Read datapaths from config
@@ -739,7 +741,7 @@ class FICDataGenerator(BaseDataGenerator):
             vectors_X = X[i, :, :, 0]
 
             # Randomly rotate the dataset
-            max_angle = np.deg2rad(15) # Only rotate +-15 degrees
+            max_angle = np.deg2rad(config(Keys.MAX_AUGMENTATION_ANGLE)) # Rotate +- angle degrees
 
             angle_x = random.uniform(-max_angle, max_angle)
             angle_y = random.uniform(-max_angle, max_angle)

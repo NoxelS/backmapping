@@ -6,17 +6,15 @@ import socket
 import sys
 import time
 
-from library.config import (Keys, config, print_config,
-                            set_hp_config_from_name, validate_config)
-from library.datagen.topology import (get_ic_from_index,
-                                      get_ic_type_from_index, get_max_ic_index,
-                                      ic_to_hlabel)
-from library.static.utils import print_input_matrix
+from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
+from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
 from library.handlers import error_handled
+from library.static.utils import print_input_matrix
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
 os.environ["SM_FRAMEWORK"] = "tf.keras"
+
 
 @error_handled()
 def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address: str = "localhost", dry_run=False) -> None:
@@ -36,8 +34,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import (IDOFAngleNet, IDOFAngleNet_Reduced,
-                                        IDOFNet, IDOFNet_Reduced)
+    from library.classes.models import IDOFAngleNet, IDOFAngleNet_Reduced, IDOFNet, IDOFNet_Reduced
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process
@@ -163,7 +160,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 port=PORT if use_socket else None,
                 ic_index=target_ic_index,
             )
-            
+
             # Immediately plot the output histogram
             try:
                 net.plot_output_histogram(train_gen)
@@ -332,6 +329,17 @@ if __name__ == "__main__":
     logging.info(
         f"Using hyperparameter configuration '{config(Keys.HP_NAME)}' (v{config(Keys.HP_VERSION)}, {config(Keys.HP_AUTHOR)}): {config(Keys.HP_DESCRIPTION)} {config(Keys.HP_NOTES)}"
     )
+
+    # Make a copy of the hyperparameter configuration into the analysis folder
+    if not args.dry_run:
+        try:
+            os.makedirs(os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{args.ic_index}"), exist_ok=True)
+            shutil.copyfile(
+                os.path.join(config(Keys.DATA_PATH), "configs", f"{args.config}.ini"),
+                os.path.join(config(Keys.DATA_PATH), "analysis", f"{config(Keys.MODEL_NAME_PREFIX)}_{args.ic_index}", f"{args.config}.ini"),
+            )
+        except Exception as e:
+            logging.error(f"Could not copy hyperparameter configuration: {e}")
 
     # Run the script
     train_model(args.ic_index, use_socket=bool(args.host), host_ip_address=args.host, dry_run=args.dry_run)

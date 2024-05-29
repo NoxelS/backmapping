@@ -1,15 +1,14 @@
-from library.analysis.plots import plot_hist_single
-
 import os
-from library.config import config, Keys 
+
+from library.analysis.plots import plot_hist_single
+from library.config import Keys, config
 
 # Find all hist files
 hist_files = [file for file in os.listdir(os.path.join(config(Keys.DATA_PATH), "hist")) if ".csv" in file]
-indices = [int(file.split("_")[-1].split(".")[0]) for file in hist_files]
 
-for index in indices:
+for file in hist_files:
     try:
-        plot_hist_single(index)
+        plot_hist_single(file)
     except Exception as e:
-        print(f"Could not plot for index {index}")
+        print(f"Could not plot for index {file}")
         print(e)
