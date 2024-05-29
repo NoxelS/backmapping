@@ -26,7 +26,8 @@ echo "####################### CODE ###########################"
 mkdir -p ./jobs/logs/capacity_run_$SLURM_JOBID
 
 # Loop from 1- 9
-for i in {1..9}
+# for i in {1..9}
+for i in {10..12}
 do
     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=cap$i --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/capacity_run_$SLURM_JOBID/$i.log --error=./jobs/logs/capacity_run_$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 test_94_$i"
 done
