@@ -13,9 +13,7 @@ import tensorflow as tf
 from Bio.PDB.PDBParser import PDBParser
 
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.static.utils import print_input_matrix, print_matrix
 
 # Read datapaths from config
@@ -552,7 +550,7 @@ class FICDataGenerator(BaseDataGenerator):
 
                         # Scale the vector
                         vec = vec * np.exp(np.linalg.norm(vec))
-                        print(f"{np.linalg.norm(X[i, j, k * 3 : k * 3 + 3]):4f}", f"{np.exp(np.linalg.norm(vec)):4f}", f"{np.linalg.norm(vec):4f}")
+
                         # Write the vector back
                         X[i, j, k * 3 : k * 3 + 3] = vec
 

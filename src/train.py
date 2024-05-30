@@ -6,8 +6,11 @@ import socket
 import sys
 import time
 
-from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
-from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
+from library.config import (Keys, config, print_config,
+                            set_hp_config_from_name, validate_config)
+from library.datagen.topology import (get_ic_from_index,
+                                      get_ic_type_from_index, get_max_ic_index,
+                                      ic_to_hlabel)
 from library.handlers import error_handled
 from library.static.utils import print_input_matrix
 
@@ -34,7 +37,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import IDOFAngleNet, IDOFAngleNet_Reduced, IDOFNet, IDOFNet_Reduced
+    from library.classes.models import (IDOFAngleNet, IDOFAngleNet_Reduced,
+                                        IDOFNet, IDOFNet_Reduced)
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process
@@ -160,8 +164,6 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 port=PORT if use_socket else None,
                 ic_index=target_ic_index,
             )
-
-            print_input_matrix(sample_gen.__getitem__(0)[0])
 
             # Abort if we are in dry run mode
             if dry_run:
