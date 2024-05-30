@@ -161,16 +161,17 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 ic_index=target_ic_index,
             )
 
-            # Immediately plot the output histogram
-            try:
-                net.plot_output_histogram(train_gen)
-            except Exception as e:
-                logging.error(f"Could not plot output histogram: {e}")
+            print_input_matrix(sample_gen.__getitem__(0)[0])
 
             # Abort if we are in dry run mode
             if dry_run:
                 logging.critical("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
                 return
+            # Immediately plot the output histogram
+            try:
+                net.plot_output_histogram(train_gen)
+            except Exception as e:
+                logging.error(f"Could not plot output histogram: {e}")
 
             # Train the model
             try:

@@ -487,15 +487,7 @@ class FICDataGenerator(BaseDataGenerator):
             validation_mode,
             augmentation,
             data_usage,
-            cache_name="ICG_cache_"
-            + ("validation" if validation_mode else "training")
-            + "_"
-            + str(ic_index)
-            + "_"
-            + ic_to_hlabel(get_ic_from_index(ic_index))
-            + "_"
-            + str(batch_size)
-            + "",
+            cache_name="ICG_cache_" + ("validation" if validation_mode else "training") + "_" + str(config(Keys.MODEL_NAME_PREFIX)) + "_" + str(ic_index),
             use_cache=use_cache,
         )
 
@@ -549,6 +541,20 @@ class FICDataGenerator(BaseDataGenerator):
 
                 # Add the neighbour to the input
                 X[i, :, 3 * (1 + j) : 3 * (2 + j), 0] = neighbor_X
+
+            # If the relative distance scale is used, the input is scaled relative to its distance to the origin
+            if config(Keys.USE_RELATIVE_DISTANCE_SCALE):
+                # Loop over all vectors
+                for j in range(12):
+                    for k in range(int(X.shape[1] / 3)):
+                        # Get the vectors
+                        vec = X[i, j, k * 3 : k * 3 + 3]
+
+                        # Scale the vector
+                        vec = vec * np.exp(np.linalg.norm(vec))
+                        print(f"{np.linalg.norm(X[i, j, k * 3 : k * 3 + 3]):4f}", f"{np.exp(np.linalg.norm(vec)):4f}", f"{np.linalg.norm(vec):4f}")
+                        # Write the vector back
+                        X[i, j, k * 3 : k * 3 + 3] = vec
 
             # Get the internal coordinate
             output_ic_value = self.__get_ic_from_cartesians(at_structure, self.ic_index, at_box_size)
@@ -741,7 +747,7 @@ class FICDataGenerator(BaseDataGenerator):
             vectors_X = X[i, :, :, 0]
 
             # Randomly rotate the dataset
-            max_angle = np.deg2rad(config(Keys.MAX_AUGMENTATION_ANGLE)) # Rotate +- angle degrees
+            max_angle = np.deg2rad(config(Keys.MAX_AUGMENTATION_ANGLE))  # Rotate +- angle degrees
 
             angle_x = random.uniform(-max_angle, max_angle)
             angle_y = random.uniform(-max_angle, max_angle)
