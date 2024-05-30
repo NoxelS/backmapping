@@ -124,7 +124,7 @@ def plot_hist_single(file: str):
 
     # Model name and ic index from file name
     model_name = file.replace("training_history_", "").replace(".csv", "")
-    print(model_name[::-1].split("_", 1)[0][::-1])
+
     ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
     config_name = model_name[::-1].split("_", 1)[1][::-1]
 
