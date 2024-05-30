@@ -6,8 +6,11 @@ import socket
 import sys
 import time
 
-from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
-from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
+from library.config import (Keys, config, print_config,
+                            set_hp_config_from_name, validate_config)
+from library.datagen.topology import (get_ic_from_index,
+                                      get_ic_type_from_index, get_max_ic_index,
+                                      ic_to_hlabel)
 from library.handlers import error_handled
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
@@ -33,7 +36,8 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import IDOFAngleNet, IDOFAngleNet_Reduced, IDOFNet, IDOFNet_Reduced
+    from library.classes.models import (IDOFAngleNet, IDOFAngleNet_Reduced,
+                                        IDOFNet, IDOFNet_Reduced)
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process
@@ -306,7 +310,7 @@ if __name__ == "__main__":
     # Note: This removed all caches that contain the target ic index because the cache files
     # do not depend on the model structure or hyperparameters.
     if args.purge_gen_caches:
-        cache_files = [_ for _ in os.listdir(os.path.join(config(Keys.DATA_PATH), "cache")) if f"_{target_ic_index}_" in _]
+        cache_files = [_ for _ in os.listdir(os.path.join(config(Keys.DATA_PATH), "cache")) if f"_{target_ic_index}_" in _ and f"_{config(Keys.MODEL_NAME_PREFIX)}_" in _]
 
         if args.dry_run:
             logging.debug("Would clean up data generator caches:" + str(cache_files))
