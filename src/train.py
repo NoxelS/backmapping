@@ -5,6 +5,7 @@ import shutil
 import socket
 import sys
 import time
+import traceback
 
 from library.config import (Keys, config, print_config,
                             set_hp_config_from_name, validate_config)
@@ -181,15 +182,17 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
                 )
             except Exception as e:
                 logging.error(f"Could not train model: {e}")
-
+                raise e
             # Save the model
             try:
                 net.save()
             except Exception as e:
+                logging.error(traceback.format_exc())
                 logging.error(f"Could not save model: {e}")
 
         except Exception as e:
             logging.error(f"Could not create model: {e}")
+            print(traceback.format_exc())
             raise e
 
     # Send finished signal
