@@ -115,8 +115,6 @@ def generate_output_structure(extended_topology: ExtendedTopologyInfo = None):
             )
             nr += 1
 
-    print(get_max_ic_index())
-
 
 def get_max_ic_index() -> int:
     """

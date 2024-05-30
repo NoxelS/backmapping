@@ -566,7 +566,7 @@ class FICDataGenerator(BaseDataGenerator):
         Y = tf.convert_to_tensor(Y, dtype=tf.float32)
 
         # Check if values that are not in [-1, 1] or [0, 1] exist
-        if not is_output_matrix_healthy(Y, [-1, 1]) or not is_output_matrix_healthy(X):
+        if not is_output_matrix_healthy(Y, [-1, 1]) or not is_output_matrix_healthy(X, [-100, 100]):
             if not is_output_matrix_healthy(Y, [-1, 1]):
                 # Find batch that is not healthy
                 for i in range(Y.shape[0]):
