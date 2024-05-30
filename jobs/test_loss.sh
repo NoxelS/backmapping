@@ -22,11 +22,11 @@ echo ""
 date
 echo "####################### CODE ###########################"
 
-testname = "loss_test_run_"
-testname_short = "loss_"
+testname="loss_test_run_"
+testname_short="loss_"
 
 # Make folder to store logs
-mkdir -p ./jobs/logs/$testname$SLURM_JOBID
+mkdir -p ./jobs/logs/${testname}${SLURM_JOBID}
 
-sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=$testname_short$i --gres=gpu:1 --mem-per-gpu=6G --nodes=1 --output=./jobs/logs/$testname$SLURM_JOBID/$i.log --error=./jobs/logs/$testname$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 test_94_mae"
-sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=$testname_short$i --gres=gpu:1 --mem-per-gpu=6G --nodes=1 --output=./jobs/logs/$testname$SLURM_JOBID/$i.log --error=./jobs/logs/$testname$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 test_94_mse"
+sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=${testname_short}mae --gres=gpu:1 --mem-per-gpu=6G --nodes=1 --output=./jobs/logs/${testname}${SLURM_JOBID}/mae.log --error=./jobs/logs/${testname}${SLURM_JOBID}/mae.err --wrap="jobs/train_single.sh 94 test_94_mae"
+sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=${testname_short}mse --gres=gpu:1 --mem-per-gpu=6G --nodes=1 --output=./jobs/logs/${testname}${SLURM_JOBID}/mse.log --error=./jobs/logs/${testname}${SLURM_JOBID}/mse.err --wrap="jobs/train_single.sh 94 test_94_mse"
