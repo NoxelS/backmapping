@@ -24,7 +24,7 @@ echo "####################### CODE ###########################"
 
 testname="batch_size_run_"
 testname_short="bs_"
-config_name="ns_test_94_"
+config_name="bs_test_94_"
 
 # Make folder to store logs
 mkdir -p ./jobs/logs/${testname}${SLURM_JOBID}
