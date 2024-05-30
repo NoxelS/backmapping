@@ -741,7 +741,7 @@ class FICDataGenerator(BaseDataGenerator):
         X = X.numpy()
 
         # Augment the data by randomly rotating the dataset
-        for i in range(self.batch_size):
+        for i in range(X.shape[0]):
             vectors_X = X[i, :, :, 0]
 
             # Randomly rotate the dataset
