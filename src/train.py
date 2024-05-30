@@ -12,7 +12,6 @@ from library.datagen.topology import (get_ic_from_index,
                                       get_ic_type_from_index, get_max_ic_index,
                                       ic_to_hlabel)
 from library.handlers import error_handled
-from library.static.utils import print_input_matrix
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
@@ -169,6 +168,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
             if dry_run:
                 logging.critical("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
                 return
+
             # Immediately plot the output histogram
             try:
                 net.plot_output_histogram(train_gen)
