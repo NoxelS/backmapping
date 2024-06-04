@@ -5,7 +5,6 @@ import socket
 import sys
 from email.message import EmailMessage
 
-from library.analysis.plots import plot_cluster_hist
 from library.config import Keys, config
 
 ##### CONFIGURATION #####
