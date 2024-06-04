@@ -7,11 +7,8 @@ import sys
 import time
 import traceback
 
-from library.config import (Keys, config, print_config,
-                            set_hp_config_from_name, validate_config)
-from library.datagen.topology import (get_ic_from_index,
-                                      get_ic_type_from_index, get_max_ic_index,
-                                      ic_to_hlabel)
+from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
+from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
 from library.handlers import error_handled
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
@@ -37,8 +34,7 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
     # Same for the other imports because they depend on tensorflow
     from library.classes.generators import FICDataGenerator
     from library.classes.losses import CustomLoss
-    from library.classes.models import (IDOFAngleNet, IDOFAngleNet_Reduced,
-                                        IDOFNet, IDOFNet_Reduced)
+    from library.classes.models import IDOFAngleNet, IDOFAngleNet_Reduced, IDOFNet, IDOFNet_Reduced
     from master import PORT, encode_finished, encode_starting
 
     # If a host is provided, try to connect to it. This will be used to communicate with the parent process

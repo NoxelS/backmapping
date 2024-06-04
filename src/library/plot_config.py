@@ -9,7 +9,7 @@ from library.config import Keys, config
 SMALL_SIZE = 10
 MEDIUM_SIZE = 12
 BIGGER_SIZE = 14
-THEMES = ["seaborn-pastel", "seaborn-v0_8-pastel"]
+THEMES = ["seaborn-paper", "seaborn-pastel", "seaborn-v0_8-paper", "seaborn-v0_8-pastel"]
 
 
 def load_matplotlib_local_fonts():
@@ -32,7 +32,7 @@ def load_matplotlib_local_fonts():
     )
 
 
-def set_plot_config():
+def set_plot_config(themes: list = THEMES):
     """
     This function sets the plot configuration for matplotlib
     to make the plots uniform and look like proper paper plots.
@@ -43,7 +43,7 @@ def set_plot_config():
 
     # Set the theme
     try:
-        plt.style.use([theme for theme in plt.style.available if theme in THEMES][0])
+        plt.style.use([theme for theme in plt.style.available if theme in themes][0])
     except IndexError:
         print("No theme found in the available themes. Using default theme.")
 
@@ -63,6 +63,10 @@ def set_plot_config():
     mpl.rcParams.update({"pdf.fonttype": 42})
     mpl.rcParams.update({"ps.fonttype": 42})
     mpl.rcParams.update({"font.family": "Arial"})
+
+    # Make titles bold
+    mpl.rcParams.update({"axes.titleweight": "bold"})
+    mpl.rcParams.update({"figure.titleweight": "bold"})
 
     # Set figure size
     mpl.rcParams.update({"figure.figsize": (10, 6)})
