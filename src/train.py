@@ -10,6 +10,7 @@ import traceback
 from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
 from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
 from library.handlers import error_handled
+from src.library.notify import send_notification
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
@@ -165,6 +166,13 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
             if dry_run:
                 logging.critical("Dry run mode is enabled. Aborting training now. Everything seems to be set up correctly up to this point.")
                 return
+
+            # Get the host name to send notifications
+            host_name = os.environ.get("SLURM_JOB_NODELIST") or os.environ.get("HOSTNAME") or os.environ.get("HOST") or "local"
+            send_notification(
+                f"Started training model for internal coordinate {config(Keys.MODEL_NAME_PREFIX)} ({target_ic_index}) on {host_name}",
+                "Training started.",
+            )
 
             # Train the model
             try:
