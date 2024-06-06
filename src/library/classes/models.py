@@ -220,7 +220,7 @@ class IDOFNet:
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
-                    1024,
+                    config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
                     # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
@@ -229,7 +229,9 @@ class IDOFNet:
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
-                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(
+                        mean=mean_scaled, stddev=std_scaled
+                    ),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
@@ -885,7 +887,7 @@ class IDOFAngleNet(IDOFNet):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
-                    1024,
+                    config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                     name="feature_extraction",
                 ),
@@ -988,7 +990,7 @@ class IDOFNet_Reduced(IDOFNet):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
-                    100 * np.prod(output_size),
+                    config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
                     # kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
@@ -997,7 +999,9 @@ class IDOFNet_Reduced(IDOFNet):
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
-                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(
+                        mean=mean_scaled, stddev=std_scaled
+                    ),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
@@ -1093,7 +1097,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                 tf.keras.layers.Flatten(),
                 tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
-                    50 * np.prod(output_size),
+                    config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
                     name="feature_extraction",
                 ),
