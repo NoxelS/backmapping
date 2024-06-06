@@ -10,7 +10,7 @@ import traceback
 from library.config import Keys, config, print_config, set_hp_config_from_name, validate_config
 from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, get_max_ic_index, ic_to_hlabel
 from library.handlers import error_handled
-from src.library.notify import send_notification
+from library.notify import send_notification
 
 MAX_IC_INDEX = get_max_ic_index()  # This is the maximum internal coordinate index
 
