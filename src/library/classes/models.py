@@ -22,6 +22,7 @@ from library.plot_config import set_plot_config
 
 # Register custom activation functions for the polar angle layer
 # See https://datascience.stackexchange.com/questions/58884/how-to-create-custom-activation-functions-in-keras-tensorflow
+# Currently disabled because it does not work with the tensorflow version on the cluster
 # get_custom_objects().update({"sin": tf.math.sin, "cos": tf.math.cos, "PolarAngleLayer": PolarAngleLayer})
 
 
