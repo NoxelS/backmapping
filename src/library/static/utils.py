@@ -2,6 +2,10 @@ import csv
 import os
 import sys
 import time
+from typing import Union
+import numpy as np
+
+from library.datagen.topology import get_ic_from_index, get_ic_type
 
 # Quick and dirty way to color the atoms by their element
 DEFAULT_ELEMENT_COLOR_MAP = {
@@ -136,3 +140,54 @@ def to_significant(value, significant_digits=3):
         str: The number as a string with the specified number of significant digits.
     """
     return "{:.{}g}".format(value, significant_digits)
+
+
+def scale_output_ic(ic_index: int, value: float) -> Union[float, tuple]:
+    """
+    Scales the output internal coordinate value based on the internal coordinate index.
+    """
+    ic = get_ic_from_index(ic_index)
+    ic_type = get_ic_type(ic)
+    mean, std = float(ic["mean"]), float(ic["std"])
+
+    if ic_type == "bond":
+        # Bonds are between [1A, 1.7A] -> [0,1] -> [-0.25, 0.25]
+        # return (value - 1) / (2 * (1.7 - 1)) - 0.25
+        # Normalization
+        return ((value - mean) / std) / 100
+
+    elif ic_type == "angle":
+        # Angles are between [90°, 160°] -> [0,1]
+        # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
+        return [np.cos(value), np.sin(value)]
+    elif ic_type == "dihedral":
+        # Dihedrals are between [50°, 140°] -> [0,1]
+        # return (value - np.deg2rad(50)) / (np.deg2rad(140) - np.deg2rad(50))
+        # return (value - np.deg2rad(90)) / (np.deg2rad(160) - np.deg2rad(90))
+        return [np.cos(value), np.sin(value)]
+
+    else:
+        raise Exception(f"Internal coordinate type {ic_type} not supported!")
+
+
+def inverse_scale_output_ic(ic_index: int, value: Union[float, tuple]) -> float:
+    """
+    Inversely scales the output internal coordinate value based on the internal coordinate index.
+    """
+    ic = get_ic_from_index(ic_index)
+    ic_type = get_ic_type(ic)
+    mean, std = float(ic["mean"]), float(ic["std"])
+
+    if ic_type == "bond":
+        # Bonds are between [-0.25, 0.25] -> [0,1] -> [1A, 1.7A]
+        # return (value + 0.25) * 2 * (1.7 - 1) + 1
+        # Inverse normalization
+        return 100 * value * std + mean
+    elif ic_type == "angle":
+        # Angles are [cos(phi), sin(phi)]
+        return np.arctan2(value[1], value[0])
+    elif ic_type == "dihedral":
+        # Angles are [cos(phi), sin(phi)]
+        return np.arctan2(value[1], value[0])
+    else:
+        raise Exception(f"Internal coordinate type {ic_type} not supported!")
