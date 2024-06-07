@@ -218,7 +218,7 @@ class IDOFNet:
                 tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dropout(config(Keys.DROPOUT_RATE)),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -815,6 +815,9 @@ class IDOFAngleNet(IDOFNet):
         """
 
         filters_scale = config(Keys.FILTERS_SCALE)
+        y_stride = 4 if config(Keys.NEIGHBORHOOD_SIZE) == 6 else 1
+        
+        
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -838,7 +841,7 @@ class IDOFAngleNet(IDOFNet):
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**4 * filters_scale,
-                    kernel_size=(3, 4),
+                    kernel_size=(3, y_stride),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -846,7 +849,7 @@ class IDOFAngleNet(IDOFNet):
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**5 * filters_scale,
-                    kernel_size=(3, 4),
+                    kernel_size=(3, y_stride),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -854,7 +857,7 @@ class IDOFAngleNet(IDOFNet):
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**6 * filters_scale,
-                    kernel_size=(3, 4),
+                    kernel_size=(3, y_stride),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -862,7 +865,7 @@ class IDOFAngleNet(IDOFNet):
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**7 * filters_scale,
-                    kernel_size=(3, 4),
+                    kernel_size=(3, y_stride),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -870,7 +873,7 @@ class IDOFAngleNet(IDOFNet):
                 ),
                 tf.keras.layers.Conv2D(
                     filters=2**8 * filters_scale,
-                    kernel_size=(3, 5),
+                    kernel_size=(3, y_stride + 1),
                     strides=(1, 1),
                     padding="valid",
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -885,7 +888,7 @@ class IDOFAngleNet(IDOFNet):
                 tf.keras.layers.BatchNormalization(name="batch_norm_2"),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dropout(config(Keys.DROPOUT_RATE)),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -988,7 +991,7 @@ class IDOFNet_Reduced(IDOFNet):
                 tf.keras.layers.BatchNormalization(),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dropout(config(Keys.DROPOUT_RATE)),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
@@ -1095,7 +1098,7 @@ class IDOFAngleNet_Reduced(IDOFNet):
                 tf.keras.layers.BatchNormalization(name="batch_norm_2"),
                 ##### Output #####
                 tf.keras.layers.Flatten(),
-                tf.keras.layers.Dropout(0.10),  # Maybe move this after the dense
+                tf.keras.layers.Dropout(config(Keys.DROPOUT_RATE)),  # Maybe move this after the dense
                 tf.keras.layers.Dense(
                     config(Keys.FEATURE_EXTRACTION_UNITS),
                     activation=tf.keras.layers.LeakyReLU(alpha=0.03),
