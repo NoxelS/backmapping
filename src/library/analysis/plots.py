@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import transforms
 
-from library.classes.generators import inverse_scale_output_ic
+from library.static.utils import inverse_scale_output_ic
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, ic_to_hlabel
 from library.plot_config import set_plot_config
