@@ -101,6 +101,7 @@ class Keys(Enum):
     LR_SCHEDULER_COOLDOWN = 1110
     LR_SCHEDULER_MIN_LR = 1111
     LR_SCHEDULER_MODE = 1112
+    PLOT_HIST_EPOCH_SIZE = 1113
 
     # Network_structure config
     NETWORK = 1200

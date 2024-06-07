@@ -596,10 +596,13 @@ class IDOFNet:
 
         # Save the predictions
         self.predictions[self.current_epoch] = pred_ics
+        
+        # Only plot the last epochs or all depending on the configuration
+        predictions = {k: v for k, v in self.predictions.items() if self.current_epoch - k < config(Keys.PLOT_HIST_EPOCH_SIZE)} if config(Keys.PLOT_HIST_EPOCH_SIZE) > 0 else self.predictions
 
         # Get min and max epoch
-        min_epoch = min(self.predictions.keys())
-        max_epoch = max(self.predictions.keys())
+        min_epoch = min(predictions.keys())
+        max_epoch = max(predictions.keys())
 
         # Calculate number of predictions
         number_of_predictions = int((max_epoch - min_epoch) / config(Keys.PREDICTION_COOLDOWN) + 1)
@@ -611,14 +614,14 @@ class IDOFNet:
         alphas[-1] = 0.9
 
         # Get the first prediction for the bins
-        first_pred = self.predictions[min_epoch]
+        first_pred = predictions[min_epoch]
 
         # Loop through all predictions
-        for i, pred_ics in enumerate(self.predictions.values()):
+        for i, pred_ics in enumerate(predictions.values()):
             # Make histogram with the same bins
             bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 400)
             # Plot the results as relative histogram
-            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="xkcd:azure", label="Predicted" if i == len(self.predictions) - 1 else None)
+            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="xkcd:azure", label="Predicted" if i == len(predictions) - 1 else None)
 
         # Plot the true values (always the same)
         bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 400)
