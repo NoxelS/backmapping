@@ -1,23 +1,22 @@
 #!/bin/bash
 
-# Loop over 10 integers
-for i in {2..14}
+# Loop from 26 to 38
+for i in {26..38}
 do
-    cp data/configs/fe_run_1.ini data/configs/fe_run_${i}.ini
-    sed -i -e s/fe_run_1/fe_run_${i}/g data/configs/fe_run_${i}.ini
-
+    cp data/configs/lr_run_25.ini data/configs/lr_run_${i}.ini
+    sed -i -e s/lr_run_25/lr_run_${i}/g data/configs/lr_run_${i}.ini
 done
-sed -i -e 's/UNITS/2/g' data/configs/fe_run_1.ini
-sed -i -e 's/UNITS/4/g' data/configs/fe_run_2.ini
-sed -i -e 's/UNITS/6/g' data/configs/fe_run_3.ini
-sed -i -e 's/UNITS/8/g' data/configs/fe_run_4.ini
-sed -i -e 's/UNITS/16/g' data/configs/fe_run_5.ini
-sed -i -e 's/UNITS/32/g' data/configs/fe_run_6.ini
-sed -i -e 's/UNITS/64/g' data/configs/fe_run_7.ini
-sed -i -e 's/UNITS/128/g' data/configs/fe_run_8.ini
-sed -i -e 's/UNITS/256/g' data/configs/fe_run_9.ini
-sed -i -e 's/UNITS/512/g' data/configs/fe_run_10.ini
-sed -i -e 's/UNITS/1024/g' data/configs/fe_run_11.ini
-sed -i -e 's/UNITS/2048/g' data/configs/fe_run_12.ini
-sed -i -e 's/UNITS/4096/g' data/configs/fe_run_13.ini
-sed -i -e 's/UNITS/8192/g' data/configs/fe_run_14.ini
+
+sed -i -e 's/0.00001/0.000009/g' data/configs/lr_run_26.ini
+sed -i -e 's/0.00001/0.000008/g' data/configs/lr_run_27.ini
+sed -i -e 's/0.00001/0.000007/g' data/configs/lr_run_28.ini
+sed -i -e 's/0.00001/0.000006/g' data/configs/lr_run_29.ini
+sed -i -e 's/0.00001/0.000005/g' data/configs/lr_run_30.ini
+sed -i -e 's/0.00001/0.000004/g' data/configs/lr_run_31.ini
+sed -i -e 's/0.00001/0.000003/g' data/configs/lr_run_32.ini
+sed -i -e 's/0.00001/0.000002/g' data/configs/lr_run_33.ini
+sed -i -e 's/0.00001/0.000001/g' data/configs/lr_run_34.ini
+sed -i -e 's/0.00001/0.0000005/g' data/configs/lr_run_35.ini
+sed -i -e 's/0.00001/0.0000001/g' data/configs/lr_run_36.ini
+sed -i -e 's/0.00001/0.00000005/g' data/configs/lr_run_37.ini
+sed -i -e 's/0.00001/0.00000001/g' data/configs/lr_run_38.ini
