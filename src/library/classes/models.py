@@ -266,16 +266,6 @@ class IDOFNet:
             os.makedirs(os.path.join(self.data_prefix, "hist"))
 
         callbacks = [
-            # The BackupAndRestore callback saves checkpoints every save_freq batches,
-            # this is set to 1 epoch here to save after each epoch. Make sure to set
-            # this to a value greater than one when training on a large dataset, because
-            # it can take a long time to save checkpoints.
-            # tf.keras.callbacks.experimental.BackupAndRestore(
-            #     backup_dir=os.path.join(self.data_prefix, "backup", self.display_name),
-            #     # save_freq=1,
-            #     delete_checkpoint=not self.keep_checkpoints,
-            #     # save_before_preemption=False,
-            # ),
             # The ReduceLROnPlateau callback monitors a quantity and if no improvement
             # is seen for a 'patience' number of epochs, the learning rate is reduced.
             # Here, it monitors 'val_loss' and if no improvement is seen for 10 epochs,
