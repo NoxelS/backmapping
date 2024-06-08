@@ -25,7 +25,9 @@ echo "####################### CODE ###########################"
 # Make folder to store logs
 mkdir -p ./jobs/logs/lr_run_$SLURM_JOBID
 
-for i in {26..38}
-do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=LR$i --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/lr_run_$SLURM_JOBID/$i.log --error=./jobs/logs/lr_run_$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 lr_run_$i"
-done
+# for i in {26..38}
+# do
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=LR$i --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/lr_run_$SLURM_JOBID/$i.log --error=./jobs/logs/lr_run_$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 lr_run_$i"
+# done
+
+sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=LRL28 --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/lr_run_$SLURM_JOBID/28.log --error=./jobs/logs/lr_run_$SLURM_JOBID/28.err --wrap="jobs/train_single_no_purge.sh 94 lr_run_28"
