@@ -27,5 +27,5 @@ mkdir -p ./jobs/logs/relu_run_$SLURM_JOBID
 
 for i in {1..13}
 do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=DO$i --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/relu_run_$SLURM_JOBID/$i.log --error=./jobs/logs/relu_run_$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 relu_run_$i"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=RELU$i --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/relu_run_$SLURM_JOBID/$i.log --error=./jobs/logs/relu_run_$SLURM_JOBID/$i.err --wrap="jobs/train_single.sh 94 relu_run_$i"
 done
