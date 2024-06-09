@@ -1,22 +1,25 @@
 import copy
 import logging
 import os
+import pickle
 import socket
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-
 # from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
-from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
-
+from library.classes.generators import (BaseDataGenerator,
+                                        inverse_scale_output_ic,
+                                        scale_output_ic)
 # from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
+from library.datagen.topology import (get_ic_from_index, get_ic_type,
+                                      ic_to_hlabel,
+                                      load_extended_topology_info)
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -230,9 +233,7 @@ class IDOFNet:
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
-                    kernel_initializer=tf.keras.initializers.RandomNormal(
-                        mean=mean_scaled, stddev=std_scaled
-                    ),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
@@ -597,9 +598,20 @@ class IDOFNet:
 
         # Save the predictions
         self.predictions[self.current_epoch] = pred_ics
-        
+
+        # Save the predictions to a file as pickle
+        try:
+            with open(os.path.join(analysis_folder, f"predictions.pkl"), "wb") as f:
+                pickle.dump(pred_ics, f)
+        except Exception as e:
+            logging.error(f"Could not save predictions to pickle: {e}")
+
         # Only plot the last epochs or all depending on the configuration
-        predictions = {k: v for k, v in self.predictions.items() if self.current_epoch - k < config(Keys.PLOT_HIST_EPOCH_SIZE)} if config(Keys.PLOT_HIST_EPOCH_SIZE) > 0 else self.predictions
+        predictions = (
+            {k: v for k, v in self.predictions.items() if self.current_epoch - k < config(Keys.PLOT_HIST_EPOCH_SIZE)}
+            if config(Keys.PLOT_HIST_EPOCH_SIZE) > 0
+            else self.predictions
+        )
 
         # Get min and max epoch
         min_epoch = min(predictions.keys())
@@ -810,8 +822,7 @@ class IDOFAngleNet(IDOFNet):
 
         filters_scale = config(Keys.FILTERS_SCALE)
         y_stride = 4 if config(Keys.NEIGHBORHOOD_SIZE) == 6 else 1
-        
-        
+
         return tf.keras.Sequential(
             [
                 ##### Input layer #####
@@ -996,9 +1007,7 @@ class IDOFNet_Reduced(IDOFNet):
                     np.prod(output_size),
                     activation=config(Keys.OUTPUT_ACTIVATION_FUNCTION),
                     # kernel_initializer=tf.keras.initializers.Zeros(),
-                    kernel_initializer=tf.keras.initializers.RandomNormal(
-                        mean=mean_scaled, stddev=std_scaled
-                    ),
+                    kernel_initializer=tf.keras.initializers.RandomNormal(mean=mean_scaled, stddev=std_scaled),
                 ),
                 tf.keras.layers.Reshape(output_size),
             ],
