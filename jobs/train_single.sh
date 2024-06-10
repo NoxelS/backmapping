@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=deflt
+#SBATCH --partition=long
 #SBATCH --nice=100
 
 # This block is echoing some SLURM variables
