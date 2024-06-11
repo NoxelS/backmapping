@@ -171,10 +171,10 @@ dihedral_ics=(
     "172"
 )
 
-# Pick 5 random ICs from each type
-# bond_ics=($(shuf -e "${bond_ics[@]}" -n 5))
-# angle_ics=($(shuf -e "${angle_ics[@]}" -n 5))
-# dihedral_ics=($(shuf -e "${dihedral_ics[@]}" -n 5))
+# Shuffle the ICs
+bond_ics=($(shuf -e "${bond_ics[@]}"))
+angle_ics=($(shuf -e "${angle_ics[@]}"))
+dihedral_ics=($(shuf -e "${dihedral_ics[@]}"))
 
 # Make folder to store logs
 mkdir -p ./jobs/logs/$SLURM_JOBID
