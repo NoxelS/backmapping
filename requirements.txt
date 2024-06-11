@@ -5,3 +5,5 @@ tensorflow==2.11.0
 imageio==2.19.3     # for creating gifs
 pillow>=8.3.2       # for creating gifs
 ffmpeg-python==0.2.0 # for creating gifs
+memdof
+scipy
