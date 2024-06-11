@@ -209,6 +209,11 @@ def train_model(target_ic_index: int, use_socket: bool = False, host_ip_address:
         except Exception as e:
             logging.error(f"Could not send finished signal: {e}")
 
+    # Send notification that the job is done
+    send_notification(
+        f"Finished for internal coordinate {config(Keys.MODEL_NAME_PREFIX)} ({target_ic_index}) on {host_name}",
+        "Finished.",
+    )
 
 if __name__ == "__main__":
     # Add argument parser
