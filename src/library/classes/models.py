@@ -602,7 +602,7 @@ class IDOFNet:
         # Save the predictions to a file as pickle
         try:
             with open(os.path.join(analysis_folder, f"predictions.pkl"), "wb") as f:
-                pickle.dump(pred_ics, f)
+                pickle.dump(self.predictions, f)
         except Exception as e:
             logging.error(f"Could not save predictions to pickle: {e}")
 
