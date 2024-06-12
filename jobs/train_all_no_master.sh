@@ -194,5 +194,5 @@ done
 
 for ic in "${dihedral_ics[@]}"
 do
-    sbatch -exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=D$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
+    sbatch -xexclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=D$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
 done
