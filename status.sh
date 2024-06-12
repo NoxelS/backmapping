@@ -51,7 +51,7 @@ for hist_file in $hist_files; do
     if [ $epoch -eq 0 ]; then
         percentage=0
     else
-        percentage=$(echo "scale=2; $epoch / $target_epoch * 100" | bc)
+        percentage=$(echo "scale=4; $epoch / $target_epoch * 100" | bc)
     fi
 
     # Remove "train_" from the hist_file
@@ -68,7 +68,7 @@ for hist_file in $hist_files; do
     done
 
     # Percentage to 2 decimal places
-    percentage=$(printf "%.4f" $percentage)
+    percentage=$(printf "%.2f" $percentage)
 
     # Make epoch and target epoch the same length
     epoch=$(printf "%-4s" $epoch)
@@ -91,7 +91,7 @@ else
 fi
 
 # Percentage to 2 decimal places
-overall_percentage=$(printf "%.4f" $overall_percentage)
+overall_percentage=$(printf "%.2f" $overall_percentage)
 
 # Print the overall status of the training
 echo -e "\nOverall\tepoch: $overall_epochs/$overall_target_epochs\t($overall_percentage%)"
