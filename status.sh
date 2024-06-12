@@ -91,7 +91,7 @@ else
 fi
 
 # Percentage to 2 decimal places
-overall_percentage=$(printf "%.2f" $overall_percentage)
+overall_percentage=$(printf "%.4f" $overall_percentage)
 
 # Print the overall status of the training
 echo -e "\nOverall\tepoch: $overall_epochs/$overall_target_epochs\t($overall_percentage%)"
