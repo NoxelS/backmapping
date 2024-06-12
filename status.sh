@@ -1,9 +1,5 @@
 #!/bin/bash
 
-
-# This script checks all hist files that contain $1 in their name for the current epoch and prints the status of the training
-# $1: the name of the model
-
 # Check if the user has provided the name of the model
 if [ -z "$1" ]; then
     echo "Please provide the name of the model"
@@ -66,7 +62,6 @@ for hist_file in $hist_files; do
     hist_file=$(echo $hist_file | sed 's/.csv//g')
 
     # Print the status of the training
-    # echo "Model: $hist_file, Epoch: $epoch, Loss: $loss, Accuracy: $accuracy, Val_loss: $val_loss, Val_accuracy: $val_accuracy"
     echo -e "$hist_file\tepoch: $epoch/$target_epoch\t($percentage%)"
 done
 
