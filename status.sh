@@ -54,15 +54,33 @@ for hist_file in $hist_files; do
         percentage=$(echo "scale=2; $epoch / $target_epoch * 100" | bc)
     fi
 
-    # Percentage to 2 decimal places
-    percentage=$(printf "%.2f" $percentage)
-
     # Remove "train_" from the hist_file
     hist_file=$(echo $hist_file | sed 's/training_history_//g')
     hist_file=$(echo $hist_file | sed 's/.csv//g')
 
+    # Print a bar ant the end to represent the percentage
+    bar=$(seq -s "#" $(echo "($percentage / 2)" | bc) | sed 's/[0-9]//g')
+
+
+    # Print . for missing epochs
+    for i in $(seq 1 $(echo "50 - ($percentage / 2)" | bc)); do
+        bar=$bar"."
+    done
+
+    # Percentage to 2 decimal places
+    percentage=$(printf "%.2f" $percentage)
+
+    # Make epoch and target epoch the same length
+    epoch=$(printf "%-4s" $epoch)
+    target_epoch=$(printf "%-4s" $target_epoch)
+    percentage=$(printf "%-5s" $percentage)
+
+    # If $2 exists, don't print the status of the training
+    if [ ! -z "$2" ]; then
+        continue
+    fi
     # Print the status of the training
-    echo -e "$hist_file\tepoch: $epoch/$target_epoch\t($percentage%)"
+    echo -e "$hist_file\tepoch: $epoch/$target_epoch\t($percentage%)\t[$bar]"
 done
 
 # Calculate overall percentage
