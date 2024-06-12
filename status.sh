@@ -68,7 +68,7 @@ for hist_file in $hist_files; do
     done
 
     # Percentage to 2 decimal places
-    percentage=$(printf "%.2f" $percentage)
+    percentage=$(printf "%.4f" $percentage)
 
     # Make epoch and target epoch the same length
     epoch=$(printf "%-4s" $epoch)
