@@ -87,7 +87,7 @@ done
 if [ $overall_target_epochs -eq 0 ]; then
     overall_percentage=0
 else
-    overall_percentage=$(echo "scale=2; $overall_epochs / $overall_target_epochs * 100" | bc)
+    overall_percentage=$(echo "scale=4; $overall_epochs / $overall_target_epochs * 100" | bc)
 fi
 
 # Percentage to 2 decimal places
