@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=deflt
+#SBATCH --partition=long
 #SBATCH --nice=100
 
 # This block is echoing some SLURM variables
@@ -19,7 +19,7 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 WITH CONFIG $2 ###########################"
 # TODO: make --purge and --purge-gen-caches optional
-python -u src/train.py -v --config $2 $1
+python -u src/predict.py -v --config $2 $1
 
 echo "####################### POST ANALYSIS ###########################"
 date
