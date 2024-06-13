@@ -569,8 +569,6 @@ class IDOFNet:
             y_pred = y_pred[:, 0, :, 0]
             y_true = y_true[:, 0, :, 0]
 
-            print(i, y_pred.shape)
-
             # Add to list
             for i in range(len(y_true)):
                 true_ics.append(y_true[i])
