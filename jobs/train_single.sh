@@ -19,7 +19,7 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 WITH CONFIG $2 ###########################"
 # TODO: make --purge and --purge-gen-caches optional
-python src/train.py -u -v --purge --purge-gen-caches --config $2 $1
+python -u src/train.py -v --purge --purge-gen-caches --config $2 $1
 
 echo "####################### POST ANALYSIS ###########################"
 date
