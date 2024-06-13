@@ -47,6 +47,11 @@ for hist_file in $hist_files; do
         val_loss=0
     fi
 
+    # If epoch is bigger than target epoch, set it to target epoch
+    if [ $epoch -gt $target_epoch ]; then
+        epoch=$target_epoch
+    fi
+
     # Calculate percentage of the current epoch if target_epoch is not 0
     if [ $epoch -eq 0 ]; then
         percentage=0
