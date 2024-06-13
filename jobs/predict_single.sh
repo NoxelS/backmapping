@@ -19,7 +19,7 @@ echo ""
 date
 echo "####################### TRAINING FOR $1 WITH CONFIG $2 ###########################"
 # TODO: make --purge and --purge-gen-caches optional
-python src/predict.py -v --config $2 $1
+python src/predict.py -u -v --config $2 $1
 
 echo "####################### POST ANALYSIS ###########################"
 date
