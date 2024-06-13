@@ -7,201 +7,85 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
 
-from library.classes.generators import FICDataGenerator, inverse_scale_output_ic
-from library.classes.losses import CustomLoss
-from library.classes.models import IDOFNet
 from library.config import Keys, config
-from library.datagen.topology import get_ic_from_index, get_max_ic_index, ic_to_hlabel
+from library.datagen.topology import get_ic_from_index, ic_to_hlabel
+from library.plot_config import set_plot_config
 
-##### CONFIGURATION #####
+if not os.path.exists("post_analysis"):
+    os.makedirs("post_analysis")
 
-DATA_PREFIX = config(Keys.DATA_PATH)
-BATCH_SIZE = config(Keys.BATCH_SIZE)
-VALIDATION_SPLIT = config(Keys.VALIDATION_SPLIT)
-NEIGHBORHOOD_SIZE = config(Keys.NEIGHBORHOOD_SIZE)
-EPOCHS = config(Keys.EPOCHS)
-MODEL_NAME_PREFIX = config(Keys.MODEL_NAME_PREFIX)
-DATA_USAGE = config(Keys.DATA_USAGE)
-USE_TENSORBOARD = config(Keys.USE_TENSORBOARD)
+# List all folders in analysis
+folders = os.listdir(os.path.join(config(Keys.DATA_PATH), "analysis"))
+folders = [f for f in folders if os.path.isdir(os.path.join(config(Keys.DATA_PATH), "analysis", f))]
 
-CG_SIZE = (
-    12,
-    3 * (1 + NEIGHBORHOOD_SIZE),
-    1,
-)
-OUTPUT_SIZE = (1, 1, 1)
+# Filter for name
+folders = [f for f in folders if "prod" in f]
 
-# This is the maximum internal coordinate index
-MAX_IC_INDEX = get_max_ic_index()
+# Get all the validation predictions
+val_pred_files = [f for f in [os.path.join(config(Keys.DATA_PATH), "analysis", f, "validation_predictions.pkl") for f in folders] if os.path.exists(f)]
 
-# Check if the internal coordinate index is valid
-if len(sys.argv) < 2:
-    raise Exception(f"Please provide the index of the internal coordinate that should be fitted as an argument, choose one out of: 0-{MAX_IC_INDEX}")
+print("Found the following predictions:", "\n - ".join(["", *val_pred_files]))
 
-# Check if the internal coordinate index is valid
-target_ic_index = int(sys.argv[1])
-if target_ic_index < 0 or target_ic_index > MAX_IC_INDEX:
-    raise Exception(f"Invalid ic index: {target_ic_index}, choose one of: 0-{MAX_IC_INDEX}")
-
-# Check if the internal coordinate index is a free ic
-target_ic = get_ic_from_index(target_ic_index)
-if target_ic["fixed"]:
-    raise ValueError(f"Internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)}) is not a free internal coordinate!")
-
-SAVE_PATH = os.path.join(DATA_PREFIX, "analysis", "predictions_cache")
-
-##### TRAINING #####
-
-sample_gen = FICDataGenerator(
-    input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
-    output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
-    input_size=CG_SIZE,
-    output_size=OUTPUT_SIZE,
-    shuffle=False,
-    batch_size=1,
-    validate_split=VALIDATION_SPLIT,
-    validation_mode=False,
-    ic_index=target_ic_index,
-    neighbourhood_size=NEIGHBORHOOD_SIZE,
-)
-
-train_gen = FICDataGenerator(
-    input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
-    output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
-    input_size=CG_SIZE,
-    output_size=OUTPUT_SIZE,
-    shuffle=False,
-    batch_size=BATCH_SIZE,
-    validate_split=VALIDATION_SPLIT,
-    validation_mode=False,
-    augmentation=False,
-    ic_index=target_ic_index,
-    neighbourhood_size=NEIGHBORHOOD_SIZE,
-    data_usage=DATA_USAGE,
-)
-
-validation_gen = FICDataGenerator(
-    input_dir_path=os.path.join(DATA_PREFIX, "training", "input"),
-    output_dir_path=os.path.join(DATA_PREFIX, "training", "output"),
-    input_size=CG_SIZE,
-    output_size=OUTPUT_SIZE,
-    shuffle=False,
-    batch_size=BATCH_SIZE,
-    validate_split=VALIDATION_SPLIT,
-    validation_mode=True,
-    augmentation=False,
-    ic_index=target_ic_index,
-    neighbourhood_size=NEIGHBORHOOD_SIZE,
-    data_usage=DATA_USAGE,
-)
+# Load all the predictions into a dictionary
+predictions = {}
+for file in val_pred_files:
+    with open(file, "rb") as f:
+        predictions[os.path.basename(os.path.dirname(file))] = pickle.load(f, fix_imports=False)
 
 
-# The central storage strategy is used to synchronize the weights of the model across all GPUs. This can lead to better
-# performance when training on multiple GPUs.
-strategy = tf.distribute.experimental.CentralStorageStrategy()
+for model in predictions.keys():
+    print("Model:", model)
 
-print(f"Starting to load and train the model for internal coordinate {target_ic_index} ({ic_to_hlabel(target_ic)})")
+    ic_index = int(model[::-1].split("_", 1)[0][::-1])
+    ic_label = ic_to_hlabel(get_ic_from_index(ic_index))
 
-with strategy.scope():
-    save_file_path = os.path.join(SAVE_PATH, f"predictions_{target_ic_index}.pkl")
-    predictions = []
+    y_true = np.array(predictions[model][:, 1])
+    y_pred = np.array(predictions[model][:, 2])
 
-    # Load predictions if not done previously
-    if not os.path.exists(save_file_path):
+    try:
+        y_true = [y[0] for y in y_true]
+        y_pred = [y[0] for y in y_pred]
+    except Exception as _:
+        pass
 
-        # Check if path exists
-        if not os.path.exists(SAVE_PATH):
-            os.makedirs(SAVE_PATH)
+    # Normalize the values
+    y_true_weights = np.ones_like(y_true) / float(len(y_true))
+    y_pred_weights = np.ones_like(y_pred) / float(len(y_pred))
 
-        net = IDOFNet(
-            CG_SIZE,
-            OUTPUT_SIZE,
-            data_prefix=DATA_PREFIX,
-            display_name=f"{MODEL_NAME_PREFIX}_{target_ic_index}",
-            keep_checkpoints=True,
-            load_path=os.path.join(DATA_PREFIX, "models", str(target_ic_index), f"{MODEL_NAME_PREFIX}.h5"),
-            # We currently use the keras MeanAbsoluteError loss function, because custom loss functions are not supproted while saving the model
-            # in the current tensorflow version. This hopefully will change in the future.
-            # loss=CustomLoss(),
-            test_sample=sample_gen.__getitem__(0),
-            ic_index=target_ic_index,
-        )
+    min_y = min(min(y_true), min(y_pred))
+    max_y = max(max(y_true), max(y_pred))
 
-        # Start calcualting the ic for all validation samples
-        print("Starting to calculate the internal coordinates for the validation samples")
+    # Make two plots, the upper plot shows the two histograms while
+    # the lower plot shows the difference between the two histograms
+    fig, axs = plt.subplots(2, 1, figsize=(10, 6))
 
-        predictions = []
+    # Make upper plot higher
+    axs[0].set_position([0.1, 0.5, 0.8, 0.4])
+    axs[1].set_position([0.1, 0.1, 0.8, 0.2])
 
-        for i in range(len(train_gen)):
-            x, y_true = train_gen.__getitem__(i)
-            y_pred = net.model.predict(x)
-            predictions.append((y_true, y_pred))
+    set_plot_config(["seaborn-pastel"])
 
-        # Save the predictions
-        with open(save_file_path, "wb") as f:
-            pickle.dump(predictions, f)
+    a, bins, _ = axs[0].hist(y_true, bins=50, alpha=0.4, label="True", color="xkcd:blue", edgecolor="black", weights=y_true_weights)
+    b, _, _ = axs[0].hist(y_pred, bins=bins, alpha=0.4, label="Predicted", color="xkcd:green", edgecolor="black", weights=y_pred_weights)
+    axs[0].legend()
 
-        # Load the predictions
-        with open(save_file_path, "rb") as f:
-            predictions = pickle.load(f)
+    # Add labels
+    axs[0].set_xlabel("Angle (°)" if "angle" in model else "Bond Length (Å)")
+    axs[0].set_ylabel("Rel. Frequency")
+    axs[0].grid(which="major", linestyle="-", linewidth="0.75", color=[0.1, 0.1, 0.1], alpha=0.5)
+    axs[0].grid(which="minor", linestyle="--", linewidth="0.25", color=[0.2, 0.2, 0.2], alpha=0.3)
+    title_a = "Bond Length" if "bond" in model else "Angle"
+    title = title_a + " Histogram for IC " + ic_label
+    axs[0].set_title(title)
 
-    else:
-        # Load the predictions
-        with open(save_file_path, "rb") as f:
-            predictions = pickle.load(f)
+    # Lower plot
+    axs[1].bar(bins[:-1], height=((a) - (b)), alpha=0.4, color="xkcd:purple", edgecolor="black", width=bins[1] - bins[0])
+    axs[1].set_xlabel("Angle (°)" if "angle" in model else "Bond Length (Å)")
+    axs[1].set_ylabel("Rel. Frequency Diff.")
 
-    true_ics = []
-    pred_ics = []
+    # Set ranges
+    axs[0].set_xlim(min_y, max_y)
+    axs[1].set_xlim(min_y, max_y)
 
-    # Remove padding and loop over all samples in the batch and save in array
-    for preds in predictions:
-        y_true, y_pred = preds
-
-        # Remove padding
-        y_pred = y_pred[:, 0, 0, 0]
-        y_true = y_true[:, 0, 0, 0]
-
-        # Loop over all samples in the batch and save in array
-        for j in range(y_pred.shape[0]):
-            true_ics.append(y_true[j])
-            pred_ics.append(y_pred[j])
-
-    # Convert to numpy arrays
-    true_ics = np.array(true_ics)
-    pred_ics = np.array(pred_ics)
-
-    # Reverse apply the scale function
-    true_ics = inverse_scale_output_ic(target_ic_index, true_ics)
-    pred_ics = inverse_scale_output_ic(target_ic_index, pred_ics)
-
-    # Calculate mean and std
-    true_mean = np.mean(true_ics)
-    pred_mean = np.mean(pred_ics)
-    true_std = np.std(true_ics)
-    pred_std = np.std(pred_ics)
-
-    # Print Mean
-    logging.debug(f"True mean: {true_mean}")
-    logging.debug(f"Pred mean: {pred_mean}")
-
-    # Make histogram with the same bins
-    bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 150)
-
-    # Plot the results as relative histogram
-    plt.hist(true_ics, bins=bins, alpha=0.5, color="purple", label="True")
-    plt.hist(pred_ics, bins=bins, alpha=0.5, color="green", label="Pred")
-
-    # # Plot the mean and std
-    # plt.axvline(true_mean, color="purple", linestyle="dashed", linewidth=1)
-    # plt.axvline(pred_mean, color="green", linestyle="dashed", linewidth=1)
-
-    # plt.axvline(true_mean + true_std, color="purple", linestyle="dotted", linewidth=1)
-    # plt.axvline(true_mean - true_std, color="purple", linestyle="dotted", linewidth=1)
-
-    # plt.axvline(pred_mean + pred_std, color="green", linestyle="dotted", linewidth=1)
-    # plt.axvline(pred_mean - pred_std, color="green", linestyle="dotted", linewidth=1)
-
-    plt.legend(loc="upper right")
-    plt.savefig(os.path.join(DATA_PREFIX, "analysis", f"ic_hist_{target_ic_index}.png"))
+    plt.savefig(os.path.join("post_analysis", f"{model}_histogram.pdf"))
