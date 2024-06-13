@@ -4,22 +4,21 @@ import os
 import pickle
 import socket
 import time
+from tracemalloc import start
 
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+
 # from keras.utils import get_custom_objects
 from matplotlib.colors import LightSource
 
-from library.classes.generators import (BaseDataGenerator,
-                                        inverse_scale_output_ic,
-                                        scale_output_ic)
+from library.classes.generators import BaseDataGenerator, inverse_scale_output_ic, scale_output_ic
+
 # from library.classes.layers import PolarAngleLayer
 from library.classes.losses import CustomLoss
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index, get_ic_type,
-                                      ic_to_hlabel,
-                                      load_extended_topology_info)
+from library.datagen.topology import get_ic_from_index, get_ic_type, ic_to_hlabel, load_extended_topology_info
 from library.notify import send_notification
 from library.plot_config import set_plot_config
 
@@ -75,7 +74,7 @@ class IDOFNet:
         self.socket = socket
         self.host_ip_address = host_ip_address
         self.port = port
-
+        self.loaded_model = False
         # For tracking predictions along training. This is a dict with epoch as key and the predictions as value
         self.predictions = {}
 
@@ -116,9 +115,10 @@ class IDOFNet:
                         "cos": tf.math.cos,
                     },
                 )
+                self.loaded_model = True
                 logging.info("Loaded model successfully from " + load_path)
             except FileNotFoundError:
-                logging.info(f"Could not find model at {load_path}, starting from scratch...")
+                logging.info(f"Could not find model at {load_path}...")
             except Exception as e:
                 logging.info("Could not load model from " + load_path + ": " + str(e))
                 try:
@@ -131,9 +131,10 @@ class IDOFNet:
                         },
                         compile=False,
                     )
+                    self.loaded_model = True
                 except Exception as e:
                     logging.debug(e)
-                    logging.debug(f"Could not load model from {load_path}, starting from scratch...")
+                    logging.debug(f"Could not load model from {load_path}...")
         else:
             logging.debug(f"No backup found at {load_path}, starting from scratch...")
 
@@ -557,7 +558,7 @@ class IDOFNet:
         true_ics = []
         pred_ics = []
 
-        number_of_batched_to_predict = 1
+        number_of_batched_to_predict = len(data_generator)
 
         # Predict all data
         for i in range(np.min([number_of_batched_to_predict, len(data_generator)])):
@@ -567,6 +568,8 @@ class IDOFNet:
             # Remove dimensionality
             y_pred = y_pred[:, 0, :, 0]
             y_true = y_true[:, 0, :, 0]
+
+            print(i, y_pred.shape)
 
             # Add to list
             for i in range(len(y_true)):
@@ -599,23 +602,9 @@ class IDOFNet:
         # Save the predictions
         self.predictions[self.current_epoch] = pred_ics
 
-        # Save the predictions to a file as pickle
-        try:
-            with open(os.path.join(analysis_folder, f"predictions.pkl"), "wb") as f:
-                pickle.dump(self.predictions, f)
-        except Exception as e:
-            logging.error(f"Could not save predictions to pickle: {e}")
-
-        # Only plot the last epochs or all depending on the configuration
-        predictions = (
-            {k: v for k, v in self.predictions.items() if self.current_epoch - k < config(Keys.PLOT_HIST_EPOCH_SIZE)}
-            if config(Keys.PLOT_HIST_EPOCH_SIZE) > 0
-            else self.predictions
-        )
-
         # Get min and max epoch
-        min_epoch = min(predictions.keys())
-        max_epoch = max(predictions.keys())
+        min_epoch = min(self.predictions.keys())
+        max_epoch = max(self.predictions.keys())
 
         # Calculate number of predictions
         number_of_predictions = int((max_epoch - min_epoch) / config(Keys.PREDICTION_COOLDOWN) + 1)
@@ -627,14 +616,14 @@ class IDOFNet:
         alphas[-1] = 0.9
 
         # Get the first prediction for the bins
-        first_pred = predictions[min_epoch]
+        first_pred = self.predictions[min_epoch]
 
         # Loop through all predictions
-        for i, pred_ics in enumerate(predictions.values()):
+        for i, pred_ics in enumerate(self.predictions.values()):
             # Make histogram with the same bins
             bins = np.linspace(min(true_ics.min(), pred_ics.min()), max(true_ics.max(), pred_ics.max()), 400)
             # Plot the results as relative histogram
-            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="xkcd:azure", label="Predicted" if i == len(predictions) - 1 else None)
+            plt.hist(pred_ics, bins=bins, alpha=alphas[i], color="xkcd:azure", label="Predicted" if i == len(self.predictions) - 1 else None)
 
         # Plot the true values (always the same)
         bins = np.linspace(min(true_ics.min(), first_pred.min()), max(true_ics.max(), first_pred.max()), 400)
@@ -696,6 +685,74 @@ class IDOFNet:
                     logging.error(f"Could not send notification for epoch {epoch}.")
 
         return tf.keras.callbacks.LambdaCallback(on_epoch_end=send)
+
+    def predict_generators(self, train_generator: BaseDataGenerator, validation_generator: BaseDataGenerator) -> tuple:
+        """
+        Predicts the output for the full train and validation generator.
+        This will save the data to a pickle file in the analysis folder and also return the data.
+
+        Returns:
+            tuple: The train and validation data in the form of [X, Y_true, Y_pred]
+        """
+        analysis_folder = os.path.join(config(Keys.DATA_PATH), "analysis", self.display_name)
+
+        # For debugging
+        start_time = time.time()
+
+        # Create directory if it does not exist
+        if not os.path.exists(analysis_folder):
+            os.makedirs(analysis_folder)
+
+        data_train = []
+        data_validation = []
+
+        for generator, name in zip([train_generator, validation_generator], ["train", "validation"]):
+
+            X = []
+            Y_true = []
+
+            # Get all the data from the generator to predict it in one go
+            [
+                (
+                    X.extend(data[0]),
+                    Y_true.extend(data[1]),
+                )
+                for data in [generator.__getitem__(i) for i in range(len(generator))]
+            ]
+
+            # Predict the data
+            Y_pred = self.model.predict(np.array(X))
+
+            # To numpy
+            Y_true, Y_pred = np.array(Y_true), np.array(Y_pred)
+
+            # Remove dimensionality
+            Y_pred = Y_pred[:, 0, :, 0]
+            Y_true = Y_true[:, 0, :, 0]
+
+            # Reverse apply the scale function
+            Y_true = [inverse_scale_output_ic(self.ic_index, true_ic) for true_ic in Y_true]
+            Y_pred = [inverse_scale_output_ic(self.ic_index, pred_ic) for pred_ic in Y_pred]
+
+            # If the ic is not a bond, convert to degrees
+            if self.ic_type != "bond":
+                Y_true = [np.rad2deg(true_ic) for true_ic in Y_true]
+                Y_pred = [np.rad2deg(pred_ic) for pred_ic in Y_pred]
+
+            # Zip the data
+            data = np.array(list(zip(X, Y_true, Y_pred)))
+
+            # For return
+            data_train.extend(data) if name == "train" else data_validation.extend(data)
+
+            # Save the data
+            with open(os.path.join(analysis_folder, f"{name}_predictions.pkl"), "wb") as f:
+                pickle.dump(data, f)
+
+        # Log time it took
+        logging.debug(f"Time it took to predict generators: {time.time() - start_time:.2f} seconds")
+
+        return data_train, data_validation
 
     def plot_weight_distribution(self):
         """
