@@ -34,10 +34,6 @@ for hist_file in $hist_files; do
     # Read the target epoch from the config
     target_epoch=$(grep "epochs" $conf_file | cut -d "=" -f 2 | xargs)
 
-    # Add to overall epochs
-    overall_epochs=$((overall_epochs + epoch))
-    overall_target_epochs=$((overall_target_epochs + target_epoch))
-
     # Set epoch and val loss 0 if not found
     if [ -z "$epoch" ]; then
         epoch=0
@@ -51,6 +47,10 @@ for hist_file in $hist_files; do
     if [ $epoch -gt $target_epoch ]; then
         epoch=$target_epoch
     fi
+
+    # Add to overall epochs
+    overall_epochs=$((overall_epochs + epoch))
+    overall_target_epochs=$((overall_target_epochs + target_epoch))
 
     # Calculate percentage of the current epoch if target_epoch is not 0
     if [ $epoch -eq 0 ]; then
