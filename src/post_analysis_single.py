@@ -87,5 +87,6 @@ for model in predictions.keys():
     # Set ranges
     axs[0].set_xlim(min_y, max_y)
     axs[1].set_xlim(min_y, max_y)
+    axs[1].set_ylim(-0.1, 0.1)
 
     plt.savefig(os.path.join("post_analysis", f"{model}_histogram.pdf"))
