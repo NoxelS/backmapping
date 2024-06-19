@@ -27,7 +27,16 @@ if __name__ == "__main__":
     parser.add_argument("--config-match", "-c", type=str, help="Selects all configs that match for a given substring.")
 
     # Add argument for verbose
-    parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output, defaults to off.", default=0)
+    parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output, defaults to off.", default=False)
+
+    # Add argument for table
+    parser.add_argument("-t", "--table", action="store_true", help="Plot a table with the losses, defaults to off.", default=False)
+
+    # Add argument for diff plot
+    parser.add_argument("-d", "--plot-diff", action="store_true", help="Add a diff plot for the specified arguments.", default=False)
+
+    # Add argument for small version
+    parser.add_argument("-s", "--small", action="store_true", help="Plots the image to be a small plot.", default=False)
 
     # Add argument for plot name
     parser.add_argument("--plot-name", "-n", type=str, help="Name of the plot to save.")
@@ -104,7 +113,10 @@ if __name__ == "__main__":
     # Plot the selected files if multiple are selected
     if len(target_files) > 1:
         # Import here to reduce import overhead
-        from library.analysis.plots import plot_hist_multiple
+        from library.analysis.plots import plot_hist_multiple, plot_diff_multiple
 
         # Plot the selected files
-        plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range)
+        # plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range, plot_table=args.table)
+
+        # Plot diff if selected
+        plot_diff_multiple(target_files, "diff_" + args.plot_name if args.plot_name else None, epoch_range=args.epoch_range, plot_table=args.table, small=args.small) if args.plot_diff else None
