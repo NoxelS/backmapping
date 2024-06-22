@@ -1,6 +1,4 @@
 #!/bin/bash
-#SBATCH --partition=deflt
-#SBATCH --nice=100
 
 # This block is echoing some SLURM variables
 echo "###################### JOB DETAILS ########################"
@@ -19,14 +17,14 @@ echo ""
 date
 echo "####################### TRAINING FOR $2, $3, $4, $5 WITH CONFIG $1 ###########################"
 
-python -u src/train.py -v --config $1 $2 &
+python -u src/train.py -v --purge --purge-gen-caches --config $1 $2 &
 
 if [ "$3" != "" ]; then
-    python -u src/train.py -v --config $1 $3 &
+    python -u src/train.py -v --purge --purge-gen-caches --config $1 $3 &
 fi
 if [ "$4" != "" ]; then
-    python -u src/train.py -v --config $1 $4 &
+    python -u src/train.py -v --purge --purge-gen-caches --config $1 $4 &
 fi
 if [ "$5" != "" ]; then
-    python -u src/train.py -v --config $1 $5 &
+    python -u src/train.py -v --purge --purge-gen-caches --config $1 $5 &
 fi

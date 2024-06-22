@@ -182,17 +182,40 @@ mkdir -p ./jobs/logs/$SLURM_JOBID/bonds
 mkdir -p ./jobs/logs/$SLURM_JOBID/angles
 mkdir -p ./jobs/logs/$SLURM_JOBID/dihedrals
 
-for ic in "${bond_ics[@]}"
-do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=B$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/bonds/$ic.log --error=./jobs/logs/$SLURM_JOBID/bonds/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_bond"
+# for ic in "${bond_ics[@]}"
+# do
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=B$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/bonds/$ic.log --error=./jobs/logs/$SLURM_JOBID/bonds/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_bond"
+# done
+
+# for ic in "${angle_ics[@]}"
+# do
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=A$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/angles/$ic.log --error=./jobs/logs/$SLURM_JOBID/angles/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
+# done
+
+# for ic in "${dihedral_ics[@]}"
+# do
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=D$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
+# done
+
+
+blength=${#bond_ics[@]}
+alength=${#angle_ics[@]}
+dlength=${#dihedral_ics[@]}
+
+for (( i=0; i<$blength; i+=4 )); do
+    package=("${bond_ics[@]:i:4}")
+    echo Bonds: Starting package $i train for ics: "${package[@]}"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PB$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/bonds/$i.log --error=./jobs/logs/$SLURM_JOBID/bonds/$i.err --wrap="jobs/train_single_no_purge.sh smaug_bond ${package[@]}"
 done
 
-for ic in "${angle_ics[@]}"
-do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=A$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/angles/$ic.log --error=./jobs/logs/$SLURM_JOBID/angles/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
+for (( i=0; i<$alength; i+=4 )); do
+    package=("${angle_ics[@]:i:4}")
+    echo Angles: Starting package $i train for ics: "${package[@]}"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PA$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/angles/$i.log --error=./jobs/logs/$SLURM_JOBID/angles/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
 done
 
-for ic in "${dihedral_ics[@]}"
-do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=D$ic --gres=gpu:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/train_single_no_purge.sh $ic smaug_angle"
+for (( i=0; i<$dlength; i+=4 )); do
+    package=("${dihedral_ics[@]:i:4}")
+    echo Dihedrals: Starting package $i train for ics: "${package[@]}"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PD$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$i.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
 done
