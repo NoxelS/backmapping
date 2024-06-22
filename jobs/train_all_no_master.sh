@@ -204,18 +204,38 @@ dlength=${#dihedral_ics[@]}
 
 for (( i=0; i<$blength; i+=4 )); do
     package=("${bond_ics[@]:i:4}")
+    ic1=${bond_ics[i]}
+    
+    if (( i+1 < blength )); then
+        ic2=${bond_ics[i+1]}
+    else
+        ic2=""
+    fi
+    
+    if (( i+2 < blength )); then
+        ic3=${bond_ics[i+2]}
+    else
+        ic3=""
+    fi
+    
+    if (( i+3 < blength )); then
+        ic4=${bond_ics[i+3]}
+    else
+        ic4=""
+    fi
+
     echo Bonds: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PB$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/bonds/$i.log --error=./jobs/logs/$SLURM_JOBID/bonds/$i.err --wrap="jobs/train_single_no_purge.sh smaug_bond ${package[@]}"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PB$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/bonds/$i.log --error=./jobs/logs/$SLURM_JOBID/bonds/$i.err --wrap="jobs/train_single_no_purge.sh smaug_bond $ic1 $ic2 $ic3 $ic4"
 done
 
-for (( i=0; i<$alength; i+=4 )); do
-    package=("${angle_ics[@]:i:4}")
-    echo Angles: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PA$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/angles/$i.log --error=./jobs/logs/$SLURM_JOBID/angles/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
-done
+# for (( i=0; i<$alength; i+=4 )); do
+#     package=("${angle_ics[@]:i:4}")
+#     echo Angles: Starting package $i train for ics: "${package[@]}"
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PA$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/angles/$i.log --error=./jobs/logs/$SLURM_JOBID/angles/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
+# done
 
-for (( i=0; i<$dlength; i+=4 )); do
-    package=("${dihedral_ics[@]:i:4}")
-    echo Dihedrals: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PD$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$i.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
-done
+# for (( i=0; i<$dlength; i+=4 )); do
+#     package=("${dihedral_ics[@]:i:4}")
+#     echo Dihedrals: Starting package $i train for ics: "${package[@]}"
+#     sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=PD$i --exclusive --mem=0 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$i.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle ${package[@]}"
+# done
