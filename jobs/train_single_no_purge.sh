@@ -19,14 +19,14 @@ echo ""
 date
 echo "####################### TRAINING FOR $2, $3, $4, $5 WITH CONFIG $1 ###########################"
 
-python -u src/train.py -v --config $1 $2 &
+srun --ntasks=1 python -u src/train.py -v --config $1 $2 &
 
 if [ "$3" != "" ]; then
-    python -u src/train.py -v --config $1 $3 &
+    srun --ntasks=1 python -u src/train.py -v --config $1 $3 &
 fi
 if [ "$4" != "" ]; then
-    python -u src/train.py -v --config $1 $4 &
+    srun --ntasks=1 python -u src/train.py -v --config $1 $4 &
 fi
 if [ "$5" != "" ]; then
-    python -u src/train.py -v --config $1 $5 &
+    srun --ntasks=1 python -u src/train.py -v --config $1 $5 &
 fi
