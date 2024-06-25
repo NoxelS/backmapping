@@ -17,14 +17,16 @@ echo ""
 date
 echo "####################### TRAINING FOR $2, $3, $4, $5 WITH CONFIG $1 ###########################"
 
-srun --ntasks=1 srun python -u src/train.py -v --purge --purge-gen-caches --config $1 $2 &
+srun python -u src/train.py -v --purge --purge-gen-caches --config $1 $2 &
 
 if [ "$3" != "" ]; then
-    srun --ntasks=1 python -u src/train.py -v --purge --purge-gen-caches --config $1 $3 &
+    srun python -u src/train.py -v --purge --purge-gen-caches --config $1 $3 &
 fi
 if [ "$4" != "" ]; then
-    srun --ntasks=1 python -u src/train.py -v --purge --purge-gen-caches --config $1 $4 &
+    srun python -u src/train.py -v --purge --purge-gen-caches --config $1 $4 &
 fi
 if [ "$5" != "" ]; then
-    srun --ntasks=1 python -u src/train.py -v --purge --purge-gen-caches --config $1 $5 &
+    srun python -u src/train.py -v --purge --purge-gen-caches --config $1 $5 &
 fi
+
+wait
