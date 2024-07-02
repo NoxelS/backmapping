@@ -225,7 +225,7 @@ for (( i=0; i<$blength; i+=4 )); do
     fi
 
     echo Bonds: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --gres=gpu:4 --job-name=PB$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/bonds/$i.log --error=./jobs/logs/$SLURM_JOBID/bonds/$i.err --wrap="jobs/train_single_no_purge.sh smaug_bond $ic1 $ic2 $ic3 $ic4"
+    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 --gres=gpu:1 --job-name=PB$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/bonds/$i.log --error=./jobs/logs/$SLURM_JOBID/bonds/$i.err --wrap="jobs/train_single_no_purge.sh smaug_bond $ic1 $ic2 $ic3 $ic4"
 done
 
 for (( i=0; i<$alength; i+=4 )); do
@@ -252,7 +252,7 @@ for (( i=0; i<$alength; i+=4 )); do
 
 
     echo Angles: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --gres=gpu:4 --job-name=PA$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/angles/$i.log --error=./jobs/logs/$SLURM_JOBID/angles/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle $ic1 $ic2 $ic3 $ic4"
+    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 --gres=gpu:1 --job-name=PA$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/angles/$i.log --error=./jobs/logs/$SLURM_JOBID/angles/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle $ic1 $ic2 $ic3 $ic4"
 done
 
 for (( i=0; i<$dlength; i+=4 )); do
@@ -278,5 +278,5 @@ for (( i=0; i<$dlength; i+=4 )); do
     fi
 
     echo Dihedrals: Starting package $i train for ics: "${package[@]}"
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --gres=gpu:4 --job-name=PD$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$i.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle $ic1 $ic2 $ic3 $ic4"
+    sbatch --exclude=fang1,fang51,fang52,fang53,fang54 --gres=gpu:1 --job-name=PD$i --exclusive=user --mem=0 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$i.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$i.err --wrap="jobs/train_single_no_purge.sh smaug_angle $ic1 $ic2 $ic3 $ic4"
 done
