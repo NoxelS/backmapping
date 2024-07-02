@@ -3,6 +3,7 @@ import logging
 import os
 
 from library.config import Keys, config
+from library.datagen.topology import get_ic_type_from_index
 
 if __name__ == "__main__":
     # Select the available hist files
@@ -25,6 +26,9 @@ if __name__ == "__main__":
 
     # Add internal coordinate index argument
     parser.add_argument("--config-match", "-c", type=str, help="Selects all configs that match for a given substring.")
+
+    # Add argument for filter by ic type
+    parser.add_argument("--filter-ic-type", type=str, help="Filter the internal coordinate type to plot.", choices=["angle", "bond", "dihedral"])
 
     # Add argument for verbose
     parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output, defaults to off.", default=False)
@@ -78,6 +82,10 @@ if __name__ == "__main__":
     if args.config_match:
         target_files.extend([file for file in hist_files if args.config_match in file])
 
+    if args.filter_ic_type:
+        # Filter the target files
+        target_files = [file for file in target_files if get_ic_type_from_index(int(file.split(".csv")[0][::-1].split("_", 1)[0][::-1])) == args.filter_ic_type]
+
     # Check if no arguments are provided
     if not args.hist_file and not args.hist_files and not args.ic_index and not args.config_match:
         exit("Please provide at least one argument.")
@@ -113,10 +121,16 @@ if __name__ == "__main__":
     # Plot the selected files if multiple are selected
     if len(target_files) > 1:
         # Import here to reduce import overhead
-        from library.analysis.plots import plot_hist_multiple, plot_diff_multiple
+        from library.analysis.plots import plot_diff_multiple, plot_hist_multiple
 
         # Plot the selected files
-        # plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range, plot_table=args.table)
+        plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range, plot_table=args.table)
 
         # Plot diff if selected
-        plot_diff_multiple(target_files, "diff_" + args.plot_name if args.plot_name else None, epoch_range=args.epoch_range, plot_table=args.table, small=args.small) if args.plot_diff else None
+        (
+            plot_diff_multiple(
+                target_files, args.plot_name.replace(".", "_diff.") if args.plot_name else None, epoch_range=args.epoch_range, plot_table=args.table, small=args.small
+            )
+            if args.plot_diff
+            else None
+        )

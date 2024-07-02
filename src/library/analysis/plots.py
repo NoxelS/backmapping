@@ -3,11 +3,10 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from library.static.utils import inverse_scale_output_ic
 from library.config import Keys, config
 from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, ic_to_hlabel
 from library.plot_config import set_plot_config
-from library.static.utils import to_significant
+from library.static.utils import inverse_scale_output_ic, to_significant
 
 PATH_TO_HIST = os.path.join(config(Keys.DATA_PATH), "hist")
 
@@ -200,74 +199,73 @@ def plot_hist_multiple(files: list, plot_name: str = None, epoch_range: tuple = 
     fig.subplots_adjust(hspace=0.5)
 
     for file in files:
-        # Load csv
-        hist = np.loadtxt(os.path.join(config(Keys.DATA_PATH), "hist", file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
+        try:
+            # Load csv
+            hist = np.loadtxt(os.path.join(config(Keys.DATA_PATH), "hist", file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
 
-        # Model name and ic index from file name
-        model_name = file.replace("training_history_", "").replace(".csv", "")
-        ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
-        config_name = model_name[::-1].split("_", 1)[1][::-1]
-        ic_type = get_ic_type_from_index(ic_index)
-        dim = "Å" if ic_type == "bond" else "a.u."
+            # Model name and ic index from file name
+            model_name = file.replace("training_history_", "").replace(".csv", "")
+            ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
+            config_name = model_name[::-1].split("_", 1)[1][::-1]
+            ic_type = get_ic_type_from_index(ic_index)
+            dim = "Å" if ic_type == "bond" else "a.u."
 
-        # If only one row, add dimension
-        if len(hist.shape) == 1:
-            hist = hist.reshape(1, -1)
+            # If only one row, add dimension
+            if len(hist.shape) == 1:
+                hist = hist.reshape(1, -1)
 
-        lower_range = (
-            max(min(hist[:, 0]), epoch_range[0]) if epoch_range else min(hist[:, 0])
-        )
-        upper_range = (
-            min(max(hist[:, 0]), epoch_range[1] + 1) if epoch_range else max(hist[:, 0]) + 1
-        )
-        hist_range = [int(lower_range), int(upper_range)]
+            lower_range = max(min(hist[:, 0]), epoch_range[0]) if epoch_range else min(hist[:, 0])
+            upper_range = min(max(hist[:, 0]), epoch_range[1] + 1) if epoch_range else max(hist[:, 0]) + 1
+            hist_range = [int(lower_range), int(upper_range)]
 
-        hist_epoch, hist_loss, hist_lr, hist_mae, hist_mse, hist_val_loss, hist_val_mae, hist_val_mse = (
-            hist[hist_range[0] : hist_range[1], 0],
-            hist[hist_range[0] : hist_range[1], 1],
-            hist[hist_range[0] : hist_range[1], 2],
-            hist[hist_range[0] : hist_range[1], 3],
-            hist[hist_range[0] : hist_range[1], 4],
-            hist[hist_range[0] : hist_range[1], 5],
-            hist[hist_range[0] : hist_range[1], 6],
-            hist[hist_range[0] : hist_range[1], 7],
-        )
+            hist_epoch, hist_loss, hist_lr, hist_mae, hist_mse, hist_val_loss, hist_val_mae, hist_val_mse = (
+                hist[hist_range[0] : hist_range[1], 0],
+                hist[hist_range[0] : hist_range[1], 1],
+                hist[hist_range[0] : hist_range[1], 2],
+                hist[hist_range[0] : hist_range[1], 3],
+                hist[hist_range[0] : hist_range[1], 4],
+                hist[hist_range[0] : hist_range[1], 5],
+                hist[hist_range[0] : hist_range[1], 6],
+                hist[hist_range[0] : hist_range[1], 7],
+            )
 
-        # Scale the losses accordingly
-        if ic_type == "bond":
-            hist_loss = inverse_scale_output_ic(ic_index, hist_loss) - inverse_scale_output_ic(ic_index, 0)
-            hist_val_loss = inverse_scale_output_ic(ic_index, hist_val_loss) - inverse_scale_output_ic(ic_index, 0)
+            # Scale the losses accordingly
+            if ic_type == "bond":
+                hist_loss = inverse_scale_output_ic(ic_index, hist_loss) - inverse_scale_output_ic(ic_index, 0)
+                hist_val_loss = inverse_scale_output_ic(ic_index, hist_val_loss) - inverse_scale_output_ic(ic_index, 0)
 
-        # There are maybe multiple train cylces so reindex the epochs accordingly
-        hist_epoch = np.arange(hist.shape[0]) if not epoch_range else np.arange(hist_range[0], hist_range[1])
+            # There are maybe multiple train cylces so reindex the epochs accordingly
+            hist_epoch = np.arange(hist.shape[0]) if not epoch_range else np.arange(hist_range[0], hist_range[1])
 
-        # Calculate the minimum loss
-        min_loss = np.min(hist_loss)
-        min_val_loss = np.min(hist_val_loss)
+            # Calculate the minimum loss
+            min_loss = np.min(hist_loss)
+            min_val_loss = np.min(hist_val_loss)
 
-        # Plot the loss on the left
-        axs[0].plot(
-            hist_epoch,
-            hist_loss,
-            label=model_name,
-            markeredgecolor="black",
-            markerfacecolor="white",
-            linestyle="-",
-            linewidth=1.2,
-            alpha=0.75,
-        )
+            # Plot the loss on the left
+            axs[0].plot(
+                hist_epoch,
+                hist_loss,
+                label=model_name,
+                markeredgecolor="black",
+                markerfacecolor="white",
+                linestyle="-",
+                linewidth=1.2,
+                alpha=0.75,
+            )
 
-        # Plot the val loss on the right
-        axs[1].plot(
-            hist_epoch,
-            hist_val_loss,
-            label=model_name,
-            markeredgecolor="black",
-            markerfacecolor="white",
-            linestyle="-",
-            linewidth=1.2,
-            alpha=0.75,
-        )
+            # Plot the val loss on the right
+            axs[1].plot(
+                hist_epoch,
+                hist_val_loss,
+                label=model_name,
+                markeredgecolor="black",
+                markerfacecolor="white",
+                linestyle="-",
+                linewidth=1.2,
+                alpha=0.75,
+            )
+        except Exception as e:
+            print(f"Error: {e}")
 
     # Add labels
     axs[0].set_xlabel("Epoch")
@@ -284,57 +282,61 @@ def plot_hist_multiple(files: list, plot_name: str = None, epoch_range: tuple = 
     axs[1].set_position([0.1, 0, 0.8, 0.4])
     axs[0].set_position([0.1, 0.55, 0.8, 0.4])
 
-    # Plot one legend beneath the others for both plots outside of the plot
-    axs[0].legend(bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
+    if len(files) < 31 * 2:
+        # Plot one legend beneath the others for both plots outside of the plot
+        axs[0].legend(bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
 
-    # Add title to legend
-    axs[0].text(
-        0.945,
-        0.95,
-        "Models",
-        verticalalignment="top",
-        horizontalalignment="left",
-        fontsize=12,
-        color="black",
-        fontweight=600,
-        transform=fig.transFigure,
-    )
+        # Add title to legend
+        axs[0].text(
+            0.945,
+            0.95,
+            "Models",
+            verticalalignment="top",
+            horizontalalignment="left",
+            fontsize=12,
+            color="black",
+            fontweight=600,
+            transform=fig.transFigure,
+        )
 
     # Plot a table with every hist file and the corresponding min loss and val loss
     # this plot should be beneath the legend
     if plot_table:
         rows = []
         for file in files:
-            # Load csv
-            hist = np.loadtxt(os.path.join(config(Keys.DATA_PATH), "hist", file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
+            try:
+                # Load csv
+                hist = np.loadtxt(os.path.join(config(Keys.DATA_PATH), "hist", file), delimiter=",", skiprows=1, usecols=(0, 1, 2, 3, 4, 5, 6, 7))
 
-            # Model name and ic index from file name
-            model_name = file.replace("training_history_", "").replace(".csv", "")
-            ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
-            config_name = model_name[::-1].split("_", 1)[::-1]
-            ic_type = get_ic_type_from_index(ic_index)
-            dim = "Å" if ic_type == "bond" else "a.u."
+                # Model name and ic index from file name
+                model_name = file.replace("training_history_", "").replace(".csv", "")
+                ic_index = int(model_name[::-1].split("_", 1)[0][::-1])
+                config_name = model_name[::-1].split("_", 1)[::-1]
+                ic_type = get_ic_type_from_index(ic_index)
+                dim = "Å" if ic_type == "bond" else "a.u."
 
-            # If only one row, add dimension
-            if len(hist.shape) == 1:
-                hist = hist.reshape(1, -1)
+                # If only one row, add dimension
+                if len(hist.shape) == 1:
+                    hist = hist.reshape(1, -1)
 
-            hist_epoch, hist_loss, hist_lr, hist_mae, hist_mse, hist_val_loss, hist_val_mae, hist_val_mse = (
-                hist[hist_range[0] : hist_range[1], 0],
-                hist[hist_range[0] : hist_range[1], 1],
-                hist[hist_range[0] : hist_range[1], 2],
-                hist[hist_range[0] : hist_range[1], 3],
-                hist[hist_range[0] : hist_range[1], 4],
-                hist[hist_range[0] : hist_range[1], 5],
-                hist[hist_range[0] : hist_range[1], 6],
-                hist[hist_range[0] : hist_range[1], 7],
-            )
+                hist_epoch, hist_loss, hist_lr, hist_mae, hist_mse, hist_val_loss, hist_val_mae, hist_val_mse = (
+                    hist[hist_range[0] : hist_range[1], 0],
+                    hist[hist_range[0] : hist_range[1], 1],
+                    hist[hist_range[0] : hist_range[1], 2],
+                    hist[hist_range[0] : hist_range[1], 3],
+                    hist[hist_range[0] : hist_range[1], 4],
+                    hist[hist_range[0] : hist_range[1], 5],
+                    hist[hist_range[0] : hist_range[1], 6],
+                    hist[hist_range[0] : hist_range[1], 7],
+                )
 
-            # Calculate the minimum loss
-            min_loss = np.min(hist_loss)
-            min_val_loss = np.min(hist_val_loss)
+                # Calculate the minimum loss
+                min_loss = np.min(hist_loss)
+                min_val_loss = np.min(hist_val_loss)
 
-            rows.append([model_name, to_significant(min_loss, 5), to_significant(min_val_loss, 5)])
+                rows.append([model_name, to_significant(min_loss, 5), to_significant(min_val_loss, 5)])
+            except Exception as e:
+                print(f"Error: {e}")
 
         # Sort by min val loss
         rows = sorted(rows, key=lambda x: x[2])
@@ -374,13 +376,7 @@ def plot_hist_multiple(files: list, plot_name: str = None, epoch_range: tuple = 
     fig.savefig(plot_name if plot_name else f"hist_{model_name}.pdf")
 
 
-def plot_diff_multiple(
-    files: list,
-    plot_name: str = None,
-    epoch_range: tuple = None,
-    plot_table: bool = False,
-    small: bool = False
-):
+def plot_diff_multiple(files: list, plot_name: str = None, epoch_range: tuple = None, plot_table: bool = False, small: bool = False):
     # Load plot config
     set_plot_config(themes=["seaborn-paper"])
 
@@ -388,6 +384,7 @@ def plot_diff_multiple(
     fig, ax = plt.subplots()
 
     average = []
+    longest_hist = []
     max_y = 0
     min_y = 0
     plotted_files = 0
@@ -447,26 +444,14 @@ def plot_diff_multiple(
 
             # Scale the losses accordingly
             if ic_type == "bond":
-                hist_loss = inverse_scale_output_ic(
-                    ic_index, hist_loss
-                ) - inverse_scale_output_ic(ic_index, 0)
-                hist_val_loss = inverse_scale_output_ic(
-                    ic_index, hist_val_loss
-                ) - inverse_scale_output_ic(ic_index, 0)
+                hist_loss = inverse_scale_output_ic(ic_index, hist_loss) - inverse_scale_output_ic(ic_index, 0)
+                hist_val_loss = inverse_scale_output_ic(ic_index, hist_val_loss) - inverse_scale_output_ic(ic_index, 0)
 
             # There are maybe multiple train cylces so reindex the epochs accordingly
-            hist_epoch = (
-                np.arange(hist.shape[0])
-                if not epoch_range
-                else np.arange(hist_range[0], hist_range[1])
-            )
-
-            # Calculate the minimum loss
-            min_loss = np.min(hist_loss)
-            min_val_loss = np.min(hist_val_loss)
+            hist_epoch = np.arange(hist.shape[0]) if not epoch_range else np.arange(hist_range[0], hist_range[1])
 
             # Calculate the diff
-            diff = ((hist_loss - hist_val_loss))
+            diff = hist_loss - hist_val_loss
 
             # Add average
             average.append(diff)
@@ -474,6 +459,7 @@ def plot_diff_multiple(
             # Set min and max
             max_y = max(max_y, max(diff))
             min_y = min(min_y, min(diff))
+            longest_hist = hist_epoch if len(hist_epoch) > len(longest_hist) else longest_hist
 
             # Plot the loss on the left
             ax.plot(
@@ -492,15 +478,13 @@ def plot_diff_multiple(
             print(f"Error: {e}")
 
     # Build average with different hist sizes
-    max_range = len(hist_epoch)
-    average_values = np.zeros(max_range)
-    for i in range(max_range):
+    average_values = np.zeros(len(longest_hist))
+    for i in range(len(longest_hist)):
         average_values[i] = np.mean([a[i] for a in average if i < len(a)])
-
 
     # Plot the average
     ax.plot(
-        hist_epoch,
+        longest_hist,
         average_values,
         label="Average",
         markeredgecolor="black",
@@ -511,10 +495,9 @@ def plot_diff_multiple(
         alpha=1,
     )
 
-
     # Add labels
     ax.set_xlabel("Epoch")
-    ax.set_ylabel(r"$\mathcal{L}_{train} - \mathcal{L}_{val}$" + f" ({dim})")
+    ax.set_ylabel(r"$\mathcal{L}_{train} - \mathcal{L}_{val}$" + f" (a.u.)")
 
     # Set the y-axis to log scale
     # ax.set_xscale("log")
@@ -522,9 +505,7 @@ def plot_diff_multiple(
 
     if plotted_files < 18 * 2 and not small:
         # Plot one legend beneath the others for both plots outside of the plot
-        ax.legend(
-            bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2
-        )
+        ax.legend(bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
 
         # Add title to legend
         ax.text(
@@ -541,14 +522,14 @@ def plot_diff_multiple(
 
     # Add title
     ax.set_title("Loss Differences") if not small else None
-    
+
     # If small, increase font sizeso of axis
     if small:
-        ax.tick_params(axis='both', which='major', labelsize=10)
-        ax.tick_params(axis='both', which='minor', labelsize=8)
-        
-        # Set labels
-        ax.set_xlabel("Epoch", fontsize=12)
-        ax.set_ylabel(r"$\mathcal{L}_{train} - \mathcal{L}_{val}$" + f" ({dim})", fontsize=12)
+        ax.tick_params(axis="both", which="major", labelsize=10)
+        ax.tick_params(axis="both", which="minor", labelsize=8)
 
-    fig.savefig(plot_name if plot_name else f"hist_{model_name}_diff.pdf")
+        # Set labels
+        ax.set_xlabel("Epoch", fontsize=18)
+        ax.set_ylabel(r"$\mathcal{L}_{train} - \mathcal{L}_{val}$" + f" ({dim})", fontsize=18)
+
+    fig.savefig(plot_name if plot_name else f"hist_{model_name}_diff.pdf", transparent=small)
