@@ -184,15 +184,15 @@ mkdir -p ./jobs/logs/$SLURM_JOBID/dihedrals
 
 for ic in "${bond_ics[@]}"
 do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_B$ic --gres=gpu:4 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/bonds/$ic.log --error=./jobs/logs/$SLURM_JOBID/bonds/$ic.err --wrap="jobs/predict_single.sh $ic smaug_bond"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_B$ic --gres=gpu:rtx2080ti:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/bonds/$ic.log --error=./jobs/logs/$SLURM_JOBID/bonds/$ic.err --wrap="jobs/predict_single.sh $ic smaug_bond"
 done
 
 for ic in "${angle_ics[@]}"
 do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_A$ic --gres=gpu:4 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/angles/$ic.log --error=./jobs/logs/$SLURM_JOBID/angles/$ic.err --wrap="jobs/predict_single.sh $ic smaug_angle"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_A$ic --gres=gpu:rtx2080ti:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/angles/$ic.log --error=./jobs/logs/$SLURM_JOBID/angles/$ic.err --wrap="jobs/predict_single.sh $ic smaug_angle"
 done
 
 for ic in "${dihedral_ics[@]}"
 do
-    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_D$ic --gres=gpu:4 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/predict_single.sh $ic smaug_angle"
+    sbatch --exclude=fang1,fang8,fang31,fang40,fang54,fang48,fang51,fang52,fang53,fang54 --job-name=P_D$ic --gres=gpu:rtx2080ti:1 --mem-per-gpu=11G --nodes=1 --output=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.log --error=./jobs/logs/$SLURM_JOBID/dihedrals/$ic.err --wrap="jobs/predict_single.sh $ic smaug_angle"
 done
