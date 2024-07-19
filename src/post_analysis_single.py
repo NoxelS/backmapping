@@ -193,11 +193,13 @@ def post_analysis(config_name: str, type: str = "mixed", skip_single_plots: bool
 post_analysis("prod", "dihedral", skip_single_plots=True, custom_range=[90, 100])
 post_analysis("prod", "dihedral", skip_single_plots=True, custom_range=[72, 82])
 post_analysis("prod", "dihedral", skip_single_plots=True, custom_range=[110, 120])
+post_analysis("prod", "dihedral", skip_single_plots=True, custom_range=[65, 130])
 post_analysis("prod", "dihedral", skip_single_plots=True)
 
 post_analysis("prod", "angle", skip_single_plots=True)
 post_analysis("prod", "angle", skip_single_plots=True, custom_range=[120, 130])
 post_analysis("prod", "angle", skip_single_plots=True, custom_range=[110, 115])
+post_analysis("prod", "angle", skip_single_plots=True, custom_range=[90, 140])
 
 post_analysis("prod", "bond", skip_single_plots=True)
 post_analysis("prod", "bond", skip_single_plots=True, custom_range=[1.475, 1.515])
