@@ -4,6 +4,7 @@ mkdir -p hist_plots
 
 # HP runs
 python src/plot_hist.py -d -c relu_run -n hist_plots/relu_run.pdf
+python src/plot_hist.py -d -c batch_size -n hist_plots/bs_run.pdf
 python src/plot_hist.py -d -c do_run -n hist_plots/do_run.pdf
 python src/plot_hist.py -d -c fe_run -n hist_plots/fe_run.pdf
 python src/plot_hist.py -d -c activation_run -n hist_plots/activation_run.pdf
