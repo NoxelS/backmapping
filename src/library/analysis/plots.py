@@ -6,8 +6,7 @@ import numpy as np
 from scipy.stats import skew
 
 from library.config import Keys, config
-from library.datagen.topology import (get_ic_from_index,
-                                      get_ic_type_from_index, ic_to_hlabel)
+from library.datagen.topology import get_ic_from_index, get_ic_type_from_index, ic_to_hlabel
 from library.plot_config import set_plot_config
 from library.static.utils import inverse_scale_output_ic, to_significant
 
@@ -361,8 +360,11 @@ def plot_hist_multiple(files: list, plot_name: str = None, epoch_range: tuple = 
             labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: float(t[0])))
             axs[0].legend(handles, labels, bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
         else:
+            handles, labels = axs[0].get_legend_handles_labels()
+            # sort both labels and handles by labels
+            labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: int("".join(c for c in t[0] if c.isdigit()))))
             # Plot one legend beneath the others for both plots outside of the plot
-            axs[0].legend(bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
+            axs[0].legend(handles, labels, bbox_to_anchor=(1.05, 0.9), loc="upper left", borderaxespad=0.0, ncol=2)
 
         # Add title to legend
         axs[0].text(
