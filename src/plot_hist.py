@@ -36,6 +36,9 @@ if __name__ == "__main__":
     # Add argument for table
     parser.add_argument("-t", "--table", action="store_true", help="Plot a table with the losses, defaults to off.", default=False)
 
+    # Add argument for table
+    parser.add_argument("-lp", "--loss-plot", type=str, help="Plot a plot with min_loss(lp)")
+
     # Add argument for diff plot
     parser.add_argument("-d", "--plot-diff", action="store_true", help="Add a diff plot for the specified arguments.", default=False)
 
@@ -118,14 +121,16 @@ if __name__ == "__main__":
         # Plot the selected file
         plot_hist_single(target_files[0], args.plot_name)
 
+        if args.loss_plot:
+            logging.info("Loss plot requires more than one file to be selected.")
+
     # Plot the selected files if multiple are selected
     if len(target_files) > 1:
         # Import here to reduce import overhead
         from library.analysis.plots import plot_diff_multiple, plot_hist_multiple
 
         # Plot the selected files
-        plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range, plot_table=args.table)
-
+        plot_hist_multiple(target_files, args.plot_name, epoch_range=args.epoch_range, plot_table=args.table, parameter_name=args.loss_plot)
         # Plot diff if selected
         (
             plot_diff_multiple(
@@ -134,3 +139,8 @@ if __name__ == "__main__":
             if args.plot_diff
             else None
         )
+
+        if args.loss_plot:
+            from library.analysis.plots import plot_loss_multiple
+
+            plot_loss_multiple(files=target_files, plot_name=args.plot_name.replace(".", "_lp.") if args.plot_name else None, parameter_name=args.loss_plot)
